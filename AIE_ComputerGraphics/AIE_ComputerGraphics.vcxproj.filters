@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="application.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="aie\Gizmos.cpp">
+      <Filter>External Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="opengl\gl_core_4_4.c">
+      <Filter>External Libraries</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="application.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="aie\Gizmos.h">
+      <Filter>External Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="opengl\gl_core_4_4.h">
+      <Filter>External Libraries</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="External Libraries">
+      <UniqueIdentifier>{50ba6a71-9f47-430d-a3f5-6dfe43c92d54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{a99a397a-6203-49a8-b093-a34a4dbf15cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{0b073514-5bd2-48f7-abc8-da6fe7a72245}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{b6ebc489-e87a-458f-83fc-9d5e9db1b6f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

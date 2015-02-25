@@ -1,0 +1,15 @@
+*.opensdf
+*.sdf
+*.suo
+*.db
+*.vcxproj.user
+*.ilk
+*.pdb
+*.Debug
+*.Release
+*.idb
+*.exe
+ipch/
+html/
+CourseProjects/AIE_ComputerGraphics/Debug/
+CourseProjects/AIE_ComputerGraphics/Release/
