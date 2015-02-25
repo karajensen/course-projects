@@ -5,7 +5,8 @@
 #pragma once
 
 #include "common.h"
-#include "glm\glm.hpp"
+
+class OpenGL;
 
 /**
 * Main application class
@@ -13,6 +14,9 @@
 class Application
 {
 public:
+
+    Application();
+    ~Application();
 
     /**
     * Main loop for the application
@@ -33,23 +37,9 @@ public:
 private: 
 
     /**
-    * Initialises OpenGL
-    * @return whether or not initialisation succeeded
-    */
-    bool InitialiseOpenGL();
-
-    /**
-    * Initialises the scene
-    * @return whether or not initialisation succeeded
-    */
-    bool InitialiseScene();
-
-    /**
     * Renders the scene
     */
     void RenderScene();
 
-    GLFWwindow* m_window = nullptr; ///< Handle to the application window
-    glm::mat4 m_view;               ///< View matrix
-    glm::mat4 m_projection;         ///< Projection matrix
+    std::unique_ptr<OpenGL> m_engine; ///< Render engine to use for application
 };

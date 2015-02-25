@@ -4,7 +4,7 @@ AIE Advanced Diploma - Computer Graphics Unit
 =================================================================
 mail@KaraJensen.com
 www.KaraJensen.com
-https://github.com/karajensen/course_projects.git
+https://github.com/karajensen/course-projects.git
 =================================================================
 
 RELEASE REQUIREMENTS: Windows 7+

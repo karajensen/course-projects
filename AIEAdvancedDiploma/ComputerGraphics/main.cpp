@@ -5,6 +5,7 @@
 #include <memory>
 #include "common.h"
 #include "application.h"
+#include "glfw/glfw3.h"
 
 #ifndef _DEBUG
     #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -17,22 +18,14 @@ int main()
 {
     bool pauseConsole = true;
 
-    if (glfwInit())
+    auto application = std::make_unique<Application>();
+    if (application->Initialise())
     {
-        auto application = std::make_unique<Application>();
-        if (application->Initialise())
-        {
-            pauseConsole = false;
-            application->Run();
-        }
+        pauseConsole = false;
+        application->Run();
+    }
 
-        application->Release();
-        glfwTerminate(); 
-    }
-    else
-    {
-        LogError("Could not initialise GLFW");
-    }
+    application->Release();
 
     if (pauseConsole)
     {

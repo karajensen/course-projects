@@ -92,12 +92,14 @@
     <ClInclude Include="aie\Gizmos.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="opengl.h" />
     <ClInclude Include="opengl\gl_core_4_4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aie\Gizmos.cpp" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="opengl.cpp" />
     <ClCompile Include="opengl\gl_core_4_4.c" />
   </ItemGroup>
   <ItemGroup>

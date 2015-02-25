@@ -13,6 +13,9 @@
     <ClCompile Include="opengl\gl_core_4_4.c">
       <Filter>External Libraries</Filter>
     </ClCompile>
+    <ClCompile Include="opengl.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -26,6 +29,9 @@
     </ClInclude>
     <ClInclude Include="opengl\gl_core_4_4.h">
       <Filter>External Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="opengl.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,8 +6,10 @@
 
 #include <string>
 #include <iostream>
-#include "opengl/gl_core_4_4.h"
-#include "glfw/glfw3.h"
+#include <memory>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 /**
 * Logs info to the outputstream
