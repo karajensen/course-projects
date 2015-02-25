@@ -45,4 +45,7 @@
       <UniqueIdentifier>{b6ebc489-e87a-458f-83fc-9d5e9db1b6f0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
+  </ItemGroup>
 </Project>

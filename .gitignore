@@ -11,5 +11,5 @@
 *.exe
 ipch/
 html/
-AIE_ComputerGraphics/Debug/
-AIE_ComputerGraphics/Release/
+AIEAdvancedDiploma/ComputerGraphics/Debug/
+AIEAdvancedDiploma/ComputerGraphics/Release/
