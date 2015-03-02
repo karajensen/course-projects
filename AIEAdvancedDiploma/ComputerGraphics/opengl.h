@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "common.h"
 #include "glm\glm.hpp"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 /**
 * Engine for initialising and managing OpenGL
@@ -15,6 +14,11 @@ class GLFWwindow;
 class OpenGL
 {
 public:
+
+    /**
+    * Constructor
+    */
+    OpenGL() = default;
 
     /**
     * Initialise OpenGL
@@ -43,11 +47,17 @@ public:
     void EndRender();
 
     /**
-    * @return the view projection matrix
+    * @return the application window
     */
-    const glm::mat4& GetViewProjection() const;
+    GLFWwindow& GetWindow() const;
 
 private: 
+
+    /**
+    * Prevent copying
+    */
+    OpenGL(const OpenGL&) = delete;
+    OpenGL& operator=(const OpenGL&) = delete;
 
     /**
     * OpenGL call checking
@@ -57,7 +67,4 @@ private:
     bool HasCallFailed() const;
 
     GLFWwindow* m_window = nullptr; ///< Handle to the application window
-    glm::mat4 m_view;               ///< View matrix
-    glm::mat4 m_projection;         ///< Projection matrix
-    glm::mat4 m_viewProjection;     ///< Combined view projection matrix
 };

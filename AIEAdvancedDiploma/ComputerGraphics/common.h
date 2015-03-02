@@ -12,6 +12,22 @@
 #include <math.h>
 
 /**
+* Converts degrees to radians
+*/
+template<typename T> T DegToRad(T degrees)
+{
+    return static_cast<T>(M_PI/180.0)*degrees;
+}
+
+/**
+* Converts radians to degrees
+*/
+template<typename T> T RadToDeg(T radians)
+{
+    return static_cast<T>(180.0/M_PI)*radians;
+}
+
+/**
 * Logs info to the outputstream
 * @param info The information to log
 */

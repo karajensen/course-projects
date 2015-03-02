@@ -6,6 +6,7 @@
 #include "opengl/gl_core_4_4.h"
 #include "glfw/glfw3.h"
 #include "glm/ext.hpp"
+#include "common.h"
 #include <sstream>
 
 bool OpenGL::IsRunning() const
@@ -26,18 +27,12 @@ void OpenGL::Release()
 void OpenGL::BeginRender()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    m_viewProjection = m_projection * m_view;
 }
 
 void OpenGL::EndRender()
-{
+{    
     glfwSwapBuffers(m_window);
     glfwPollEvents();
-}
-
-const glm::mat4& OpenGL::GetViewProjection() const
-{
-    return m_viewProjection;
 }
 
 bool OpenGL::Initialise()
@@ -66,12 +61,6 @@ bool OpenGL::Initialise()
     glEnable(GL_DEPTH_TEST); 
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    m_view = glm::lookAt(glm::vec3(10,10,10), 
-        glm::vec3(0), glm::vec3(0,1,0));
-
-    m_projection = glm::perspective(
-        glm::pi<float>() * 0.25f, 16/9.f, 0.1f, 1000.f);
-
     std::stringstream stream;
     stream << "OpenGL: Initialised " << ogl_GetMajorVersion() 
         << "." << ogl_GetMinorVersion();
@@ -96,4 +85,10 @@ bool OpenGL::HasCallFailed() const
         LogError("OpenGL: Unknown Error");
         return true;
     }
+}
+
+GLFWwindow& OpenGL::GetWindow() const
+{
+    assert(m_window);
+    return *m_window;
 }

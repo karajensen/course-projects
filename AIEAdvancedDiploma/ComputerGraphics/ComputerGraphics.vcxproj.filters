@@ -16,6 +16,12 @@
     <ClCompile Include="opengl.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -31,6 +37,12 @@
       <Filter>External Libraries</Filter>
     </ClInclude>
     <ClInclude Include="opengl.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
