@@ -3,16 +3,22 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "application.h"
-#include "common.h"
+#include "renderdata.h"
 #include "opengl.h"
 #include "input.h"
 #include "camera.h"
-#include "glfw/glfw3.h"
-#include "aie/Gizmos.h"
+#include "scene.h"
+
+namespace
+{
+    const float DT_MAXIMUM = 0.03f;   ///< Maximum allowed deltatime
+    const float DT_MINIMUM = 0.01f;   ///< Minimum allowed deltatime
+}
 
 Application::Application() :
     m_camera(std::make_unique<Camera>()),
-    m_engine(std::make_unique<OpenGL>())
+    m_scene(std::make_unique<Scene>()),
+    m_engine(std::make_unique<OpenGL>(*m_scene, *m_camera))
 {
 }
 
@@ -22,50 +28,23 @@ void Application::Run()
 {
     while(m_engine->IsRunning())
     {
-        UpdateScene();
+        const float currentTime = static_cast<float>(glfwGetTime());
+        m_deltaTime = Clamp(currentTime - m_previousTime, DT_MINIMUM, DT_MAXIMUM);
+        m_previousTime = currentTime;
+        m_timePassed += m_deltaTime;
 
-        m_engine->BeginRender();
-        RenderScene();
-        m_engine->EndRender();
+        m_input->Update();
+        m_camera->Update();
+        m_scene->Tick(m_deltaTime);
+        m_engine->RenderScene(m_timePassed);
     }
-}
-
-void Application::UpdateScene()
-{
-    const float currentTime = static_cast<float>(glfwGetTime());
-    m_deltaTime = currentTime - m_previousTime;
-    m_previousTime = currentTime;
-
-    m_input->Update();
-    m_camera->Update();
-}
-
-void Application::RenderScene()
-{
-    Gizmos::clear();
-
-    Gizmos::addTransform(glm::mat4(1));
-
-    glm::vec4 white(1);
-    glm::vec4 black(0,0,0,1);
-    for(int i = 0; i < 21; ++i) 
-    {
-        Gizmos::addLine(
-            glm::vec3(-10 + i, 0, 10),
-            glm::vec3(-10 + i, 0, -10), i == 10 ? white : black);
-    
-        Gizmos::addLine(
-            glm::vec3(10, 0, -10 + i), 
-            glm::vec3(-10, 0, -10 + i), i == 10 ? white : black);
-    }
-
-    Gizmos::draw(m_camera->ViewProjection());
 }
 
 void Application::Release()
 {
-    Gizmos::destroy();
-    m_engine->Release();
+    // Release all openGL resources before terminating engine
+    m_scene.reset();
+    m_engine.reset();
 }
 
 bool Application::Initialise()
@@ -76,22 +55,80 @@ bool Application::Initialise()
         return false;
     }
 
+    if (!m_scene->Initialise())
+    {
+        LogError("Could not initialise scene");
+        return false;
+    }
+
     InitialiseInput();
 
-    Gizmos::create();
     return true;
 }
 
 void Application::InitialiseInput()
 {
-    m_input = std::make_unique<Input>(m_engine->GetWindow());
-    m_input->AddCallback(GLFW_KEY_W, true, [this](){ m_camera->Forward(-m_deltaTime); });
-    m_input->AddCallback(GLFW_KEY_S, true, [this](){ m_camera->Forward(m_deltaTime); });
-    m_input->AddCallback(GLFW_KEY_D, true, [this](){ m_camera->Right(m_deltaTime); });
-    m_input->AddCallback(GLFW_KEY_A, true, [this](){ m_camera->Right(-m_deltaTime); });
-    m_input->AddCallback(GLFW_KEY_Q, true, [this](){ m_camera->Up(m_deltaTime); });
-    m_input->AddCallback(GLFW_KEY_E, true, [this](){ m_camera->Up(-m_deltaTime); });
+    /*********************************************************
+    * 1 -> 9      Rendering different maps
+    * 0           Toggle Wireframe
+    * P           Save all procedural textures to file
+    * WASDQE      Move the camera
+    * ALT + LMC   Rotate the camera
+    *********************************************************/
 
+    m_input = std::make_unique<Input>(m_engine->GetWindow());
+
+    m_input->AddCallback(GLFW_KEY_1, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::FINAL_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_2, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::SCENE_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_3, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::NORMAL_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_4, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::DEPTH_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_5, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::BLUR_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_6, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::BLOOM_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_7, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::AMBIENCE_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_8, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::FOG_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_9, false, 
+        [this](){ m_scene->SetPostMap(PostProcessing::DOF_MAP); });
+
+    m_input->AddCallback(GLFW_KEY_0, false, 
+        [this](){ m_engine->ToggleWireframe(); });
+
+    m_input->AddCallback(GLFW_KEY_P, false, 
+        [this](){ m_scene->SaveTextures(); });
+
+    m_input->AddCallback(GLFW_KEY_W, true, 
+        [this](){ m_camera->Forward(-m_deltaTime); });
+
+    m_input->AddCallback(GLFW_KEY_S, true, 
+        [this](){ m_camera->Forward(m_deltaTime); });
+
+    m_input->AddCallback(GLFW_KEY_D, true, 
+        [this](){ m_camera->Right(m_deltaTime); });
+
+    m_input->AddCallback(GLFW_KEY_A, true, 
+        [this](){ m_camera->Right(-m_deltaTime); });
+
+    m_input->AddCallback(GLFW_KEY_Q, true,
+        [this](){ m_camera->Up(m_deltaTime); });
+
+    m_input->AddCallback(GLFW_KEY_E, true, 
+        [this](){ m_camera->Up(-m_deltaTime); });
+    
     m_input->AddCallback(GLFW_KEY_LEFT_ALT, true, [this]()
     {
         if (m_input->IsMousePressed())

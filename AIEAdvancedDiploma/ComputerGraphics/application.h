@@ -9,6 +9,7 @@
 class OpenGL;
 class Camera;
 class Input;
+class Scene;
 
 /**
 * Main application class
@@ -45,23 +46,15 @@ private:
     Application& operator=(const Application&) = delete;
 
     /**
-    * Renders the scene
-    */
-    void RenderScene();
-
-    /**
-    * Updates the scene
-    */
-    void UpdateScene();
-
-    /**
     * Initialises the input for the application
     */
     void InitialiseInput();
 
     float m_previousTime = 0.0f;      ///< Time previously saved last tick
     float m_deltaTime = 0.0f;         ///< Time passed between ticks
-    std::unique_ptr<OpenGL> m_engine; ///< Render engine to use for application
+    float m_timePassed = 0.0f;        ///< The total time passed since start
     std::unique_ptr<Camera> m_camera; ///< The camera viewing the scene
     std::unique_ptr<Input> m_input;   ///< Manages input from the window
+    std::unique_ptr<Scene> m_scene;   ///< Manages all objects
+    std::unique_ptr<OpenGL> m_engine; ///< Render engine to use for application
 };

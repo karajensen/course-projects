@@ -3,36 +3,51 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "opengl.h"
-#include "opengl/gl_core_4_4.h"
-#include "glfw/glfw3.h"
-#include "glm/ext.hpp"
-#include "common.h"
-#include <sstream>
+#include "renderdata.h"
+#include "sceneInterface.h"
+#include "camera.h"
+#include "light.h"
+#include "mesh.h"
+#include "water.h"
+#include "emitter.h"
+#include "terrain.h"
+#include "quad.h"
+#include "shader.h"
+#include "texture.h"
+#include "rendertarget.h"
+#include "postprocessing.h"
+
+OpenGL::OpenGL(const IScene& scene, const Camera& camera) :
+    m_scene(scene),
+    m_camera(camera)
+{
+}
+
+OpenGL::~OpenGL()
+{
+    Release();
+}
+
+void OpenGL::Release()
+{
+    // All resources must be destroyed before the engine
+    m_screenQuad.reset();
+    m_backBuffer.reset();
+    m_sceneTarget.reset();
+
+    if (m_window)
+    {
+        glfwDestroyWindow(m_window);
+        m_window = nullptr;
+    }
+
+    glfwTerminate();
+}
 
 bool OpenGL::IsRunning() const
 {
     return !glfwWindowShouldClose(m_window) && 
           glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS;
-}
-
-void OpenGL::Release()
-{
-    if (m_window)
-    {
-        glfwDestroyWindow(m_window);
-    }
-    glfwTerminate();
-}
-
-void OpenGL::BeginRender()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void OpenGL::EndRender()
-{    
-    glfwSwapBuffers(m_window);
-    glfwPollEvents();
 }
 
 bool OpenGL::Initialise()
@@ -43,7 +58,9 @@ bool OpenGL::Initialise()
         return false;
     }
 
-    m_window = glfwCreateWindow(1280, 720, "Computer Graphics", nullptr, nullptr);
+    m_window = glfwCreateWindow(WINDOW_WIDTH, 
+        WINDOW_HEIGHT, "Computer Graphics", nullptr, nullptr);
+
     if (!m_window)
     {
         LogError("OpenGL: Could not create window");
@@ -58,37 +75,448 @@ bool OpenGL::Initialise()
         return false;
     }
 
-    glEnable(GL_DEPTH_TEST); 
-    glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+    glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glClearDepth(1.0f);
+    glDepthFunc(GL_LEQUAL);
+    glDepthRange(0.0f, 1.0f);
+    glFrontFace(GL_CCW); 
+    glDisablei(GL_BLEND, 0);
+    glEnable(GL_CULL_FACE);
+    glDepthMask(GL_TRUE);
 
-    std::stringstream stream;
-    stream << "OpenGL: Initialised " << ogl_GetMajorVersion() 
-        << "." << ogl_GetMinorVersion();
-    LogInfo(stream.str());
-
-    return !HasCallFailed();
-}
-
-bool OpenGL::HasCallFailed() const
-{
-    switch(glGetError())
+    if (HasCallFailed())
     {
-    case GL_NO_ERROR:
+        LogError("OpenGL: Failed to initialise scene");
         return false;
-    case GL_INVALID_VALUE:
-        LogError("OpenGL: Invalid Value");
-        return true;
-    case GL_INVALID_OPERATION:
-        LogError("OpenGL: Invalid Operation");
-        return true;
-    default:
-        LogError("OpenGL: Unknown Error");
-        return true;
     }
+
+    LogInfo("OpenGL: Initialised " + std::to_string(ogl_GetMajorVersion()) +
+        "." + std::to_string(ogl_GetMinorVersion()));
+
+    m_backBuffer = std::make_unique<RenderTarget>("BackBuffer");
+    m_sceneTarget = std::make_unique<RenderTarget>("Scene", RenderTarget::SCENE_TEXTURES, true);
+    m_effectsTarget = std::make_unique<RenderTarget>("Effects", RenderTarget::EFFECTS_TEXTURES, false);
+    m_blurHorizontal = std::make_unique<RenderTarget>("BlurH", RenderTarget::BLUR_TEXTURES, false);
+    m_blurVertical = std::make_unique<RenderTarget>("BlurV", RenderTarget::BLUR_TEXTURES, false);
+
+    if (!m_backBuffer->Initialise() ||
+        !m_sceneTarget->Initialise() ||
+        !m_effectsTarget->Initialise() ||
+        !m_blurHorizontal->Initialise() ||
+        !m_blurVertical->Initialise())
+    {
+        LogError("Render targets failed initialisation");
+        return false;
+    }
+
+    m_screenQuad = std::make_unique<Quad>("ScreenQuad");
+    if (!m_screenQuad->Initialise())
+    {
+        LogError("Screen quad failed initialisation");
+        return false;
+    }
+
+    return true;
 }
 
 GLFWwindow& OpenGL::GetWindow() const
 {
     assert(m_window);
     return *m_window;
+}
+
+void OpenGL::RenderScene(float timer)
+{
+    RenderSceneMap(timer);
+    RenderPreEffects();
+    RenderBlur();
+    RenderPostProcessing();
+
+    glfwSwapBuffers(m_window);
+    glfwPollEvents();
+}
+
+void OpenGL::RenderSceneMap(float timer)
+{
+    m_sceneTarget->SetActive();
+
+    if (m_isWireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   
+    }
+
+    RenderMeshes();
+    RenderWater(timer);
+    RenderEmitters();
+
+    if (m_isWireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   
+    }
+}   
+
+void OpenGL::RenderMeshes()
+{
+    auto updateInstance = [this](const glm::mat4& world)
+    { 
+        UpdateShader(world); 
+    };
+
+    for (const auto& mesh : m_scene.Meshes())
+    {
+        if (UpdateShader(*mesh))
+        {
+            mesh->PreRender();
+            EnableSelectedShader();
+            mesh->Render(updateInstance);
+        }
+    }
+}
+
+void OpenGL::RenderWater(float timer)
+{
+    for (const auto& water : m_scene.Waters())
+    {
+        if (UpdateShader(*water, timer))
+        {
+            water->PreRender();
+            EnableSelectedShader();
+            water->Render();
+        }
+    }
+}
+
+void OpenGL::RenderEmitters()
+{
+    EnableDepthWrite(false);
+
+    auto updateParticle = [this](const glm::mat4& world, const Particle& particle)
+    {
+        UpdateShader(world, particle); 
+    };
+
+    for (auto& emitter : m_scene.Emitters())
+    {
+        if (UpdateShader(*emitter))
+        {
+            emitter->PreRender();
+            EnableSelectedShader();
+            emitter->Render(updateParticle, m_camera.Position(), m_camera.Up());
+        }
+    }
+
+    EnableDepthWrite(true);
+}
+
+void OpenGL::RenderPostProcessing()
+{
+    EnableAlphaBlending(false);
+    EnableBackfaceCull(false);
+
+    const auto& post = m_scene.Post();
+    auto& postShader = m_scene.GetShader(Shader::ID_POST_PROCESSING);
+    
+    postShader.SetActive();
+    postShader.SendUniform("contrast", post.Contrast());
+    postShader.SendUniform("saturation", post.Saturation());
+    postShader.SendUniform("dofStart", post.DOFStart());
+    postShader.SendUniform("dofFade", post.DOFFade());
+    postShader.SendUniform("fogStart", post.FogStart());
+    postShader.SendUniform("fogFade", post.FogFade());
+    postShader.SendUniform("fogColor", post.FogColour());
+    postShader.SendUniform("minimumColor", post.MinColour());
+    postShader.SendUniform("maximumColor", post.MaxColour());
+    postShader.SendUniform("finalMask", post.Mask(PostProcessing::FINAL_MAP));
+    postShader.SendUniform("sceneMask", post.Mask(PostProcessing::SCENE_MAP));
+    postShader.SendUniform("normalMask", post.Mask(PostProcessing::NORMAL_MAP));
+    postShader.SendUniform("depthMask", post.Mask(PostProcessing::DEPTH_MAP));
+    postShader.SendUniform("blurSceneMask", post.Mask(PostProcessing::BLUR_MAP));
+    postShader.SendUniform("depthOfFieldMask", post.Mask(PostProcessing::DOF_MAP));
+    postShader.SendUniform("fogMask", post.Mask(PostProcessing::FOG_MAP));
+    postShader.SendUniform("bloomMask", post.Mask(PostProcessing::BLOOM_MAP));
+    postShader.SendUniform("ambienceMask", post.Mask(PostProcessing::AMBIENCE_MAP));
+
+    postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
+    postShader.SendTexture(1, *m_effectsTarget, RenderTarget::NORMAL_ID);
+    postShader.SendTexture(2, *m_blurVertical, RenderTarget::BLUR_EFFECTS_ID);
+    postShader.SendTexture(3, *m_blurVertical, RenderTarget::BLUR_SCENE_ID);
+
+    m_backBuffer->SetActive();
+    m_screenQuad->PreRender();
+    postShader.EnableShader();
+    m_screenQuad->Render();
+
+    postShader.ClearTexture(0, *m_effectsTarget);
+    postShader.ClearTexture(1, *m_effectsTarget);
+    postShader.ClearTexture(2, *m_blurVertical);
+    postShader.ClearTexture(3, *m_blurVertical);
+}
+
+void OpenGL::RenderBlur()
+{
+    EnableAlphaBlending(false);
+    EnableBackfaceCull(false);
+
+    const auto& post = m_scene.Post();
+    auto& blurHorizontalShader = m_scene.GetShader(Shader::ID_BLUR_HORIZONTAL);
+    auto& blurVerticalShader = m_scene.GetShader(Shader::ID_BLUR_VERTICAL);
+
+    blurHorizontalShader.SetActive();
+    blurHorizontalShader.SendUniform("blurStep", post.BlurStep());
+    blurHorizontalShader.SendUniform("weightMain", post.BlurWeightMain());
+    blurHorizontalShader.SendUniform("weightOffset", post.BlurWeightOffset());
+    blurHorizontalShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
+    blurHorizontalShader.SendTexture(1, *m_effectsTarget, RenderTarget::EFFECTS_ID);
+
+    m_blurHorizontal->SetActive();
+    m_screenQuad->PreRender();
+    blurHorizontalShader.EnableShader();
+    m_screenQuad->Render();
+
+    blurHorizontalShader.ClearTexture(0, *m_effectsTarget);
+    blurHorizontalShader.ClearTexture(1, *m_effectsTarget);
+
+    blurVerticalShader.SetActive();
+    blurVerticalShader.SendUniform("blurStep", post.BlurStep());
+    blurVerticalShader.SendUniform("weightMain", post.BlurWeightMain());
+    blurVerticalShader.SendUniform("weightOffset", post.BlurWeightOffset());
+    blurVerticalShader.SendTexture(0, *m_blurHorizontal, RenderTarget::BLUR_SCENE_ID);
+    blurVerticalShader.SendTexture(1, *m_blurHorizontal, RenderTarget::BLUR_EFFECTS_ID);
+
+    m_blurVertical->SetActive();
+    m_screenQuad->PreRender();
+    blurVerticalShader.EnableShader();
+    m_screenQuad->Render();
+
+    blurVerticalShader.ClearTexture(0, *m_blurHorizontal);
+    blurVerticalShader.ClearTexture(1, *m_blurHorizontal);
+}
+
+void OpenGL::RenderPreEffects()
+{
+    EnableBackfaceCull(false);
+    EnableAlphaBlending(false);
+
+    const auto& post = m_scene.Post();
+    auto& preShader = m_scene.GetShader(Shader::ID_PRE_PROCESSING);
+
+    preShader.SetActive();
+    preShader.SendUniform("bloomIntensity", post.BloomIntensity());
+    preShader.SendUniform("bloomStart", post.BloomStart());
+    preShader.SendUniform("bloomFade", post.BloomFade());
+
+    preShader.SendTexture(0, *m_sceneTarget, RenderTarget::SCENE_ID);
+    preShader.SendTexture(1, *m_sceneTarget, RenderTarget::NORMAL_ID);
+    preShader.SendTexture(2, m_scene.GetTexture(Texture::ID_RANDOM).GetID(), false);
+    
+    m_effectsTarget->SetActive();
+    m_screenQuad->PreRender();
+    preShader.EnableShader();
+    m_screenQuad->Render();
+
+    preShader.ClearTexture(0, *m_sceneTarget);
+    preShader.ClearTexture(1, *m_sceneTarget);
+}
+
+void OpenGL::UpdateShader(const glm::mat4& world)
+{
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    shader.SendUniform("world", world);
+}
+
+bool OpenGL::UpdateShader(const Mesh& mesh)
+{
+    const int index = mesh.ShaderID();
+    if (index != NO_INDEX)
+    {
+        auto& shader = m_scene.GetShader(index);
+        if(index != m_selectedShader)
+        {
+            SetSelectedShader(index);
+            shader.SendUniform("viewProjection", m_camera.ViewProjection());
+            shader.SendUniform("cameraPosition", m_camera.Position());
+            shader.SendUniform("depthNear", m_scene.Post().DepthNear());
+            shader.SendUniform("depthFar", m_scene.Post().DepthFar());
+            SendLights();
+        }
+    
+        shader.SendUniform("meshCaustics", mesh.Caustics());
+        shader.SendUniform("meshAmbience", mesh.Ambience());
+        shader.SendUniform("meshBump", mesh.Bump());
+        shader.SendUniform("meshSpecularity", mesh.Specularity());
+
+        SendTextures(mesh.TextureIDs());
+        EnableBackfaceCull(mesh.BackfaceCull());
+        EnableAlphaBlending(false);
+        return true;
+    }
+    return false;
+}
+
+bool OpenGL::UpdateShader(const Water& water, float timer)
+{
+    const int index = water.ShaderID();
+    if (index != NO_INDEX)
+    {
+        auto& shader = m_scene.GetShader(index);
+        if(index != m_selectedShader)
+        {
+            SetSelectedShader(index);
+            shader.SendUniform("viewProjection", m_camera.ViewProjection());
+            shader.SendUniform("timer", timer);
+            shader.SendUniform("depthNear", m_scene.Post().DepthNear());
+            shader.SendUniform("depthFar", m_scene.Post().DepthFar());
+            shader.SendUniform("cameraPosition", m_camera.Position());
+            SendLights();
+        }
+
+        shader.SendUniform("speed", water.Speed());
+        shader.SendUniform("bumpIntensity", water.Bump());
+        shader.SendUniform("bumpVelocity", water.BumpVelocity());
+        shader.SendUniform("uvScale", water.UVScale());
+        shader.SendUniform("deepColor", water.Deep());
+        shader.SendUniform("shallowColor", water.Shallow());
+        shader.SendUniform("reflectionTint", water.ReflectionTint());
+        shader.SendUniform("reflectionIntensity", water.ReflectionIntensity());
+        shader.SendUniform("fresnal", water.Fresnal());
+        SendWaves(water);
+
+        EnableBackfaceCull(false);
+        EnableAlphaBlending(true);
+        SendTextures(water.TextureIDs());
+        return true;
+    }
+    return false;
+}
+
+bool OpenGL::UpdateShader(const Emitter& emitter)
+{
+    const int index = emitter.ShaderID();
+    if (index != NO_INDEX)
+    {
+        auto& shader = m_scene.GetShader(index);
+        if (index != m_selectedShader)
+        {
+            SetSelectedShader(index);
+        }
+
+        shader.SendUniform("tint", emitter.Tint());
+
+        EnableBackfaceCull(false);
+        EnableAlphaBlending(true);
+        return true;
+    }
+    return false;
+}
+
+void OpenGL::UpdateShader(const glm::mat4& world, const Particle& particle)
+{
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    shader.SendUniform("worldViewProjection", m_camera.ViewProjection() * world);
+    shader.SendUniform("alpha", particle.Alpha());
+    SendTexture(0, particle.Texture());
+}
+
+void OpenGL::SendWaves(const Water& water)
+{
+    const auto& waves = water.Waves();
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    for (unsigned int i = 0; i < waves.size(); ++i)
+    {
+        shader.SendUniform("waveFrequency", waves[i].amplitude, i);
+        shader.SendUniform("waveAmplitude", waves[i].amplitude, i);
+        shader.SendUniform("wavePhase", waves[i].phase, i);
+        shader.SendUniform("waveDirectionX", waves[i].directionX, i);
+        shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
+    }
+}
+
+void OpenGL::SendLights()
+{
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    const auto& lights = m_scene.Lights();
+
+    for (unsigned int i = 0; i < lights.size(); ++i)
+    {
+        const int offset = i*3; // Arrays pack tightly
+        shader.SendUniform("lightSpecularity", lights[i]->Specularity(), i);
+        shader.SendUniform("lightActive", lights[i]->Active(), i);
+        shader.SendUniform("lightAttenuation", lights[i]->Attenuation(), offset);
+        shader.SendUniform("lightPosition", lights[i]->Position(), offset);
+        shader.SendUniform("lightDiffuse", lights[i]->Diffuse(), offset);
+        shader.SendUniform("lightSpecular", lights[i]->Specular(), offset);
+    }
+}
+
+void OpenGL::SendTextures(const std::vector<int>& textures)
+{
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    for (unsigned int i = 0, slot = 0; i < textures.size(); ++i)
+    {
+        if (SendTexture(slot, textures[i]))
+        {
+            ++slot;
+        }
+    }
+}
+
+bool OpenGL::SendTexture(int slot, int ID)
+{
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    if (ID != NO_INDEX && shader.HasTextureSlot(slot))
+    {
+        const auto& texture = m_scene.Textures()[ID];
+        shader.SendTexture(slot, texture->GetID(), texture->IsCubeMap());
+        return true;
+    }
+    return false;
+}
+
+void OpenGL::EnableAlphaBlending(bool enable)
+{
+    if (enable != m_isAlphaBlend)
+    {
+        m_isAlphaBlend = enable;
+        enable ? glEnablei(GL_BLEND, 0) : glDisablei(GL_BLEND, 0);
+    }
+}
+
+void OpenGL::EnableBackfaceCull(bool enable)
+{
+    if(enable != m_isBackfaceCull)
+    {
+        m_isBackfaceCull = enable;
+        enable ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+    }
+}
+
+void OpenGL::EnableDepthWrite(bool enable)
+{
+    if (enable != m_isDepthWrite)
+    {
+        m_isDepthWrite = enable;
+        enable ? glDepthMask(GL_TRUE) : glDepthMask(GL_FALSE);
+    }
+}
+
+void OpenGL::EnableSelectedShader()
+{
+    m_scene.GetShader(m_selectedShader).EnableShader();
+}
+
+void OpenGL::SetSelectedShader(int index)
+{
+    m_selectedShader = index;
+    m_scene.GetShader(m_selectedShader).SetActive();
+}
+
+void OpenGL::ToggleWireframe()
+{
+    m_isWireframe = !m_isWireframe;
+
+    LogInfo("OpenGL: Wireframe " + 
+        std::string(m_isWireframe ? "on" : "off"));
 }

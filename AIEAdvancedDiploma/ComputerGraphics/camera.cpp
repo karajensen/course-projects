@@ -3,22 +3,26 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Camera.h"
-#include "glm/ext.hpp"
-#include "common.h"
+#include "renderdata.h"
 
 Camera::Camera() :
-    m_initialPos(0.0f, 0.02f, 10.0f),
+    m_initialPos(3.0f, 1.0f, 15.0f),
     m_position(m_initialPos),
     m_target(0.0f, 0.0f, 0.0f),
-    m_rotationSpeed(0.25f),
-    m_translateSpeed(0.1f),
-    m_forwardSpeed(1.0f)
+    m_rotationSpeed(5.0f),
+    m_translateSpeed(5.0f),
+    m_forwardSpeed(5.0f),
+    m_yaw(-5.0f),
+    m_pitch(0.0f),
+    m_roll(0.0f)
 {
-    const float near = 0.1f;
-    const float far = 1000.0f;
+    const float frustrumNear = 1.0f;
+    const float frustrumFar = 2000.0f;
+    const float fieldOfView = 60.0f;
 
-    m_projection = glm::perspective(
-        glm::pi<float>() * 0.25f, 16/9.f, near, far);
+    m_projection = glm::perspective(fieldOfView, 
+        WINDOW_WIDTH / static_cast<float>(WINDOW_HEIGHT),
+        frustrumNear, frustrumFar);
 }
 
 void Camera::Forward(float value)
@@ -86,6 +90,10 @@ void Camera::Update()
         m_world = translate * rotation;
         m_view = glm::inverse(m_world);
         m_viewProjection = m_projection * m_view;
+
+        m_up.x = m_world[1][0];
+        m_up.y = m_world[1][1];
+        m_up.z = m_world[1][2];
     }
 }
 
@@ -119,4 +127,14 @@ const glm::mat4& Camera::View() const
 const glm::mat4& Camera::World() const
 {
     return m_world;
+}
+
+const glm::vec3& Camera::Position() const
+{
+    return m_position;
+}
+
+const glm::vec3& Camera::Up() const
+{
+    return m_up;
 }

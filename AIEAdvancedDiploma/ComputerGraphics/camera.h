@@ -91,6 +91,16 @@ public:
     */
     const glm::mat4& World() const;
 
+    /**
+    * @return the camera position
+    */
+    const glm::vec3& Position() const;
+
+    /**
+    * @return the camera up vector
+    */
+    const glm::vec3& Up() const;
+
 private:
 
     /**
@@ -105,6 +115,7 @@ private:
     glm::mat4 m_world;             ///< World Matrix for the camera
     glm::vec3 m_initialPos;        ///< Camera initial position in world space
     glm::vec3 m_position;          ///< Camera position in world space
+    glm::vec3 m_up;                ///< Camera up vector
     glm::vec3 m_target;            ///< Camera Look at target
     bool m_requiresUpdate = true;  ///< Whether the camera requires updating or not
     float m_yaw = 0.0f;            ///< Degrees amount of yaw

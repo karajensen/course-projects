@@ -7,9 +7,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="aie\Gizmos.cpp">
-      <Filter>External Libraries</Filter>
-    </ClCompile>
     <ClCompile Include="opengl\gl_core_4_4.c">
       <Filter>External Libraries</Filter>
     </ClCompile>
@@ -22,6 +19,51 @@
     <ClCompile Include="input.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="meshdata.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="sceneBuilder.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="quad.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="animation.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="postprocessing.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="terrain.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="emitter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="particle.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="water.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="rendertarget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -29,9 +71,6 @@
     </ClInclude>
     <ClInclude Include="common.h">
       <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="aie\Gizmos.h">
-      <Filter>External Libraries</Filter>
     </ClInclude>
     <ClInclude Include="opengl\gl_core_4_4.h">
       <Filter>External Libraries</Filter>
@@ -45,9 +84,60 @@
     <ClInclude Include="input.h">
       <Filter>Header</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.gitignore" />
+    <ClInclude Include="light.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="meshdata.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="sceneBuilder.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="renderdata.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="quad.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="colour.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="animation.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="sceneInterface.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="postprocessing.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="terrain.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="emitter.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="particle.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="water.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="rendertarget.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="External Libraries">
@@ -65,5 +155,76 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\.gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shaders\blur_horizontal_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\blur_horizontal_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\blur_vertical_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\blur_vertical_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bump_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bump_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bumpspecularcaustics_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bumpspecularcaustics_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\diffuse_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\diffuse_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\diffusecaustics_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\diffusecaustics_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\flat_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\flat_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\particle_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\particle_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\post_effects_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\post_effects_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\pre_effects_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\pre_effects_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\water_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\water_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
