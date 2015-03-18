@@ -158,9 +158,15 @@ private:
     /**
     * Initialises the mesh data buffer from an FBX file
     * @param path The full path to the mesh file
+    * @param requiresUVs Whether this mesh requres UVs for texturing
+    * @param requiresNormals Whether this mesh requires normals
+    * @param requiresTangents Whether this mesh requires tangents/bitangents
     * @return Whether creation was successful
     */
-    bool InitialiseFromFBX(const std::string& path);
+    bool InitialiseFromFBX(const std::string& path,
+                           bool requiresUVs,
+                           bool requiresNormals, 
+                           bool requiresTangents);
 
     float m_bump = 1.0f;                 ///< Saturation of bump
     float m_caustics = 1.0f;             ///< How much of the caustics are visible

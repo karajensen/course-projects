@@ -2,6 +2,7 @@
 // Kara Jensen - mail@karajensen.com - mesh.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#include "fbx/FBXFile.h"
 #include "mesh.h"
 #include "assimp/include/scene.h"
 #include "assimp/include/Importer.hpp"
@@ -32,7 +33,7 @@ bool Mesh::InitialiseFromFile(const std::string& path,
     }
     else if (path.find(".fbx") != NO_INDEX)
     {
-        success = InitialiseFromFBX(path);
+        success = InitialiseFromFBX(path, requiresUVs, requiresNormals, requiresTangents);
     }
 
     return success && MeshData::Initialise();
@@ -219,7 +220,6 @@ bool Mesh::InitialiseFromOBJ(const std::string& path,
                 componentCount += 3;
             }
 
-            // Add any bitangents/tangents for the mesh
             if(requiresTangents)
             {
                 if(pMesh->HasTangentsAndBitangents())
@@ -275,7 +275,103 @@ bool Mesh::InitialiseFromOBJ(const std::string& path,
     return true;
 }
 
-bool Mesh::InitialiseFromFBX(const std::string& path)
+bool Mesh::InitialiseFromFBX(const std::string& path,
+                             bool requiresUVs,
+                             bool requiresNormals,
+                             bool requiresTangents)
 {
-    return false;
+    auto fbx = std::make_unique<FBXFile>();
+
+    if (!fbx->load(path.c_str(), FBXFile::UNITS_METER, false, false, false))
+    {
+        LogError("FBX loader failed for " + m_name);
+        return false;
+    }
+
+    // For each submesh
+    m_vertexComponentCount = 1;
+    bool generatedComponentCount = false;
+    for (unsigned int i = 0; i < fbx->getMeshCount(); ++i)
+    {
+        FBXMeshNode* mesh = fbx->getMeshByIndex(i);
+
+        const unsigned int indexOffset = m_vertices.size() / m_vertexComponentCount;
+
+        // For each vertex
+        int componentCount = 0;
+        for (const FBXVertex& vertex : mesh->m_vertices)
+        {
+            m_vertices.push_back(vertex.position.x);
+            m_vertices.push_back(vertex.position.y);
+            m_vertices.push_back(vertex.position.z);
+            componentCount = 3;
+
+            if (requiresUVs)
+            {
+                m_vertices.push_back(vertex.texCoord1.x);
+                m_vertices.push_back(vertex.texCoord1.y);
+                componentCount += 2;
+            }
+
+            if (requiresNormals)
+            {
+                if (!IsZero(vertex.normal))
+                {
+                    m_vertices.push_back(vertex.normal.x);
+                    m_vertices.push_back(vertex.normal.y);
+                    m_vertices.push_back(vertex.normal.z);
+                    componentCount += 3;
+                }
+                {
+                    LogError(Name() + " requires normals for requested shader");
+                    return false;
+                }
+            }
+
+            if(requiresTangents)
+            {
+                if (!IsZero(vertex.tangent) && !IsZero(vertex.binormal))
+                {
+                    m_vertices.push_back(vertex.tangent.x);
+                    m_vertices.push_back(vertex.tangent.y);
+                    m_vertices.push_back(vertex.tangent.z);
+                    m_vertices.push_back(vertex.binormal.x);
+                    m_vertices.push_back(vertex.binormal.y);
+                    m_vertices.push_back(vertex.binormal.z);
+                    componentCount += 6;
+                }
+                else
+                {
+                    LogError(Name() + " requires tangents for requested shader");
+                    return false;
+                }
+            }
+        }
+
+        // Make sure vertex layout is consistant between submeshes
+        if(generatedComponentCount)
+        {
+            if(componentCount != m_vertexComponentCount)
+            {
+                LogError("FBX error for mesh " + path + ": " + 
+                    std::to_string(componentCount) + " does not match " +
+                    std::to_string(m_vertexComponentCount));
+                return false;
+            }
+        }
+        else
+        {
+            m_vertexComponentCount = componentCount;
+            generatedComponentCount = true;
+        }
+
+        // Save the indices
+        for (unsigned int index : mesh->m_indices)
+        {
+            m_indices.push_back(indexOffset + index);
+        }
+    }
+
+    fbx->unload();
+    return true;
 }

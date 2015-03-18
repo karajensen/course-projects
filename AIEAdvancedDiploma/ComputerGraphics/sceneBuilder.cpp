@@ -113,7 +113,7 @@ bool SceneBuilder::InitialiseTextures()
 
 bool SceneBuilder::InitialiseMeshes()
 {	
-    auto index = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
+    auto index = InitialiseMesh("sphereFBX", "sphere.fbx", Shader::ID_BUMP_SPEC_CAUSTICS);
     if (index != NO_INDEX)
     {
         auto& mesh = m_scene.GetMesh(index);
@@ -123,7 +123,7 @@ bool SceneBuilder::InitialiseMeshes()
             m_scene.GetTexture("bump"), m_scene.GetTexture("specular"));
     }
 
-    index = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
+    index = InitialiseMesh("sphereOBJ", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
     if (index != NO_INDEX)
     {
         auto& mesh = m_scene.GetMesh(index);

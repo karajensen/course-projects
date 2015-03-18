@@ -37,3 +37,13 @@ inline bool HasCallFailed()
         return true;
     }
 }
+
+/**
+* Determines if the given vector is zeroed
+*/
+template<typename T> bool IsZero(const T& vector)
+{
+    return vector.x == 0.0 &&
+        vector.y == 0.0 &&
+        vector.z == 0.0;
+}
