@@ -99,14 +99,12 @@ bool OpenGL::Initialise()
     m_backBuffer = std::make_unique<RenderTarget>("BackBuffer");
     m_sceneTarget = std::make_unique<RenderTarget>("Scene", RenderTarget::SCENE_TEXTURES, true);
     m_effectsTarget = std::make_unique<RenderTarget>("Effects", RenderTarget::EFFECTS_TEXTURES, false);
-    m_blurHorizontal = std::make_unique<RenderTarget>("BlurH", RenderTarget::BLUR_TEXTURES, false);
-    m_blurVertical = std::make_unique<RenderTarget>("BlurV", RenderTarget::BLUR_TEXTURES, false);
+    m_blurTarget = std::make_unique<RenderTarget>("Blur", RenderTarget::BLUR_TEXTURES, false, true);
 
     if (!m_backBuffer->Initialise() ||
         !m_sceneTarget->Initialise() ||
         !m_effectsTarget->Initialise() ||
-        !m_blurHorizontal->Initialise() ||
-        !m_blurVertical->Initialise())
+        !m_blurTarget->Initialise())
     {
         LogError("Render targets failed initialisation");
         return false;
@@ -241,8 +239,8 @@ void OpenGL::RenderPostProcessing()
 
     postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
     postShader.SendTexture(1, *m_effectsTarget, RenderTarget::NORMAL_ID);
-    postShader.SendTexture(2, *m_blurVertical, RenderTarget::BLUR_EFFECTS_ID);
-    postShader.SendTexture(3, *m_blurVertical, RenderTarget::BLUR_SCENE_ID);
+    postShader.SendTexture(2, *m_blurTarget, RenderTarget::BLUR_EFFECTS_ID);
+    postShader.SendTexture(3, *m_blurTarget, RenderTarget::BLUR_SCENE_ID);
 
     m_backBuffer->SetActive();
     m_screenQuad->PreRender();
@@ -251,14 +249,17 @@ void OpenGL::RenderPostProcessing()
 
     postShader.ClearTexture(0, *m_effectsTarget);
     postShader.ClearTexture(1, *m_effectsTarget);
-    postShader.ClearTexture(2, *m_blurVertical);
-    postShader.ClearTexture(3, *m_blurVertical);
+    postShader.ClearTexture(2, *m_blurTarget);
+    postShader.ClearTexture(3, *m_blurTarget);
 }
 
 void OpenGL::RenderBlur()
 {
     EnableAlphaBlending(false);
     EnableBackfaceCull(false);
+
+    m_blurTarget->SetActive();
+    m_blurTarget->SwitchTextures();
 
     const auto& post = m_scene.Post();
     auto& blurHorizontalShader = m_scene.GetShader(Shader::ID_BLUR_HORIZONTAL);
@@ -271,7 +272,6 @@ void OpenGL::RenderBlur()
     blurHorizontalShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
     blurHorizontalShader.SendTexture(1, *m_effectsTarget, RenderTarget::EFFECTS_ID);
 
-    m_blurHorizontal->SetActive();
     m_screenQuad->PreRender();
     blurHorizontalShader.EnableShader();
     m_screenQuad->Render();
@@ -283,16 +283,16 @@ void OpenGL::RenderBlur()
     blurVerticalShader.SendUniform("blurStep", post.BlurStep());
     blurVerticalShader.SendUniform("weightMain", post.BlurWeightMain());
     blurVerticalShader.SendUniform("weightOffset", post.BlurWeightOffset());
-    blurVerticalShader.SendTexture(0, *m_blurHorizontal, RenderTarget::BLUR_SCENE_ID);
-    blurVerticalShader.SendTexture(1, *m_blurHorizontal, RenderTarget::BLUR_EFFECTS_ID);
+    blurVerticalShader.SendTexture(0, *m_blurTarget, RenderTarget::BLUR_SCENE_ID);
+    blurVerticalShader.SendTexture(1, *m_blurTarget, RenderTarget::BLUR_EFFECTS_ID);
 
-    m_blurVertical->SetActive();
+    m_blurTarget->SwitchTextures();
     m_screenQuad->PreRender();
     blurVerticalShader.EnableShader();
     m_screenQuad->Render();
 
-    blurVerticalShader.ClearTexture(0, *m_blurHorizontal);
-    blurVerticalShader.ClearTexture(1, *m_blurHorizontal);
+    blurVerticalShader.ClearTexture(0, *m_blurTarget);
+    blurVerticalShader.ClearTexture(1, *m_blurTarget);
 }
 
 void OpenGL::RenderPreEffects()

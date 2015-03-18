@@ -209,10 +209,9 @@ private:
     bool m_isDepthWrite = true;      ///< Whether writing to the depth buffer is active
     int m_selectedShader = -1;       ///< Currently active shader for rendering
                                      
-    std::unique_ptr<Quad> m_screenQuad;              ///< Screen space quad for effects
-    std::unique_ptr<RenderTarget> m_backBuffer;      ///< Render target for the back buffer
-    std::unique_ptr<RenderTarget> m_sceneTarget;     ///< Render target for the main scene
-    std::unique_ptr<RenderTarget> m_effectsTarget;   ///< Render target for pre-processing
-    std::unique_ptr<RenderTarget> m_blurVertical;    ///< Render target for blurring vertically
-    std::unique_ptr<RenderTarget> m_blurHorizontal;  ///< Render target for blurring horizontally
+    std::unique_ptr<Quad> m_screenQuad;            ///< Screen space quad for effects
+    std::unique_ptr<RenderTarget> m_backBuffer;    ///< Render target for the back buffer
+    std::unique_ptr<RenderTarget> m_sceneTarget;   ///< Render target for the main scene
+    std::unique_ptr<RenderTarget> m_effectsTarget; ///< Render target for pre-processing
+    std::unique_ptr<RenderTarget> m_blurTarget;    ///< Render target for blurring
 };

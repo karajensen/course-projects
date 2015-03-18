@@ -6,28 +6,44 @@
 
 RenderTarget::RenderTarget(const std::string& name) :
     m_isBackBuffer(true),
-    m_multisampled(false),
-    m_name(name),
-    m_count(0)
+    m_name(name)
 {
 }
 
-RenderTarget::RenderTarget(const std::string& name, int textures, bool multisampled) :
-    m_isBackBuffer(false),
+RenderTarget::RenderTarget(const std::string& name, 
+                               int textures, 
+                               bool multisampled, 
+                               bool usesChain) :
+
     m_multisampled(multisampled),
     m_name(name),
-    m_count(textures)
+    m_count(textures),
+    m_readWrite(usesChain)
 {
     m_attachments.resize(m_count);
-    m_textures.resize(m_count);
+    m_texturesMain.resize(m_count);
+
+    if (m_readWrite)
+    {
+        m_texturesAlt.resize(m_count);
+    }
 }
 
 RenderTarget::~RenderTarget()
 {
+    Release();
+}
+
+void RenderTarget::Release()
+{
     if(m_initialised && !m_isBackBuffer)
     {
         glDeleteFramebuffers(1, &m_frameBuffer);
-        for (GLuint texture : m_textures)
+        for (GLuint texture : m_texturesMain)
+        {
+            glDeleteTextures(1, &texture);
+        }
+        for (GLuint texture : m_texturesAlt)
         {
             glDeleteTextures(1, &texture);
         }
@@ -38,7 +54,8 @@ RenderTarget::~RenderTarget()
 
 GLuint RenderTarget::GetTexture(int index) const
 { 
-    return m_textures[index]; 
+    return m_readWrite && !m_mainAttached ? 
+        m_texturesAlt[index] : m_texturesMain[index];
 }
 
 bool RenderTarget::Initialise()
@@ -57,34 +74,24 @@ bool RenderTarget::Initialise()
         const unsigned int textureType = m_multisampled ? 
             GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 
-        for (unsigned int i = 0; i < m_textures.size(); ++i)
+        for (unsigned int i = 0; i < m_texturesAlt.size(); ++i)
         {
-            m_attachments[i] = GetTextureAttachment(i);
-            glGenTextures(1, &m_textures[i]);
-            glBindTexture(textureType, m_textures[i]);
-
-            if (m_multisampled)
+            if (!CreateTexture(m_texturesAlt[i], textureType))
             {
-                glTexImage2DMultisample(textureType, MULTISAMPLING_COUNT, 
-                    GL_RGBA32F, WINDOW_WIDTH, WINDOW_HEIGHT, GL_TRUE);  
+                return false;
             }
-            else
-            {
-                glTexImage2D(textureType, 0, GL_RGBA, WINDOW_WIDTH,
-                    WINDOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        }
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            }
-
-            if(HasCallFailed())
+        for (unsigned int i = 0; i < m_texturesMain.size(); ++i)
+        {
+            if (!CreateTexture(m_texturesMain[i], textureType))
             {
-                LogError(m_name + " Failed to create texture " + std::to_string(i));
                 return false;
             }
 
+            m_attachments[i] = GetTextureAttachment(i);
             glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                m_attachments[i], textureType, m_textures[i], 0);
+                m_attachments[i], textureType, m_texturesMain[i], 0);
 
             if(HasCallFailed())
             {
@@ -124,13 +131,61 @@ bool RenderTarget::Initialise()
         }
     }
 
+    m_mainAttached = true;
     m_initialised = true;
+    return true;
+}
+
+bool RenderTarget::CreateTexture(GLuint& id, unsigned int type)
+{
+    glGenTextures(1, &id);
+    glBindTexture(type, id);
+
+    if (m_multisampled)
+    {
+        glTexImage2DMultisample(type, MULTISAMPLING_COUNT, 
+            GL_RGBA32F, WINDOW_WIDTH, WINDOW_HEIGHT, GL_TRUE);  
+    }
+    else
+    {
+        glTexImage2D(type, 0, GL_RGBA, WINDOW_WIDTH,
+            WINDOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+
+    if(HasCallFailed())
+    {
+        LogError(m_name + " Failed to create texture");
+        return false;
+    }
+
     return true;
 }
 
 bool RenderTarget::IsMultisampled() const
 {
     return m_multisampled;
+}
+
+void RenderTarget::SwitchTextures()
+{
+    assert(!m_multisampled);
+    assert(m_readWrite);
+
+    m_mainAttached = !m_mainAttached;
+
+    for (unsigned int i = 0; i < m_texturesMain.size(); ++i)
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, m_attachments[i], GL_TEXTURE_2D, 
+            m_mainAttached ? m_texturesMain[i] : m_texturesAlt[i], 0);
+
+        if(HasCallFailed())
+        {
+            LogError(m_name + " Failed to switch textures");
+        }
+    }
 }
 
 void RenderTarget::SetActive()
