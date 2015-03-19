@@ -9,6 +9,7 @@
 *.Release
 *.idb
 *.exe
+*.fbm/
 ipch/
 html/
 AIEAdvancedDiploma/ComputerGraphics/Debug/
