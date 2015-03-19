@@ -239,8 +239,8 @@ void OpenGL::RenderPostProcessing()
 
     postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
     postShader.SendTexture(1, *m_effectsTarget, RenderTarget::NORMAL_ID);
-    postShader.SendTexture(2, *m_blurTarget, RenderTarget::BLUR_EFFECTS_ID);
-    postShader.SendTexture(3, *m_blurTarget, RenderTarget::BLUR_SCENE_ID);
+    postShader.SendTexture(2, *m_effectsTarget, RenderTarget::EFFECTS_ID);
+    postShader.SendTexture(3, *m_blurTarget, RenderTarget::BLUR_ID);
 
     m_backBuffer->SetActive();
     m_screenQuad->PreRender();
@@ -249,7 +249,7 @@ void OpenGL::RenderPostProcessing()
 
     postShader.ClearTexture(0, *m_effectsTarget);
     postShader.ClearTexture(1, *m_effectsTarget);
-    postShader.ClearTexture(2, *m_blurTarget);
+    postShader.ClearTexture(2, *m_effectsTarget);
     postShader.ClearTexture(3, *m_blurTarget);
 }
 
@@ -267,20 +267,17 @@ void OpenGL::RenderBlur()
 
     blurHorizontalShader.SetActive();
     blurHorizontalShader.SendUniform("blurStep", post.BlurStep());
-    blurHorizontalShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
-    blurHorizontalShader.SendTexture(1, *m_effectsTarget, RenderTarget::EFFECTS_ID);
+    blurHorizontalShader.SendTexture(0, *m_effectsTarget);
 
     m_screenQuad->PreRender();
     blurHorizontalShader.EnableShader();
     m_screenQuad->Render();
 
     blurHorizontalShader.ClearTexture(0, *m_effectsTarget);
-    blurHorizontalShader.ClearTexture(1, *m_effectsTarget);
 
     blurVerticalShader.SetActive();
     blurVerticalShader.SendUniform("blurStep", post.BlurStep());
-    blurVerticalShader.SendTexture(0, *m_blurTarget, RenderTarget::BLUR_SCENE_ID);
-    blurVerticalShader.SendTexture(1, *m_blurTarget, RenderTarget::BLUR_EFFECTS_ID);
+    blurVerticalShader.SendTexture(0, *m_blurTarget);
 
     m_blurTarget->SwitchTextures();
     m_screenQuad->PreRender();
@@ -288,7 +285,6 @@ void OpenGL::RenderBlur()
     m_screenQuad->Render();
 
     blurVerticalShader.ClearTexture(0, *m_blurTarget);
-    blurVerticalShader.ClearTexture(1, *m_blurTarget);
 }
 
 void OpenGL::RenderPreEffects()

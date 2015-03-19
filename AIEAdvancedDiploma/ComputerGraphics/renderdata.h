@@ -14,6 +14,7 @@
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 const int MULTISAMPLING_COUNT = 4;
+const int RANDOM_TEXTURE_SIZE = 128;
 
 /**
 * OpenGL call checking

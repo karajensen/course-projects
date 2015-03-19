@@ -21,12 +21,11 @@ public:
     {
         EFFECTS_TEXTURES = 3,
         SCENE_TEXTURES = 2,
-        BLUR_TEXTURES = 2,
+        BLUR_TEXTURES = 1,
         SCENE_ID = 0,
         NORMAL_ID = 1,
         EFFECTS_ID = 2,
-        BLUR_SCENE_ID = 0,
-        BLUR_EFFECTS_ID = 1
+        BLUR_ID = 0,
     };
 
     /**

@@ -289,18 +289,19 @@ bool Mesh::InitialiseFromFBX(const std::string& path,
     }
 
     // For each submesh
-    m_vertexComponentCount = 1;
     bool generatedComponentCount = false;
     for (unsigned int i = 0; i < fbx->getMeshCount(); ++i)
     {
         FBXMeshNode* mesh = fbx->getMeshByIndex(i);
 
-        const unsigned int indexOffset = m_vertices.size() / m_vertexComponentCount;
+        const unsigned int indexOffset = m_vertices.size() / 
+            std::max(1, m_vertexComponentCount);
 
         // For each vertex
         int componentCount = 0;
-        for (const FBXVertex& vertex : mesh->m_vertices)
+        for (unsigned int i = 0; i < mesh->m_vertices.size(); ++i)
         {
+            const auto& vertex = mesh->m_vertices[i];
             m_vertices.push_back(vertex.position.x);
             m_vertices.push_back(vertex.position.y);
             m_vertices.push_back(vertex.position.z);
@@ -366,9 +367,9 @@ bool Mesh::InitialiseFromFBX(const std::string& path,
         }
 
         // Save the indices
-        for (unsigned int index : mesh->m_indices)
+        for (unsigned int i = 0; i < mesh->m_indices.size(); ++i)
         {
-            m_indices.push_back(indexOffset + index);
+            m_indices.push_back(indexOffset + mesh->m_indices[i]);
         }
     }
 

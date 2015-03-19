@@ -97,7 +97,7 @@ bool SceneBuilder::InitialiseShaders()
 
 bool SceneBuilder::InitialiseTextures()
 {
-    return InitialiseTexture("random", "random.bmp", Texture::RANDOM, 128, Texture::ID_RANDOM) &&
+    return InitialiseTexture("random", "random.bmp", Texture::RANDOM, RANDOM_TEXTURE_SIZE, Texture::ID_RANDOM) &&
         InitialiseTexture("water_environment", "water_environment", Texture::CUBE) &&
         InitialiseTexture("water_colour", "water.png", Texture::FROM_FILE) &&
         InitialiseTexture("water_normal", "water_normal.png", Texture::FROM_FILE) &&
@@ -115,7 +115,7 @@ bool SceneBuilder::InitialiseTextures()
 
 bool SceneBuilder::InitialiseMeshes()
 {	
-    auto index = InitialiseMesh("sphereFBX", "sphere.fbx", Shader::ID_BUMP_SPEC_CAUSTICS);
+    auto index = InitialiseMesh("sphereFBX", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
     if (index != NO_INDEX)
     {
         auto& mesh = m_scene.GetMesh(index);

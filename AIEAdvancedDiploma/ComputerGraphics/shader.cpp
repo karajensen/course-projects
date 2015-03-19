@@ -25,6 +25,9 @@ std::vector<std::pair<std::string, std::string>> Shader::sm_defines;
 
 void Shader::InitialiseDefines(const PostProcessing& post)
 {
+    const float randomU = WINDOW_WIDTH / static_cast<float>(RANDOM_TEXTURE_SIZE);
+    const float randomV = WINDOW_HEIGHT / static_cast<float>(RANDOM_TEXTURE_SIZE);
+
     sm_defines = 
     {
         std::make_pair("MAX_LIGHTS", std::to_string(Light::MAX_LIGHTS)),
@@ -34,17 +37,15 @@ void Shader::InitialiseDefines(const PostProcessing& post)
         std::make_pair("SAMPLES", std::to_string(MULTISAMPLING_COUNT)),
         std::make_pair("SCENE_TEXTURES", std::to_string(RenderTarget::SCENE_TEXTURES)),
         std::make_pair("EFFECTS_TEXTURES", std::to_string(RenderTarget::EFFECTS_TEXTURES)),
-        std::make_pair("BLUR_TEXTURES", std::to_string(RenderTarget::BLUR_TEXTURES)),
         std::make_pair("ID_COLOUR", std::to_string(RenderTarget::SCENE_ID)),
         std::make_pair("ID_NORMAL", std::to_string(RenderTarget::NORMAL_ID)),
         std::make_pair("ID_EFFECTS", std::to_string(RenderTarget::EFFECTS_ID)),
-        std::make_pair("ID_BLUR_SCENE", std::to_string(RenderTarget::BLUR_SCENE_ID)),
-        std::make_pair("ID_BLUR_EFFECTS", std::to_string(RenderTarget::BLUR_EFFECTS_ID)),
         std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
         std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
         std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),
         std::make_pair("WEIGHT3", std::to_string(post.BlurWeight(3))),
-        std::make_pair("WEIGHT4", std::to_string(post.BlurWeight(4)))
+        std::make_pair("WEIGHT4", std::to_string(post.BlurWeight(4))),
+        std::make_pair("RANDOM_UVS", std::to_string(randomU) + "," + std::to_string(randomV))
     };
 }
 
