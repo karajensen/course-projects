@@ -10,6 +10,7 @@
 #include "renderdata.h"
 
 class RenderTarget;
+class PostProcessing;
 
 /**
 * Shader used to render a mesh
@@ -157,6 +158,12 @@ public:
     */
     void ClearTexture(int slot, const RenderTarget& target);
 
+    /**
+    * Initialises the defined constants in the shaders
+    * @param post The post processing data
+    */
+    static void InitialiseDefines(const PostProcessing& post);
+
 private:
 
     /**
@@ -301,6 +308,7 @@ private:
     };
 
     typedef std::unordered_map<std::string, UniformData> UniformMap;
+    typedef std::vector<std::pair<std::string, std::string>> Defines;
 
     UniformMap m_uniforms;                    ///< Vertex and fragment non-attribute uniform data
     std::vector<int> m_samplers;              ///< Fragment shader sampler locations
@@ -315,4 +323,5 @@ private:
     const unsigned int m_components;          ///< Sections that make up this shader
     std::string m_vertexText;                 ///< The vertex shader string
     std::string m_fragmentText;               ///< The fragment shader string
+    static Defines sm_defines;                ///< Holds constant data to substitute into shaders
 };                              

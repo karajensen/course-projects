@@ -29,31 +29,27 @@ PostProcessing::PostProcessing()
     m_minimumColour.r = 0.0f;
     m_minimumColour.g = 0.0f;
     m_minimumColour.b = 0.0f;
-    m_weightMain = 1.0f;
-    m_weightOffset.x = 0.9f;
-    m_weightOffset.y = 0.55f;
-    m_weightOffset.z = 0.18f;
-    m_weightOffset.w = 0.1f;
+
+    m_weights[0] = 1.0f;
+    m_weights[1] = 0.9f;
+    m_weights[2] = 0.55f;
+    m_weights[3] = 0.18f;
+    m_weights[4] = 0.1f;
 
     // Normalise the blurring weights
-    const float overallWeight = m_weightMain + 2.0f * 
-        (m_weightOffset.x + m_weightOffset.y + m_weightOffset.z + m_weightOffset.w);
+    const float overallWeight = m_weights[0] + 2.0f * 
+        (m_weights[1] + m_weights[2] + m_weights[3] + m_weights[4]);
 
-    m_weightMain /= overallWeight;
-    m_weightOffset.x /= overallWeight;
-    m_weightOffset.y /= overallWeight;
-    m_weightOffset.z /= overallWeight;
-    m_weightOffset.w /= overallWeight;
+    m_weights[0] /= overallWeight;
+    m_weights[1] /= overallWeight;
+    m_weights[2] /= overallWeight;
+    m_weights[3] /= overallWeight;
+    m_weights[4] /= overallWeight;
 }
 
-float PostProcessing::BlurWeightMain() const
+float PostProcessing::BlurWeight(int index) const
 {
-    return m_weightMain;
-}
-
-const glm::vec4& PostProcessing::BlurWeightOffset() const
-{
-    return m_weightOffset;
+    return m_weights.at(index);
 }
 
 void PostProcessing::SetPostMap(PostProcessing::Map map)

@@ -66,6 +66,8 @@ bool SceneBuilder::InitialiseLighting()
 
 bool SceneBuilder::InitialiseShaders()
 {
+    Shader::InitialiseDefines(m_scene.Post());
+
     bool failed = false;
 
     failed |= !InitialiseShader(Shader::ID_POST_PROCESSING, "post_effects", Shader::NONE);

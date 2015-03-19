@@ -53,14 +53,10 @@ public:
     float DOFFade() const;
 
     /**
-    * @return The blur weight for the main pixel
+    * @param index The pixel to get the weight for
+    * @return The blur weight for the surrounding pixels
     */
-    float BlurWeightMain() const;
-
-    /**
-    * @return The blur weights for the surrounding pixels
-    */
-    const glm::vec4& BlurWeightOffset() const;
+    float BlurWeight(int index) const;
 
     /**
     * @return Contrast controller of the final scene
@@ -152,10 +148,11 @@ private:
     float m_depthFar = 0.0f;              ///< Value where depth colour is max
     float m_fogStart = 0.0f;              ///< Distance the fog starts
     float m_fogFade = 0.0f;               ///< How quick fog fades to the scene
-    float m_weightMain = 0.0f;            ///< Blur weight of the main pixel
-    glm::vec4 m_weightOffset;             ///< Blur weights of the surrounding pixels
     glm::vec3 m_fogColour;                ///< Colour for the fog
     glm::vec3 m_minimumColour;            ///< Minimum Colour ranges for RGB
     glm::vec3 m_maximumColour;            ///< Maximum Colour ranges for RGB
     std::array<float, MAX_MAPS> m_masks;  ///< Visibility of post maps
+
+    static const int BLUR_PIXELS = 5;          ///< Amount of pixels per-pixel involved in blurring
+    std::array<float, BLUR_PIXELS> m_weights;  ///< Normalised pixel weights for blurring
 };

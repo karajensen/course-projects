@@ -9,6 +9,7 @@
 #include "water.h"
 #include "rendertarget.h"
 #include "renderdata.h"
+#include "postprocessing.h"
 #include <string>
 #include <fstream>
 
@@ -18,7 +19,13 @@ namespace
     const std::string FRAGMENT_SHADER("_glsl_frag.fx");
     const std::string GLSL_IN_POSITION("in_Position");
 
-    std::vector<std::pair<std::string, std::string>> defines = 
+}
+
+std::vector<std::pair<std::string, std::string>> Shader::sm_defines;
+
+void Shader::InitialiseDefines(const PostProcessing& post)
+{
+    sm_defines = 
     {
         std::make_pair("MAX_LIGHTS", std::to_string(Light::MAX_LIGHTS)),
         std::make_pair("MAX_WAVES", std::to_string(Water::Wave::MAX)),
@@ -33,6 +40,11 @@ namespace
         std::make_pair("ID_EFFECTS", std::to_string(RenderTarget::EFFECTS_ID)),
         std::make_pair("ID_BLUR_SCENE", std::to_string(RenderTarget::BLUR_SCENE_ID)),
         std::make_pair("ID_BLUR_EFFECTS", std::to_string(RenderTarget::BLUR_EFFECTS_ID)),
+        std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
+        std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
+        std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),
+        std::make_pair("WEIGHT3", std::to_string(post.BlurWeight(3))),
+        std::make_pair("WEIGHT4", std::to_string(post.BlurWeight(4)))
     };
 }
 
@@ -116,7 +128,7 @@ bool Shader::LoadShaderFile(const std::string& loadPath, std::string& text)
         std::string line;
         std::getline(file, line);
 
-        for (const auto& define : defines)
+        for (const auto& define : sm_defines)
         {
             int index = line.find(define.first);
             while (index != NO_INDEX)

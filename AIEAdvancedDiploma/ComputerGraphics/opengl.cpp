@@ -267,8 +267,6 @@ void OpenGL::RenderBlur()
 
     blurHorizontalShader.SetActive();
     blurHorizontalShader.SendUniform("blurStep", post.BlurStep());
-    blurHorizontalShader.SendUniform("weightMain", post.BlurWeightMain());
-    blurHorizontalShader.SendUniform("weightOffset", post.BlurWeightOffset());
     blurHorizontalShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
     blurHorizontalShader.SendTexture(1, *m_effectsTarget, RenderTarget::EFFECTS_ID);
 
@@ -281,8 +279,6 @@ void OpenGL::RenderBlur()
 
     blurVerticalShader.SetActive();
     blurVerticalShader.SendUniform("blurStep", post.BlurStep());
-    blurVerticalShader.SendUniform("weightMain", post.BlurWeightMain());
-    blurVerticalShader.SendUniform("weightOffset", post.BlurWeightOffset());
     blurVerticalShader.SendTexture(0, *m_blurTarget, RenderTarget::BLUR_SCENE_ID);
     blurVerticalShader.SendTexture(1, *m_blurTarget, RenderTarget::BLUR_EFFECTS_ID);
 
