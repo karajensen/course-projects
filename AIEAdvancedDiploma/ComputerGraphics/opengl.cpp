@@ -227,6 +227,7 @@ void OpenGL::RenderPostProcessing()
     postShader.SendUniform("fogColor", post.FogColour());
     postShader.SendUniform("minimumColor", post.MinColour());
     postShader.SendUniform("maximumColor", post.MaxColour());
+    postShader.SendUniform("bloomIntensity", post.BloomIntensity());
     postShader.SendUniform("finalMask", post.Mask(PostProcessing::FINAL_MAP));
     postShader.SendUniform("sceneMask", post.Mask(PostProcessing::SCENE_MAP));
     postShader.SendUniform("normalMask", post.Mask(PostProcessing::NORMAL_MAP));
@@ -238,9 +239,8 @@ void OpenGL::RenderPostProcessing()
     postShader.SendUniform("ambienceMask", post.Mask(PostProcessing::AMBIENCE_MAP));
 
     postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
-    postShader.SendTexture(1, *m_effectsTarget, RenderTarget::NORMAL_ID);
-    postShader.SendTexture(2, *m_effectsTarget, RenderTarget::EFFECTS_ID);
-    postShader.SendTexture(3, *m_blurTarget, RenderTarget::BLUR_ID);
+    postShader.SendTexture(1, *m_effectsTarget, RenderTarget::EFFECTS_ID);
+    postShader.SendTexture(2, *m_blurTarget);
 
     m_backBuffer->SetActive();
     m_screenQuad->PreRender();
@@ -249,8 +249,7 @@ void OpenGL::RenderPostProcessing()
 
     postShader.ClearTexture(0, *m_effectsTarget);
     postShader.ClearTexture(1, *m_effectsTarget);
-    postShader.ClearTexture(2, *m_effectsTarget);
-    postShader.ClearTexture(3, *m_blurTarget);
+    postShader.ClearTexture(2, *m_blurTarget);
 }
 
 void OpenGL::RenderBlur()
@@ -296,7 +295,8 @@ void OpenGL::RenderPreEffects()
     auto& preShader = m_scene.GetShader(Shader::ID_PRE_PROCESSING);
 
     preShader.SetActive();
-    preShader.SendUniform("bloomIntensity", post.BloomIntensity());
+    
+    preShader.SendUniform("normalMask", post.Mask(PostProcessing::NORMAL_MAP));
     preShader.SendUniform("bloomStart", post.BloomStart());
     preShader.SendUniform("bloomFade", post.BloomFade());
 
