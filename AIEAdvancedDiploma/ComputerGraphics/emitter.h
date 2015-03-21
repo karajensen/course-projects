@@ -127,6 +127,12 @@ public:
 
 private:
 
+    /**
+    * Prevent copying
+    */
+    Emitter(const Emitter&) = delete;
+    Emitter& operator=(const Emitter&) = delete;
+
     EmitterData m_data;                  ///< Data for this emitter
     std::vector<int> m_textures;         ///< Indexes for the particle textures to use
     std::vector<Particle> m_particles;   ///< Particles this emitter can spawn

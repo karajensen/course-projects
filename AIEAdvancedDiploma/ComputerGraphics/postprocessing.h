@@ -136,6 +136,12 @@ public:
 
 private:
 
+    /**
+    * Prevent copying
+    */
+    PostProcessing(const PostProcessing&) = delete;
+    PostProcessing& operator=(const PostProcessing&) = delete;
+
     float m_dofStart = 0.0f;              ///< Distance the depth of field starts
     float m_dofFade = 0.0f;               ///< How quick depth of field fades to the scene
     float m_bloomStart = 0.0f;            ///< The threshold when the bloom starts

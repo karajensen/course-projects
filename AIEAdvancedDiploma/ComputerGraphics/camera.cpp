@@ -6,14 +6,14 @@
 #include "renderdata.h"
 
 Camera::Camera() :
-    m_initialPos(3.0f, 1.0f, 15.0f),
+    m_initialPos(15.0f, 1.0f, 3.0f),
     m_position(m_initialPos),
     m_target(0.0f, 0.0f, 0.0f),
     m_rotationSpeed(5.0f),
     m_translateSpeed(5.0f),
     m_forwardSpeed(5.0f),
-    m_yaw(-5.0f),
     m_pitch(0.0f),
+    m_yaw(75.0f),
     m_roll(0.0f)
 {
     const float frustrumNear = 1.0f;
@@ -27,19 +27,19 @@ Camera::Camera() :
 
 void Camera::Forward(float value)
 {
-    m_position.z += m_forwardSpeed * value;
+    m_position += m_forward * m_forwardSpeed * value;
     m_requiresUpdate = true;
 }
 
 void Camera::Right(float value)
 {
-    m_position.x += m_translateSpeed * value;
+    m_position += m_right * m_translateSpeed * value;
     m_requiresUpdate = true;
 }
 
 void Camera::Up(float value)
 {
-    m_position.y += m_translateSpeed * value;
+    m_position += m_up * m_translateSpeed * value;
     m_requiresUpdate = true;
 }
 
@@ -75,7 +75,8 @@ void Camera::Update()
     if (m_requiresUpdate)
     {
         m_requiresUpdate = false;
-
+        //LogCamera();
+        
         glm::mat4 translate;
         translate[3][0] = m_position.x;
         translate[3][1] = m_position.y;
@@ -94,18 +95,36 @@ void Camera::Update()
         m_up.x = m_world[1][0];
         m_up.y = m_world[1][1];
         m_up.z = m_world[1][2];
+
+        m_right.x = m_world[0][0];
+        m_right.y = m_world[0][1];
+        m_right.z = m_world[0][2];
+
+        m_forward.x = m_world[2][0];
+        m_forward.y = m_world[2][1];
+        m_forward.z = m_world[2][2];
     }
+}
+
+void Camera::LogCamera()
+{
+    LogInfo("[" + std::to_string(m_position.x) + " " +
+        std::to_string(m_position.y) + " " +
+        std::to_string(m_position.z) + "] [" +
+        std::to_string(m_pitch) + " " +
+        std::to_string(m_yaw) + " " + 
+        std::to_string(m_roll) + "]");
 }
 
 void Camera::Rotate(const glm::vec2& direction, float value)
 {
     if(direction.x != 0.0f)
     {
-        Yaw(direction.x < 0.0f ? value : -value);
+        Yaw(direction.x < 0.0f ? -value : value);
     }
     if(direction.y != 0.0f)
     {
-        Pitch(direction.y < 0.0f ? value : -value);
+        Pitch(direction.y < 0.0f ? -value : value);
     }
 }
 

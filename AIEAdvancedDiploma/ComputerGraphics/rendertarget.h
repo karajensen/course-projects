@@ -85,6 +85,12 @@ public:
 private:
 
     /**
+    * Prevent copying
+    */
+    RenderTarget(const RenderTarget&) = delete;
+    RenderTarget& operator=(const RenderTarget&) = delete;
+
+    /**
     * @param index The index of the texture
     * @return the OpenGL Attachement ID for the texture
     */

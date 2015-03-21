@@ -95,6 +95,12 @@ public:
 
 private:
 
+    /**
+    * Prevent copying
+    */
+    Water(const Water&) = delete;
+    Water& operator=(const Water&) = delete;
+
     float m_speed = 0.0f;                ///< Overall speed of the wave
     float m_bump = 0.0f;                 ///< Saturation of bump
     glm::vec2 m_bumpVelocity;            ///< Velocity of the bump movement

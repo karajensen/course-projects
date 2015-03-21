@@ -109,6 +109,11 @@ private:
     Camera(const Camera&) = delete;
     Camera& operator=(const Camera&) = delete;
 
+    /**
+    * Logs the camera to the console window
+    */
+    void LogCamera();
+
     glm::mat4 m_projection;        ///< Projection Matrix for the camera
     glm::mat4 m_view;              ///< View Matrix for the camera
     glm::mat4 m_viewProjection;    ///< Combined view projection matrix
@@ -116,6 +121,8 @@ private:
     glm::vec3 m_initialPos;        ///< Camera initial position in world space
     glm::vec3 m_position;          ///< Camera position in world space
     glm::vec3 m_up;                ///< Camera up vector
+    glm::vec3 m_forward;           ///< Camera forward vector
+    glm::vec3 m_right;             ///< Camera right vector
     glm::vec3 m_target;            ///< Camera Look at target
     bool m_requiresUpdate = true;  ///< Whether the camera requires updating or not
     float m_yaw = 0.0f;            ///< Degrees amount of yaw

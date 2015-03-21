@@ -48,6 +48,12 @@ public:
 
 private:
 
+    /**
+    * Prevent copying
+    */
+    Terrain(const Terrain&) = delete;
+    Terrain& operator=(const Terrain&) = delete;
+
     float m_bump = 1.0f;         ///< Saturation of bump
     float m_caustics = 1.0f;     ///< How much of the caustics are visible
     float m_specularity = 1.0f;  ///< Brightness of the specular highlights
