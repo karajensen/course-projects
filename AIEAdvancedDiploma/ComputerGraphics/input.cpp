@@ -38,18 +38,23 @@ void Input::Update()
 {
     UpdateMouse();
 
-    for(KeyMap::iterator it = m_keys.begin(); it != m_keys.end(); ++it)
+    if (m_mousePressed && m_mouseCallback)
     {
-        const bool pressed = glfwGetKey(&m_window, it->first) == GLFW_PRESS;
-        UpdateKey(pressed, it->second.state);
+        m_mouseCallback();
+    }
 
-        const bool keyDown = it->second.continuous ? 
-            IsKeyDownContinous(it->second.state) : 
-            IsKeyDown(it->second.state);
+    for(auto& key : m_keys)
+    {
+        const bool pressed = glfwGetKey(&m_window, key.first) == GLFW_PRESS;
+        UpdateKey(pressed, key.second.state);
 
-        if(keyDown && it->second.onKeyFn != nullptr)
+        const bool keyDown = key.second.continuous ? 
+            IsKeyDownContinous(key.second.state) : 
+            IsKeyDown(key.second.state);
+
+        if(keyDown && key.second.onKeyFn != nullptr)
         {
-            it->second.onKeyFn();
+            key.second.onKeyFn();
         }
     }
 }
@@ -90,11 +95,16 @@ bool Input::IsKeyDown(unsigned int& state)
     return false;
 }
 
-void Input::AddCallback(unsigned int key, bool onContinous, Input::KeyFn onKeyFn)
+void Input::AddCallback(unsigned int key, bool onContinous, KeyFn onKeyFn)
 {
     m_keys[key].state = KEY_NONE;
     m_keys[key].continuous = onContinous;
     m_keys[key].onKeyFn = onKeyFn;
+}
+
+void Input::AddMouseCallback(KeyFn onKeyFn)
+{
+    m_mouseCallback = onKeyFn;
 }
 
 const glm::vec2& Input::GetMouseDirection() const

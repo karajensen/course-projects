@@ -12,13 +12,11 @@ NOTES: The fbx loader libary requires unzipping before building
 
 =================================================================
 
-UNDERWATER SCENE PLAN:
-- Generated Sand/rock terrain
-- Generate world as move in sections
-- Create Coral, seaweed, shells models
-- Placing models on terrain
-- Generated Sand/rock shaders
-- Generated Sand/rock textures
-- Bubble particles
-- Caustics
-- Light shafts
+INPUT:
+1 -> 9     Render a specific layer
+0          Toggle Wireframe
+P          Save procedural textures to file
+WASDQE     Move the camera
+LMC        Rotate the camera
+
+=================================================================

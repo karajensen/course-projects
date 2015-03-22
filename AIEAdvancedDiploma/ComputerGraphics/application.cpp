@@ -68,14 +68,6 @@ bool Application::Initialise()
 
 void Application::InitialiseInput()
 {
-    /*********************************************************
-    * 1 -> 9      Rendering different maps
-    * 0           Toggle Wireframe
-    * P           Save all procedural textures to file
-    * WASDQE      Move the camera
-    * ALT + LMC   Rotate the camera
-    *********************************************************/
-
     m_input = std::make_unique<Input>(m_engine->GetWindow());
 
     m_input->AddCallback(GLFW_KEY_1, false, 
@@ -129,12 +121,8 @@ void Application::InitialiseInput()
     m_input->AddCallback(GLFW_KEY_E, true, 
         [this](){ m_camera->Up(-m_deltaTime); });
     
-    m_input->AddCallback(GLFW_KEY_LEFT_ALT, true, [this]()
+    m_input->AddMouseCallback([this]()
     {
-        if (m_input->IsMousePressed())
-        {
-            m_camera->Rotate(m_input->GetMouseDirection(), m_deltaTime);
-
-        }
+        m_camera->Rotate(m_input->GetMouseDirection(), m_deltaTime);
     });
 }

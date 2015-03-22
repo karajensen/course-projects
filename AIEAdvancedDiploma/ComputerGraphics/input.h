@@ -39,6 +39,12 @@ public:
     void AddCallback(unsigned int key, bool onContinous, KeyFn onKeyFn);
 
     /**
+    * Adds a callback for when the mouse is down
+    * @param onKeyFn The function to call when the conditions are true
+    */
+    void AddMouseCallback(KeyFn onKeyFn);
+
+    /**
     * @return the normalized direction the mouse is moving
     */
     const glm::vec2& GetMouseDirection() const;
@@ -105,10 +111,11 @@ private:
 
     typedef std::unordered_map<unsigned int, Key> KeyMap;
 
-    KeyMap m_keys;                  ///< Key states
-    GLFWwindow& m_window;           ///< The window to get input from
-    glm::vec2 m_mouseDirection;     ///< Direction mouse has moved (normalized) between ticks
-    int m_mouseX = 0;               ///< X screen coordinate of the mouse
-    int m_mouseY = 0;               ///< Y screen coordinate of the mouse
-    bool m_mousePressed = false;    ///< Whether the mouse is currently being pressed
+    KeyMap m_keys;                   ///< Key states and callbacks
+    KeyFn m_mouseCallback = nullptr; ///< Mouse down callback
+    GLFWwindow& m_window;            ///< The window to get input from
+    glm::vec2 m_mouseDirection;      ///< Direction mouse has moved (normalized) between ticks
+    int m_mouseX = 0;                ///< X screen coordinate of the mouse
+    int m_mouseY = 0;                ///< Y screen coordinate of the mouse
+    bool m_mousePressed = false;     ///< Whether the mouse is currently being pressed
 };
