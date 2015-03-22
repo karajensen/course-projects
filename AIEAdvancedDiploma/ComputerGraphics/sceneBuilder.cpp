@@ -12,6 +12,7 @@
 #include "emitter.h"
 #include "terrain.h"
 #include "animation.h"
+#include "rendertarget.h"
 #include <assert.h>
 
 namespace
@@ -37,6 +38,7 @@ bool SceneBuilder::Initialise()
 {
     return InitialiseLighting() &&
            InitialiseTextures() &&
+           InitialiseShaderConstants() &&
            InitialiseShaders() &&
            InitialiseEmitters() &&
            InitialiseWater() &&
@@ -64,10 +66,38 @@ bool SceneBuilder::InitialiseLighting()
     return true;
 }
 
+bool SceneBuilder::InitialiseShaderConstants()
+{
+    const auto& post = m_scene.Post();
+    const float randomU = WINDOW_WIDTH / static_cast<float>(Texture::RANDOM_SIZE);
+    const float randomV = WINDOW_HEIGHT / static_cast<float>(Texture::RANDOM_SIZE);
+
+    Shader::ShaderConstants constants = 
+    {
+        std::make_pair("MAX_LIGHTS", std::to_string(Light::MAX_LIGHTS)),
+        std::make_pair("MAX_WAVES", std::to_string(Water::Wave::MAX)),
+        std::make_pair("WINDOW_WIDTH", std::to_string(WINDOW_WIDTH)),
+        std::make_pair("WINDOW_HEIGHT", std::to_string(WINDOW_HEIGHT)),
+        std::make_pair("SAMPLES", std::to_string(MULTISAMPLING_COUNT)),
+        std::make_pair("SCENE_TEXTURES", std::to_string(RenderTarget::SCENE_TEXTURES)),
+        std::make_pair("EFFECTS_TEXTURES", std::to_string(RenderTarget::EFFECTS_TEXTURES)),
+        std::make_pair("ID_COLOUR", std::to_string(RenderTarget::SCENE_ID)),
+        std::make_pair("ID_NORMAL", std::to_string(RenderTarget::NORMAL_ID)),
+        std::make_pair("ID_EFFECTS", std::to_string(RenderTarget::EFFECTS_ID)),
+        std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
+        std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
+        std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),
+        std::make_pair("WEIGHT3", std::to_string(post.BlurWeight(3))),
+        std::make_pair("WEIGHT4", std::to_string(post.BlurWeight(4))),
+        std::make_pair("RANDOM_UVS", std::to_string(randomU) + "," + std::to_string(randomV))
+    };
+
+    Shader::InitialiseConstants(constants);
+    return true;
+}
+
 bool SceneBuilder::InitialiseShaders()
 {
-    Shader::InitialiseDefines(m_scene.Post());
-
     bool failed = false;
 
     failed |= !InitialiseShader(Shader::ID_POST_PROCESSING, "post_effects", Shader::NONE);
@@ -97,20 +127,30 @@ bool SceneBuilder::InitialiseShaders()
 
 bool SceneBuilder::InitialiseTextures()
 {
-    return InitialiseTexture("random", "random.bmp", Texture::RANDOM, RANDOM_TEXTURE_SIZE, Texture::ID_RANDOM) &&
-        InitialiseTexture("water_environment", "water_environment", Texture::CUBE) &&
-        InitialiseTexture("water_colour", "water.png", Texture::FROM_FILE) &&
-        InitialiseTexture("water_normal", "water_normal.png", Texture::FROM_FILE) &&
-        InitialiseTexture("particle1", "particle1.png", Texture::FROM_FILE) &&
-        InitialiseTexture("particle2", "particle2.png", Texture::FROM_FILE) &&
-        InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE) &&
-        InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE) &&
-        InitialiseTexture("ground", "ground.png", Texture::FROM_FILE) &&
-        InitialiseTexture("bump", "bump.png", Texture::FROM_FILE) &&
-        InitialiseTexture("bridge", "bridge.bmp", Texture::FROM_FILE) &&
-        InitialiseTexture("sky", "sky.png", Texture::FROM_FILE) &&
-        InitialiseTexture("blank", "blank.png", Texture::FROM_FILE) &&
-        InitialiseCaustics();
+    bool failed = false;
+    
+    failed |= !InitialiseTexture("random", "random.bmp", 
+        Texture::RANDOM, Texture::NEAREST, 
+        Texture::RANDOM_SIZE, Texture::ID_RANDOM);
+
+    failed |= !InitialiseTexture("water_environment", "water_environment", 
+        Texture::CUBE, Texture::ANISOTROPIC);
+
+    failed |= !InitialiseTexture("water_colour", "water.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("water_normal", "water_normal.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("particle1", "particle1.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("particle2", "particle2.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("ground", "ground.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("bridge", "bridge.bmp", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
+    failed |= !InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
+    
+    failed |= !InitialiseCaustics();
+
+    return !failed;
 }
 
 bool SceneBuilder::InitialiseMeshes()
@@ -251,7 +291,7 @@ bool SceneBuilder::InitialiseCaustics()
         const std::string frameName(name + (frame < 10 ? "0" : "") + number + extension);
 
         const auto index = m_scene.Add(std::make_unique<Texture>(
-            frameName, path + frameName, Texture::FROM_FILE));
+            frameName, path + frameName, Texture::FROM_FILE, Texture::LINEAR));
         
         caustics.AddFrame(index);
         
@@ -275,20 +315,22 @@ bool SceneBuilder::InitialiseShader(int index,
 
 bool SceneBuilder::InitialiseTexture(const std::string& name, 
                                      const std::string& path,
-                                     Texture::Type type)
+                                     Texture::Type type,
+                                     Texture::Filter filter)
 {
-    const auto index = m_scene.Add(std::make_unique<Texture>(name, TEXTURE_PATH + path, type));
+    const auto index = m_scene.Add(std::make_unique<Texture>(name, TEXTURE_PATH + path, type, filter));
     return m_scene.GetTexture(index).Initialise();
 }
 
 bool SceneBuilder::InitialiseTexture(const std::string& name, 
                                      const std::string& path,
                                      Texture::Type type,
+                                     Texture::Filter filter,
                                      int size,
                                      int index)
 {
     m_scene.Add(index, std::make_unique<Texture>(
-        name, GENERATED_TEXTURES + path, size, type));
+        name, GENERATED_TEXTURES + path, size, type, filter));
 
     return m_scene.GetTexture(index).Initialise();
 }

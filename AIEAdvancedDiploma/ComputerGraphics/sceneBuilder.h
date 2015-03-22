@@ -39,6 +39,12 @@ private:
     SceneBuilder& operator=(const SceneBuilder&) = delete;
 
     /**
+    * Initialises all shader constants
+    * @return Whether the initialization was successful
+    */
+    bool InitialiseShaderConstants();
+
+    /**
     * Initiliases all shaders
     * @return Whether the initialization was successful
     */
@@ -118,17 +124,20 @@ private:
     * @param name The name of the texture
     * @param path The path of the texture
     * @param type The image type of the texture
+    * @param filter The type of filtering to use
     * @return Whether the initialization was successful
     */
     bool InitialiseTexture(const std::string& name, 
                            const std::string& path,
-                           Texture::Type type);
+                           Texture::Type type,
+                           Texture::Filter filter = Texture::LINEAR);
 
     /**
     * Initialises a procedural texture
     * @param name The name of the texture
     * @param path The path of the texture
     * @param type The image type of the texture
+    * @param filter The type of filtering to use
     * @param size The size of the texture
     * @param index The index to initialise the texture at
     * @return Whether the initialization was successful
@@ -136,6 +145,7 @@ private:
     bool InitialiseTexture(const std::string& name, 
                            const std::string& path,
                            Texture::Type type,
+                           Texture::Filter filter,
                            int size,
                            int index);
 

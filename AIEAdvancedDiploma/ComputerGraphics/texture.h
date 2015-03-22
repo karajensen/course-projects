@@ -26,6 +26,16 @@ public:
     };
 
     /**
+    * Type of filtering for this texture
+    */
+    enum Filter
+    {
+        NEAREST,
+        LINEAR,
+        ANISOTROPIC
+    };
+
+    /**
     * Special textures that are not attached to a mesh 
     */
     enum Index
@@ -35,14 +45,24 @@ public:
     };
 
     /**
+    * Dimensions of the procedural textures
+    */
+    enum ProceduralSize
+    {
+        RANDOM_SIZE = 128
+    };
+
+    /**
     * Constructor for a texture loaded from file
     * @param name The filename of the texture
     * @param path The full path to the texture
     * @param type The type of image to display
+    * @param filter The type of filtering for this texture
     */
     Texture(const std::string& name, 
             const std::string& path,
-            Type type);
+            Type type,
+            Filter filter);
 
     /**
     * Constructor for a procedurally generated texture
@@ -50,11 +70,13 @@ public:
     * @param path The full path to save the texture
     * @param size The dimensions of the texture
     * @param type The type of texture to make
+    * @param filter The type of filtering for this texture
     */
     Texture(const std::string& name, 
             const std::string& path,
             int size,
-            Type type);
+            Type type,
+            Filter filter);
 
     /**
     * Destructor
@@ -108,6 +130,18 @@ private:
     Texture& operator=(const Texture&) = delete;
 
     /**
+    * Creates the mipmaps for the texture
+    * @return whether creation was successful
+    */
+    bool CreateMipMaps();
+
+    /**
+    * Sets the filtering for the texture
+    * @return whether setting was successful
+    */
+    bool SetFiltering();
+
+    /**
     * Creates a texture of random normals used for ambient occlusion
     */
     void MakeRandomNormals();
@@ -132,12 +166,13 @@ private:
 
     /**
     * Loads a texture from file
-    * @param type The type of texture to load
+    * @param type The type of opengl texture to load
     * @param path The path to the texture
     * @return whether loading was successful
     */
     bool LoadTexture(GLenum type, const std::string& path);
 
+    Filter m_filter;                    ///< The type of filtering for this texture
     Type m_image;                       ///< The type of image displayed
     std::vector<unsigned int> m_pixels; ///< Optional pixels of the texture
     int m_size = 0;                     ///< Optional Dimensions of the texture

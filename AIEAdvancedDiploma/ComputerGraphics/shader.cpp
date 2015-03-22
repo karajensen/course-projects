@@ -5,11 +5,8 @@
 #pragma once
 
 #include "shader.h"
-#include "light.h"
-#include "water.h"
-#include "rendertarget.h"
 #include "renderdata.h"
-#include "postprocessing.h"
+#include "rendertarget.h"
 #include <string>
 #include <fstream>
 
@@ -21,32 +18,11 @@ namespace
 
 }
 
-std::vector<std::pair<std::string, std::string>> Shader::sm_defines;
+Shader::ShaderConstants Shader::sm_constants;
 
-void Shader::InitialiseDefines(const PostProcessing& post)
+void Shader::InitialiseConstants(const ShaderConstants& constants)
 {
-    const float randomU = WINDOW_WIDTH / static_cast<float>(RANDOM_TEXTURE_SIZE);
-    const float randomV = WINDOW_HEIGHT / static_cast<float>(RANDOM_TEXTURE_SIZE);
-
-    sm_defines = 
-    {
-        std::make_pair("MAX_LIGHTS", std::to_string(Light::MAX_LIGHTS)),
-        std::make_pair("MAX_WAVES", std::to_string(Water::Wave::MAX)),
-        std::make_pair("WINDOW_WIDTH", std::to_string(WINDOW_WIDTH)),
-        std::make_pair("WINDOW_HEIGHT", std::to_string(WINDOW_HEIGHT)),
-        std::make_pair("SAMPLES", std::to_string(MULTISAMPLING_COUNT)),
-        std::make_pair("SCENE_TEXTURES", std::to_string(RenderTarget::SCENE_TEXTURES)),
-        std::make_pair("EFFECTS_TEXTURES", std::to_string(RenderTarget::EFFECTS_TEXTURES)),
-        std::make_pair("ID_COLOUR", std::to_string(RenderTarget::SCENE_ID)),
-        std::make_pair("ID_NORMAL", std::to_string(RenderTarget::NORMAL_ID)),
-        std::make_pair("ID_EFFECTS", std::to_string(RenderTarget::EFFECTS_ID)),
-        std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
-        std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
-        std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),
-        std::make_pair("WEIGHT3", std::to_string(post.BlurWeight(3))),
-        std::make_pair("WEIGHT4", std::to_string(post.BlurWeight(4))),
-        std::make_pair("RANDOM_UVS", std::to_string(randomU) + "," + std::to_string(randomV))
-    };
+    sm_constants = constants;
 }
 
 Shader::Shader(const std::string& name, 
@@ -129,14 +105,14 @@ bool Shader::LoadShaderFile(const std::string& loadPath, std::string& text)
         std::string line;
         std::getline(file, line);
 
-        for (const auto& define : sm_defines)
+        for (const auto& constant : sm_constants)
         {
-            int index = line.find(define.first);
+            int index = line.find(constant.first);
             while (index != NO_INDEX)
             {
-                const int size = static_cast<int>(define.first.size());
-                line.replace(index, size, define.second);
-                index = line.find(define.first);
+                const int size = static_cast<int>(constant.first.size());
+                line.replace(index, size, constant.second);
+                index = line.find(constant.first);
             }
         }
 

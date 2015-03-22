@@ -7,17 +7,28 @@
 #include "soil/SOIL.h"
 #include "colour.h"
 
-Texture::Texture(const std::string& name, const std::string& path, Type type) :
+Texture::Texture(const std::string& name, 
+                 const std::string& path, 
+                 Type type,
+                 Filter filter) :
+
     m_name(name),
     m_path(path),
-    m_image(type)
+    m_image(type),
+    m_filter(filter)
 {
 }
 
-Texture::Texture(const std::string& name, const std::string& path, int size, Type type) :
+Texture::Texture(const std::string& name, 
+                 const std::string& path, 
+                 int size, 
+                 Type type,
+                 Filter filter) :
+
     m_name(name),
     m_path(path),
-    m_image(type)
+    m_image(type),
+    m_filter(filter)
 {
     m_size = size;
     m_pixels.resize(size * size);
@@ -71,20 +82,7 @@ bool Texture::Initialise()
         success = InitialiseFromPixels();
     }
 
-    glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    const auto GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE;
-    const float MAX_ANISOTROPY = 16.0f;
-    glTexParameterf(type, GL_TEXTURE_MAX_ANISOTROPY_EXT, MAX_ANISOTROPY);
-
-    if(!success || HasCallFailed())
-    {
-        LogError("Failed " + m_path + " texture");
-        return false;
-    }
-
-    return true;
+    return success && CreateMipMaps() && !HasCallFailed();
 }
 
 bool Texture::InitialiseCubeMap()
@@ -110,11 +108,11 @@ bool Texture::InitialiseFromPixels()
 
     if(HasCallFailed())
     {
-        LogError("Failed " + m_name + " texture");
+        LogError("Failed to load " + m_name + " texture");
         return false;
     }
 
-    return ReloadPixels();
+    return SetFiltering() && ReloadPixels();
 }
 
 bool Texture::ReloadPixels()
@@ -132,6 +130,48 @@ bool Texture::ReloadPixels()
     return true;
 }
 
+bool Texture::SetFiltering()
+{
+    const auto type = IsCubeMap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+
+    const auto magFilter = m_filter == Texture::NEAREST ? GL_NEAREST : GL_LINEAR;
+    const auto minFilter = m_filter == Texture::NEAREST ? GL_NEAREST : GL_LINEAR_MIPMAP_LINEAR;
+
+    glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(type, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(type, GL_TEXTURE_MAG_FILTER, magFilter);
+
+    if (m_filter == Texture::ANISOTROPIC)
+    {
+        const float MAX_ANISOTROPY = 16.0f;
+        const auto GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE;
+        glTexParameterf(type, GL_TEXTURE_MAX_ANISOTROPY_EXT, MAX_ANISOTROPY);
+    }
+
+    if(HasCallFailed())
+    {
+        LogError("Failed to set filtering for " + m_name);
+        return false;
+    }
+    return true;
+}
+
+bool Texture::CreateMipMaps()
+{
+    if (m_filter != Texture::NEAREST)
+    {
+        glGenerateMipmap(IsCubeMap() ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D);
+
+        if(HasCallFailed())
+        {
+            LogError("Mipmap creation failed for " + m_name);
+            return false;
+        }
+    }
+    return true;
+}
+
 bool Texture::LoadTexture(GLenum type, const std::string& path)
 {
     int width, height;
@@ -141,10 +181,11 @@ bool Texture::LoadTexture(GLenum type, const std::string& path)
 
     if(HasCallFailed())
     {
-        LogError("Failed " + path + " texture");
+        LogError("Failed to load " + path + " texture");
         return false;
     }
-    return true;
+
+    return SetFiltering();
 }
 
 GLuint Texture::GetID() const
