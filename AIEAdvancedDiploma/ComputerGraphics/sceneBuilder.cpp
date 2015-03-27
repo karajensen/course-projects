@@ -257,7 +257,7 @@ bool SceneBuilder::InitialiseWater()
     Water& water = m_scene.Add(std::make_unique<Water>("water", Shader::ID_WATER));
     water.SetTexture(MeshData::COLOUR, m_scene.GetTexture("water_colour"));
     water.SetTexture(MeshData::NORMAL, m_scene.GetTexture("water_normal"));
-    water.SetTexture(MeshData::ENVIRONMENT, m_scene.GetTexture("water_environment"));
+    water.SetTexture(MeshData::ENVIRONMENT, m_scene.GetTexture("water_cube"));
     success &= water.Initialise(glm::vec3(0,5,0), 10.0f, 10, 20);
 
     return success;
