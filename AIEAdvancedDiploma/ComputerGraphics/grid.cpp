@@ -5,21 +5,49 @@
 #include "grid.h"
 #include "common.h"
 
+namespace
+{
+    enum VertexOffset
+    {
+        POS_X,
+        POS_Y,
+        POS_Z,
+        TEXTURE_U,
+        TEXTURE_V,
+        NORMAL_X, 
+        NORMAL_Y, 
+        NORMAL_Z
+    };
+}
+
 Grid::Grid(const std::string& name, int shader) :
     MeshData(name, shader)
 {
 }
 
-void Grid::CreateGrid(const glm::vec3& position, float spacing, int rows, int columns, bool normals)
+bool Grid::CreateGrid(const glm::vec3& position, 
+                      float spacing, 
+                      int rows, 
+                      int columns, 
+                      bool normals, 
+                      bool tangents)
 {
+    if (!normals && tangents)
+    {
+        LogError("CreateGrid: Tangents require normals");
+        return false;
+    }
+
     m_columns = columns;
     m_rows = rows;
     m_position = position;
     m_spacing = spacing;
-    m_vertexComponentCount = normals ? 8 : 5;
+    m_vertexComponentCount = tangents ? 14 : (normals ? 8 : 5);
     m_hasNormals = normals;
+    m_hasTangents = tangents;
 
     ResetGrid();
+    return true;
 }
 
 void Grid::ResetGrid()
@@ -29,7 +57,6 @@ void Grid::ResetGrid()
     const int pointsInFace = 3;
     const int triangleNumber = ((m_rows-1)*(m_columns-1)) * trianglesPerQuad;
 
-    m_heights.clear();
     m_indices.clear();
     m_vertices.clear();
 
@@ -46,34 +73,28 @@ void Grid::ResetGrid()
 
     for(int r = 0; r < m_rows; ++r)
     {
-        m_heights.emplace_back();
         for(int c = 0; c < m_columns; ++c)
         {
-            m_vertices[index] = initialPosition.x + (r * m_spacing);
-            m_vertices[index + 1] = initialPosition.y;
-            m_vertices[index + 2] = initialPosition.z + (c * m_spacing);
-            m_vertices[index + 3] = u;
-            m_vertices[index + 4] = v;
+            m_vertices[index + POS_X] = initialPosition.x + (r * m_spacing);
+            m_vertices[index + POS_Y] = initialPosition.y;
+            m_vertices[index + POS_Z] = initialPosition.z + (c * m_spacing);
+            m_vertices[index + TEXTURE_U] = u;
+            m_vertices[index + TEXTURE_V] = v;
 
             if (m_hasNormals)
             {
-                m_vertices[index + 5] = 0.0f;
-                m_vertices[index + 6] = 1.0f;
-                m_vertices[index + 7] = 0.0f;
+                m_vertices[index + NORMAL_X] = 0.0f;
+                m_vertices[index + NORMAL_Y] = 1.0f;
+                m_vertices[index + NORMAL_Z] = 0.0f;
             }
-
-            m_heights[r].push_back(&m_vertices[index + 1]);
 
             index += m_vertexComponentCount;
             u += 0.5;
         }
 
-        assert(m_heights[r].size() == m_columns);
         u = 0;
         v += 0.5;
     }
-
-    assert(m_heights.size() == m_rows);
 
     index = 0;
     for(int r = 0; r < m_rows-1; ++r)
@@ -93,20 +114,26 @@ void Grid::ResetGrid()
     }
 }
 
+unsigned int Grid::GetIndex(int row, int column) const
+{
+    return (row * m_columns * m_vertexComponentCount)
+        + (column * m_vertexComponentCount);
+}
+
 void Grid::Set(int row, int column, float height)
 {
-    *m_heights[row][column] = height;
+    m_vertices[GetIndex(row, column)] = height;
 }
 
 float Grid::Get(int row, int column) const
 {
-    return *m_heights[row][column];
+    return m_vertices[GetIndex(row, column)];
 }
 
 bool Grid::Valid(int row, int column) const
 {
-    return row < static_cast<int>(m_heights.size()) && row >= 0 &&
-        column < static_cast<int>(m_heights[row].size()) && column >= 0;
+    const auto index = GetIndex(row, column);
+    return index >= 0 && index < m_vertices.size();
 }
 
 int Grid::Rows() const
@@ -132,57 +159,56 @@ void Grid::RecalculateNormals()
     assert(m_hasNormals);
 
     glm::vec3 normal;
-    for(int r = 0; r < m_rows; ++r)
+    for(int r = 0; r < m_rows-1; ++r)
     {
-        for(int c = 0; c < m_columns; ++c)
+        for(int c = 0; c < m_columns-1; ++c)
         {
-            const int offset = c * m_vertexComponentCount;
-            const int p1index = (r * m_columns) + offset;
-            const int p2index = ((r + 1) * m_columns) + offset;
-            const int p3index = (r * m_columns) + offset + 1;
-            const int p4index = ((r + 1) * m_columns) + offset + 1;
+            const int p1index = GetIndex(r, c);
+            const int p2index = GetIndex(r+1, c);
+            const int p3index = GetIndex(r, c+1);
+            const int p4index = GetIndex(r+1, c+1);
 
-            const glm::vec3 p1(m_vertices[p1index], 
-                m_vertices[p1index+1], m_vertices[p1index+2]);
+            const glm::vec3 p1(m_vertices[p1index+POS_X], 
+                m_vertices[p1index+POS_Y], m_vertices[p1index+POS_Z]);
 
-            const glm::vec3 p2(m_vertices[p2index], 
-                m_vertices[p2index+1], m_vertices[p2index+2]);
+            const glm::vec3 p2(m_vertices[p2index+POS_X], 
+                m_vertices[p2index+POS_Y], m_vertices[p2index+POS_Z]);
 
-            const glm::vec3 p3(m_vertices[p3index], 
-                m_vertices[p3index+1], m_vertices[p3index+2]);
+            const glm::vec3 p3(m_vertices[p3index+POS_X], 
+                m_vertices[p3index+POS_Y], m_vertices[p3index+POS_Z]);
 
-            const glm::vec3 p4(m_vertices[p4index], 
-                m_vertices[p4index+1], m_vertices[p4index+2]);
+            const glm::vec3 p4(m_vertices[p4index+POS_X], 
+                m_vertices[p4index+POS_Y], m_vertices[p4index+POS_Z]);
 
             normal = glm::cross(p1 - p2, p3 - p2);
             normal = glm::normalize(normal);
 
-            m_vertices[p1index + 5] += normal.x;
-            m_vertices[p1index + 6] += normal.y;
-            m_vertices[p1index + 7] += normal.z;
+            m_vertices[p1index + NORMAL_X] += normal.x;
+            m_vertices[p1index + NORMAL_Y] += normal.y;
+            m_vertices[p1index + NORMAL_Z] += normal.z;
 
-            m_vertices[p2index + 5] += normal.x;
-            m_vertices[p2index + 6] += normal.y;
-            m_vertices[p2index + 7] += normal.z;
+            m_vertices[p2index + NORMAL_X] += normal.x;
+            m_vertices[p2index + NORMAL_Y] += normal.y;
+            m_vertices[p2index + NORMAL_Z] += normal.z;
 
-            m_vertices[p3index + 5] += normal.x;
-            m_vertices[p3index + 6] += normal.y;
-            m_vertices[p3index + 7] += normal.z;
+            m_vertices[p3index + NORMAL_X] += normal.x;
+            m_vertices[p3index + NORMAL_Y] += normal.y;
+            m_vertices[p3index + NORMAL_Z] += normal.z;
 
             normal = glm::cross(p2 - p4, p3 - p4);
             normal = glm::normalize(normal);
 
-            m_vertices[p2index + 5] += normal.x;
-            m_vertices[p2index + 6] += normal.y;
-            m_vertices[p2index + 7] += normal.z;
+            m_vertices[p2index + NORMAL_X] += normal.x;
+            m_vertices[p2index + NORMAL_Y] += normal.y;
+            m_vertices[p2index + NORMAL_Z] += normal.z;
 
-            m_vertices[p3index + 5] += normal.x;
-            m_vertices[p3index + 6] += normal.y;
-            m_vertices[p3index + 7] += normal.z;
+            m_vertices[p3index + NORMAL_X] += normal.x;
+            m_vertices[p3index + NORMAL_Y] += normal.y;
+            m_vertices[p3index + NORMAL_Z] += normal.z;
 
-            m_vertices[p4index + 5] += normal.x;
-            m_vertices[p4index + 6] += normal.y;
-            m_vertices[p4index + 7] += normal.z;
+            m_vertices[p4index + NORMAL_X] += normal.x;
+            m_vertices[p4index + NORMAL_Y] += normal.y;
+            m_vertices[p4index + NORMAL_Z] += normal.z;
         }
     }
 }

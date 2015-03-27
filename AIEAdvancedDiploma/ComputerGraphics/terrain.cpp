@@ -16,16 +16,14 @@ bool Terrain::Initialise(Type type,
 {
     m_type = type;
 
-    // Only odd numbered grids are supported
-    size = (size % 2) ? size : size + 1;
+    if (CreateGrid(position, spacing, size, size, true, false))
+    {
+        GenerateTerrain();
+        RecalculateNormals();
+        return MeshData::Initialise();
+    }
 
-    CreateGrid(position, spacing, size, size, true);
-
-    GenerateTerrain();
-
-    RecalculateNormals();
-
-    return MeshData::Initialise();
+    return false;
 }
 
 void Terrain::GenerateTerrain()
