@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "meshdata.h"
+#include "grid.h"
 #include <array>
 
 /**
 * Data for a water-shaded mesh
 */
-class Water : public MeshData
+class Water : public Grid
 {
 public:
 

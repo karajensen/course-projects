@@ -18,7 +18,7 @@ void Animation::Tick(float deltatime)
 {
     m_timePassed += deltatime;
 
-    const float secondsUntilSwitch = 0.065f;
+    const float secondsUntilSwitch = 0.123f;
     if (m_timePassed >= secondsUntilSwitch)
     {
         const int maxFrame = static_cast<int>(m_frames.size())-1;

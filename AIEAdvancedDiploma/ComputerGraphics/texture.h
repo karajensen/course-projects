@@ -22,7 +22,7 @@ public:
     {
         FROM_FILE,
         CUBE,
-        RANDOM
+        PROCEDURAL
     };
 
     /**
@@ -53,7 +53,7 @@ public:
     };
 
     /**
-    * Constructor for a texture loaded from file
+    * Constructor for a texture
     * @param name The filename of the texture
     * @param path The full path to the texture
     * @param type The type of image to display
@@ -65,29 +65,15 @@ public:
             Filter filter);
 
     /**
-    * Constructor for a procedurally generated texture
-    * @param name The filename of the texture
-    * @param path The full path to save the texture
-    * @param size The dimensions of the texture
-    * @param type The type of texture to make
-    * @param filter The type of filtering for this texture
-    */
-    Texture(const std::string& name, 
-            const std::string& path,
-            int size,
-            Type type,
-            Filter filter);
-
-    /**
     * Destructor
     */
-    ~Texture();
+    virtual ~Texture();
 
     /**
     * Initialises the texture
     * @return whether initialisation was successful
     */
-    bool Initialise();
+    virtual bool Initialise();
 
     /**
     * @return whether this texture is a cube map
@@ -105,21 +91,23 @@ public:
     const std::string& Name() const;
 
     /**
+    * @return the path of the texture
+    */
+    const std::string& Path() const;
+
+    /**
     * @return the unique ID for the texture
     */
     GLuint GetID() const;
 
-    /**
-    * Reloads the texture from pixels
-    * @return whether reloading was successful
-    */
-    bool ReloadPixels();
+protected:
 
     /**
-    * Saves a texture to file from its pixels
-    * @return whether saving was successful
+    * Sets the filtering for the texture
+    * @note must be called after any texture is generated
+    * @return whether setting was successful
     */
-    bool SaveTexture();
+    bool SetFiltering();
 
 private:
 
@@ -134,17 +122,6 @@ private:
     * @return whether creation was successful
     */
     bool CreateMipMaps();
-
-    /**
-    * Sets the filtering for the texture
-    * @return whether setting was successful
-    */
-    bool SetFiltering();
-
-    /**
-    * Creates a texture of random normals used for ambient occlusion
-    */
-    void MakeRandomNormals();
 
     /**
     * Initialises a cube map
@@ -162,7 +139,7 @@ private:
     * Initialises the texture from pixels
     * @return whether initialisation was successful
     */
-    bool InitialiseFromPixels();
+    virtual bool InitialiseFromPixels();
 
     /**
     * Loads a texture from file
@@ -172,13 +149,10 @@ private:
     */
     bool LoadTexture(GLenum type, const std::string& path);
 
-    Filter m_filter;                    ///< The type of filtering for this texture
-    Type m_image;                       ///< The type of image displayed
-    std::vector<unsigned int> m_pixels; ///< Optional pixels of the texture
-    int m_size = 0;                     ///< Optional Dimensions of the texture
-    bool m_initialised = false;         ///< Whether this texture is initialised
-    bool m_cubeMap = false;             ///< Whether this texture is a cube map
-    GLuint m_id = 0;                    ///< Unique id for the texture
-    std::string m_name;                 ///< Name of the texture
-    std::string m_path;                 ///< Path to the texture
+    Filter m_filter;             ///< The type of filtering for this texture
+    Type m_image;                ///< The type of image displayed
+    bool m_initialised = false;  ///< Whether this texture is initialised
+    GLuint m_id = 0;             ///< Unique id for the texture
+    std::string m_name;          ///< Name of the texture
+    std::string m_path;          ///< Path to the texture
 };

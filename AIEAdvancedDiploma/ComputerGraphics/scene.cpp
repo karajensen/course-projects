@@ -13,6 +13,7 @@
 #include "light.h"
 #include "texture.h"
 #include "animation.h"
+#include "textureProcedural.h"
 
 /**
 * Internal data for the scene
@@ -47,43 +48,54 @@ void Scene::Add(int index, std::unique_ptr<Shader> element)
     m_data->shaders[index] = std::move(element);
 }
 
-void Scene::Add(int index, std::unique_ptr<Light> element)
+Light& Scene::Add(int index, std::unique_ptr<Light> element)
 {
     m_data->lights[index] = std::move(element);
+    return *m_data->lights[index];
 }
 
-void Scene::Add(int index, std::unique_ptr<Animation> element)
+Animation& Scene::Add(int index, std::unique_ptr<Animation> element)
 {
     m_data->animation[index] = std::move(element);
+    return *m_data->animation[index];
 }
 
-unsigned int Scene::Add(std::unique_ptr<Terrain> element)
+Terrain& Scene::Add(std::unique_ptr<Terrain> element)
 {
     m_data->terrain.push_back(std::move(element));
-    return m_data->terrain.size()-1;
+    return *m_data->terrain[m_data->terrain.size()-1];
 }
 
-unsigned int Scene::Add(std::unique_ptr<Water> element)
+Water& Scene::Add(std::unique_ptr<Water> element)
 {
     m_data->water.push_back(std::move(element));
-    return m_data->water.size()-1;
+    return *m_data->water[m_data->water.size()-1];
 }
 
-unsigned int Scene::Add(std::unique_ptr<Emitter> element)
+Emitter& Scene::Add(std::unique_ptr<Emitter> element)
 {
     m_data->emitters.push_back(std::move(element));
-    return m_data->emitters.size()-1;
+    return *m_data->emitters[m_data->emitters.size()-1];
 }
 
-unsigned int Scene::Add(std::unique_ptr<Mesh> element)
+Mesh& Scene::Add(std::unique_ptr<Mesh> element)
 {
     m_data->meshes.push_back(std::move(element));
-    return m_data->meshes.size()-1;
+    return *m_data->meshes[m_data->meshes.size()-1];
 }
 
-void Scene::Add(int index, std::unique_ptr<Texture> element)
+ProceduralTexture& Scene::Add(std::unique_ptr<ProceduralTexture> element, int index)
 {
-    m_data->textures[index] = std::move(element);
+    if (index == NO_INDEX)
+    {
+        index = m_data->textures.size();
+        m_data->textures.push_back(std::move(element));
+    }
+    else
+    {
+        m_data->textures[index] = std::move(element);
+    }
+    return static_cast<ProceduralTexture&>(*m_data->textures[index]);
 }
 
 unsigned int Scene::Add(std::unique_ptr<Texture> element)
@@ -132,36 +144,6 @@ const PostProcessing& Scene::Post() const
     return *m_data->post;
 }
 
-Animation& Scene::GetAnimation(int index)
-{
-    return *m_data->animation[index];
-}
-
-Terrain& Scene::GetTerrain(int index)
-{
-    return *m_data->terrain[index];
-}
-
-Light& Scene::GetLight(int index)
-{
-    return *m_data->lights[index];
-}
-
-Water& Scene::GetWater(int index)
-{
-    return *m_data->water[index];
-}
-
-Emitter& Scene::GetEmitter(int index)
-{
-    return *m_data->emitters[index];
-}
-
-Mesh& Scene::GetMesh(int index)
-{
-    return *m_data->meshes[index];
-}
-
 Shader& Scene::GetShader(int index) const
 {
     return *m_data->shaders[index];
@@ -207,7 +189,8 @@ void Scene::Tick(float deltatime)
     {
         if (GetShader(mesh->ShaderID()).HasComponent(Shader::CAUSTICS))
         {
-            mesh->SetTexture(Mesh::CAUSTICS, GetAnimation(Animation::ID_CAUSTICS).GetFrame());
+            mesh->SetTexture(Mesh::CAUSTICS, 
+                m_data->animation[Animation::ID_CAUSTICS]->GetFrame());
         }
     }
 
@@ -248,7 +231,7 @@ void Scene::SaveTextures()
     {
         if (texture->IsProcedural())
         {
-            texture->SaveTexture();
+            static_cast<ProceduralTexture&>(*texture).SaveTexture();
         }
     }
 }

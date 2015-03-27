@@ -13,6 +13,7 @@
 #include "terrain.h"
 #include "animation.h"
 #include "rendertarget.h"
+#include "textureProcedural.h"
 #include <assert.h>
 
 namespace
@@ -42,21 +43,20 @@ bool SceneBuilder::Initialise()
            InitialiseShaders() &&
            InitialiseEmitters() &&
            InitialiseWater() &&
-           InitialiseMeshes();
+           InitialiseMeshes() && 
+           InitialiseTerrain();
 }
 
 bool SceneBuilder::InitialiseLighting()
 {
-    m_scene.Add(Light::ID_SUN, std::make_unique<Light>("Sun"));
-    auto& sun = m_scene.GetLight(Light::ID_SUN);
+    auto& sun = m_scene.Add(Light::ID_SUN, std::make_unique<Light>("Sun"));
     sun.Position(glm::vec3(0.0, 12.0, 0.0));
     sun.Attenuation(glm::vec3(1.3, 0.0, 0.0));
     sun.Diffuse(glm::vec3(1.0, 1.0, 1.0));
     sun.Specular(glm::vec3(0.0, 0.0, 0.0));
     sun.Specularity(1.0f);
 
-    m_scene.Add(Light::ID_SPOT, std::make_unique<Light>("Spot"));
-    auto& spot = m_scene.GetLight(Light::ID_SPOT);
+    auto& spot = m_scene.Add(Light::ID_SPOT, std::make_unique<Light>("Spot"));
     spot.Position(glm::vec3(0.0, 6.0, 0.0));
     spot.Attenuation(glm::vec3(0.0, 0.0, 0.08));
     spot.Diffuse(glm::vec3(0.0, 1.0, 0.0));
@@ -98,126 +98,113 @@ bool SceneBuilder::InitialiseShaderConstants()
 
 bool SceneBuilder::InitialiseShaders()
 {
-    bool failed = false;
+    bool success = true;
 
-    failed |= !InitialiseShader(Shader::ID_POST_PROCESSING, "post_effects", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_POST_PROCESSING, "post_effects", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_PRE_PROCESSING, "pre_effects", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_PRE_PROCESSING, "pre_effects", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_BLUR_VERTICAL, "blur_vertical", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_BLUR_VERTICAL, "blur_vertical", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_BLUR_HORIZONTAL, "blur_horizontal", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_BLUR_HORIZONTAL, "blur_horizontal", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_DIFFUSE, "diffuse", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_DIFFUSE, "diffuse", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_WATER, "water", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_WATER, "water", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_PARTICLE, "particle", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_PARTICLE, "particle", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_BUMP, "bump", Shader::BUMP);
+    success &= InitialiseShader(Shader::ID_BUMP, "bump", Shader::BUMP);
 
-    failed |= !InitialiseShader(Shader::ID_DIFFUSE_CAUSTICS, "diffusecaustics", Shader::CAUSTICS);
+    success &= InitialiseShader(Shader::ID_DIFFUSE_CAUSTICS, "diffusecaustics", Shader::CAUSTICS);
 
-    failed |= !InitialiseShader(Shader::ID_FLAT, "flat", Shader::NONE);
+    success &= InitialiseShader(Shader::ID_FLAT, "flat", Shader::NONE);
 
-    failed |= !InitialiseShader(Shader::ID_BUMP_SPEC_CAUSTICS, "bumpspecularcaustics", 
+    success &= InitialiseShader(Shader::ID_BUMP_SPEC_CAUSTICS, "bumpspecularcaustics", 
                                 Shader::BUMP|Shader::SPECULAR|Shader::CAUSTICS);
-    return !failed;
+    return success;
 }
 
 bool SceneBuilder::InitialiseTextures()
 {
-    bool failed = false;
+    bool success = true;
+
+    success &= InitialiseTexture("water_cube", "water_environment", Texture::CUBE, Texture::ANISOTROPIC);
+    success &= InitialiseTexture("water_colour", "water.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("water_normal", "water_normal.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("particle1", "particle1.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("particle2", "particle2.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
+    success &= InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
+    success &= InitialiseTexture("ground", "ground.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("bridge", "bridge.bmp", Texture::FROM_FILE);
+    success &= InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
+
+    auto& random = InitialiseTexture("random", Texture::NEAREST, Texture::RANDOM_SIZE, Texture::ID_RANDOM);
+    random.MakeRandomNormals();
+    success &= random.Initialise();
+
+    auto& test = InitialiseTexture("test", Texture::NEAREST, 256);
+    test.MakeDiamondSquareFractal();
+    success &= test.Initialise();
     
-    failed |= !InitialiseTexture("random", "random.bmp", 
-        Texture::RANDOM, Texture::NEAREST, 
-        Texture::RANDOM_SIZE, Texture::ID_RANDOM);
+    return success && InitialiseCaustics();
+}
 
-    failed |= !InitialiseTexture("water_environment", "water_environment", 
-        Texture::CUBE, Texture::ANISOTROPIC);
+bool SceneBuilder::InitialiseTerrain()
+{
+    bool success = true;
 
-    failed |= !InitialiseTexture("water_colour", "water.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("water_normal", "water_normal.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("particle1", "particle1.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("particle2", "particle2.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("ground", "ground.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("bridge", "bridge.bmp", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
-    failed |= !InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
-    
-    failed |= !InitialiseCaustics();
+    Terrain& sand = m_scene.Add(std::make_unique<Terrain>("sand", Shader::ID_DIFFUSE));
+    sand.SetTexture(MeshData::COLOUR, m_scene.GetTexture("ground"));
+    success &= sand.Initialise(Terrain::DIAMOND_SQUARE, glm::vec3(0, -5, 0), 1.0f, 100);
 
-    return !failed;
+    return success;
 }
 
 bool SceneBuilder::InitialiseMeshes()
 {	
-    auto index = InitialiseMesh("sphereFBX", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
+        auto& mesh = InitialiseMesh("sphereFBX", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
+        mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"), m_scene.GetTexture("specular"));
         mesh.Bump(20.0f);
         mesh.Specularity(5.0f);
-        mesh.SetTextures(m_scene.GetTexture("ground"), 
-            m_scene.GetTexture("bump"), m_scene.GetTexture("specular"));
     }
-
-    index = InitialiseMesh("sphereOBJ", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
+        auto& mesh = InitialiseMesh("sphereOBJ", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
         mesh.SetTextures(m_scene.GetTexture("blank"));
     }
-
-    index = InitialiseMesh("bridge", "mock_bridge.obj", Shader::ID_DIFFUSE);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
+        auto& mesh = InitialiseMesh("bridge", "mock_bridge.obj", Shader::ID_DIFFUSE);
         mesh.SetTextures(m_scene.GetTexture("bridge"));
         mesh.BackfaceCull(false);
     }
-    
-    index = InitialiseMesh("sky", "mock_skybox.obj", Shader::ID_FLAT);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
+        auto& mesh = InitialiseMesh("sky", "mock_skybox.obj", Shader::ID_FLAT);
         mesh.SetTextures(m_scene.GetTexture("sky"));
         mesh.BackfaceCull(false);
     }
-    
-    index = InitialiseMesh("ground1", "mock_ground1.obj", Shader::ID_BUMP);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
-        mesh.Bump(20.0f);
+        auto& mesh = InitialiseMesh("ground1", "mock_ground1.obj", Shader::ID_BUMP);
         mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
+        mesh.Bump(20.0f);
     }
-    
-    index = InitialiseMesh("ground2", "mock_ground2.obj", Shader::ID_BUMP);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
-        mesh.Bump(20.0f);
+        auto& mesh = InitialiseMesh("ground2", "mock_ground2.obj", Shader::ID_BUMP);
         mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
+        mesh.Bump(20.0f);
     }
-    
-    index = InitialiseMesh("hill1", "mock_hill1.obj", Shader::ID_BUMP);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
-        mesh.Bump(20.0f);
+        auto& mesh = InitialiseMesh("hill1", "mock_hill1.obj", Shader::ID_BUMP);
         mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
+        mesh.Bump(20.0f);
     }
-    
-    index = InitialiseMesh("hill2", "mock_hill2.obj", Shader::ID_BUMP);
-    if (index != NO_INDEX)
     {
-        auto& mesh = m_scene.GetMesh(index);
-        mesh.Bump(20.0f);
+        auto& mesh = InitialiseMesh("hill2", "mock_hill2.obj", Shader::ID_BUMP);
         mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
+        mesh.Bump(20.0f);
     }
 
     return true;
@@ -265,20 +252,20 @@ bool SceneBuilder::InitialiseBubbles()
 
 bool SceneBuilder::InitialiseWater()
 {
-    const auto index = m_scene.Add(std::make_unique<Water>("water", Shader::ID_WATER));
+    bool success = true;
 
-    Water& water = m_scene.GetWater(index);
+    Water& water = m_scene.Add(std::make_unique<Water>("water", Shader::ID_WATER));
     water.SetTexture(MeshData::COLOUR, m_scene.GetTexture("water_colour"));
     water.SetTexture(MeshData::NORMAL, m_scene.GetTexture("water_normal"));
     water.SetTexture(MeshData::ENVIRONMENT, m_scene.GetTexture("water_environment"));
-    
-    return water.Initialise(glm::vec3(0,-5,0), 10.0f, 10, 20);
+    success &= water.Initialise(glm::vec3(0,5,0), 10.0f, 10, 20);
+
+    return success;
 }
 
 bool SceneBuilder::InitialiseCaustics()
 {
-    m_scene.Add(Animation::ID_CAUSTICS, std::make_unique<Animation>());
-    Animation& caustics = m_scene.GetAnimation(Animation::ID_CAUSTICS);
+    Animation& caustics = m_scene.Add(Animation::ID_CAUSTICS, std::make_unique<Animation>());
 
     const std::string path(TEXTURE_PATH + "Caustics//");
     const std::string name("Caustics_0");
@@ -322,34 +309,29 @@ bool SceneBuilder::InitialiseTexture(const std::string& name,
     return m_scene.GetTexture(index).Initialise();
 }
 
-bool SceneBuilder::InitialiseTexture(const std::string& name, 
-                                     const std::string& path,
-                                     Texture::Type type,
-                                     Texture::Filter filter,
-                                     int size,
-                                     int index)
+ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name, 
+                                                   Texture::Filter filter,
+                                                   int size,
+                                                   int index)
 {
-    m_scene.Add(index, std::make_unique<Texture>(
-        name, GENERATED_TEXTURES + path, size, type, filter));
-
-    return m_scene.GetTexture(index).Initialise();
+    return m_scene.Add(std::make_unique<ProceduralTexture>(
+            name, GENERATED_TEXTURES + name + ".bmp", size, filter), index);
 }
 
-int SceneBuilder::InitialiseMesh(const std::string& name,
-                                 const std::string& filename,
-                                 int shaderID,
-                                 int instances)
+Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
+                                   const std::string& filename,
+                                   int shaderID,
+                                   int instances)
 {
-    const auto index = m_scene.Add(std::make_unique<Mesh>(name, shaderID, instances));
+    auto& mesh = m_scene.Add(std::make_unique<Mesh>(name, shaderID, instances));
 
-    if (m_scene.GetMesh(index).InitialiseFromFile(MESHES_PATH + filename, 
+    if (!mesh.InitialiseFromFile(MESHES_PATH + filename, 
         true, true, m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
     {
-        return index;
+        LogError("Mesh: " + name + " failed initialisation");
     }
 
-    LogError("Mesh: " + name + " failed initialisation");
-    return NO_INDEX;
+    return mesh;
 }
 
 bool SceneBuilder::InitialiseEmitter(const std::string& name,
@@ -358,12 +340,12 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
                                      const std::vector<int>& textures,
                                      const EmitterData& data)
 {
-    const auto index = m_scene.Add(std::make_unique<Emitter>(name, shaderID, amount));
+    Emitter& emitter = m_scene.Add(std::make_unique<Emitter>(name, shaderID, amount));
 
     for (int texture : textures)
     {
-        m_scene.GetEmitter(index).AddTexture(texture);
+        emitter.AddTexture(texture);
     }
 
-    return m_scene.GetEmitter(index).Initialise(data);
+    return emitter.Initialise(data);
 }

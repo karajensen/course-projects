@@ -146,6 +146,7 @@ void OpenGL::RenderSceneMap(float timer)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   
     }
 
+    RenderTerrain();
     RenderMeshes();
     RenderWater(timer);
     RenderEmitters();
@@ -170,6 +171,19 @@ void OpenGL::RenderMeshes()
             mesh->PreRender();
             EnableSelectedShader();
             mesh->Render(updateInstance);
+        }
+    }
+}
+
+void OpenGL::RenderTerrain()
+{
+    for (const auto& terrain : m_scene.Terrains())
+    {
+        if (UpdateShader(*terrain))
+        {
+            terrain->PreRender();
+            EnableSelectedShader();
+            terrain->Render();
         }
     }
 }
@@ -319,7 +333,7 @@ void OpenGL::UpdateShader(const glm::mat4& world)
     shader.SendUniform("world", world);
 }
 
-bool OpenGL::UpdateShader(const Mesh& mesh)
+bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timer)
 {
     const int index = mesh.ShaderID();
     if (index != NO_INDEX)
@@ -328,21 +342,50 @@ bool OpenGL::UpdateShader(const Mesh& mesh)
         if(index != m_selectedShader)
         {
             SetSelectedShader(index);
+            SendLights();
+
             shader.SendUniform("viewProjection", m_camera.ViewProjection());
             shader.SendUniform("cameraPosition", m_camera.Position());
             shader.SendUniform("depthNear", m_scene.Post().DepthNear());
             shader.SendUniform("depthFar", m_scene.Post().DepthFar());
-            SendLights();
+
+            if (timer >= 0.0f)
+            {
+                shader.SendUniform("timer", timer);
+            }
         }
-    
+
+        SendTextures(mesh.TextureIDs());
+        EnableBackfaceCull(mesh.BackfaceCull());
+        EnableAlphaBlending(alphaBlend);
+        return true;
+    }
+    return false;
+}
+
+bool OpenGL::UpdateShader(const Mesh& mesh)
+{
+    if (UpdateShader(mesh, false))
+    {
+        auto& shader = m_scene.GetShader(mesh.ShaderID());
         shader.SendUniform("meshCaustics", mesh.Caustics());
         shader.SendUniform("meshAmbience", mesh.Ambience());
         shader.SendUniform("meshBump", mesh.Bump());
         shader.SendUniform("meshSpecularity", mesh.Specularity());
+        return true;
+    }
+    return false;
+}
 
-        SendTextures(mesh.TextureIDs());
-        EnableBackfaceCull(mesh.BackfaceCull());
-        EnableAlphaBlending(false);
+bool OpenGL::UpdateShader(const Terrain& terrain)
+{
+    if (UpdateShader(terrain, false))
+    {
+        auto& shader = m_scene.GetShader(terrain.ShaderID());
+        shader.SendUniform("meshCaustics", terrain.Caustics());
+        shader.SendUniform("meshAmbience", terrain.Ambience());
+        shader.SendUniform("meshBump", terrain.Bump());
+        shader.SendUniform("meshSpecularity", terrain.Specularity());
         return true;
     }
     return false;
@@ -350,21 +393,9 @@ bool OpenGL::UpdateShader(const Mesh& mesh)
 
 bool OpenGL::UpdateShader(const Water& water, float timer)
 {
-    const int index = water.ShaderID();
-    if (index != NO_INDEX)
+    if (UpdateShader(water, false, timer))
     {
-        auto& shader = m_scene.GetShader(index);
-        if(index != m_selectedShader)
-        {
-            SetSelectedShader(index);
-            shader.SendUniform("viewProjection", m_camera.ViewProjection());
-            shader.SendUniform("timer", timer);
-            shader.SendUniform("depthNear", m_scene.Post().DepthNear());
-            shader.SendUniform("depthFar", m_scene.Post().DepthFar());
-            shader.SendUniform("cameraPosition", m_camera.Position());
-            SendLights();
-        }
-
+        auto& shader = m_scene.GetShader(water.ShaderID());
         shader.SendUniform("speed", water.Speed());
         shader.SendUniform("bumpIntensity", water.Bump());
         shader.SendUniform("bumpVelocity", water.BumpVelocity());
@@ -375,10 +406,6 @@ bool OpenGL::UpdateShader(const Water& water, float timer)
         shader.SendUniform("reflectionIntensity", water.ReflectionIntensity());
         shader.SendUniform("fresnal", water.Fresnal());
         SendWaves(water);
-
-        EnableBackfaceCull(false);
-        EnableAlphaBlending(true);
-        SendTextures(water.TextureIDs());
         return true;
     }
     return false;

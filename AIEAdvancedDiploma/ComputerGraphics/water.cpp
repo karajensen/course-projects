@@ -5,7 +5,7 @@
 #include "water.h"
 
 Water::Water(const std::string& name, int shaderID) :
-    MeshData(name, shaderID),
+    Grid(name, shaderID),
     m_speed(1.0f),
     m_bump(1.0f),
     m_bumpVelocity(0.0f, 0.0f),
@@ -16,6 +16,7 @@ Water::Water(const std::string& name, int shaderID) :
     m_reflectionTint(1.0f, 1.0f, 1.0f),
     m_reflection(1.0f)
 {
+    m_backfacecull = false;
     m_waves.resize(Wave::MAX);
 
     m_waves[0].amplitude = 1.0f;
@@ -33,7 +34,7 @@ Water::Water(const std::string& name, int shaderID) :
 
 bool Water::Initialise(const glm::vec3& position, float spacing, int rows, int columns)
 {
-    CreateGrid(position, spacing, rows, columns);
+    CreateGrid(position, spacing, rows, columns, false);
     return MeshData::Initialise();
 }
 

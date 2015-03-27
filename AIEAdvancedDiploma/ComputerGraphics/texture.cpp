@@ -5,7 +5,6 @@
 #include "texture.h"
 #include "renderdata.h"
 #include "soil/SOIL.h"
-#include "colour.h"
 
 Texture::Texture(const std::string& name, 
                  const std::string& path, 
@@ -17,28 +16,6 @@ Texture::Texture(const std::string& name,
     m_image(type),
     m_filter(filter)
 {
-}
-
-Texture::Texture(const std::string& name, 
-                 const std::string& path, 
-                 int size, 
-                 Type type,
-                 Filter filter) :
-
-    m_name(name),
-    m_path(path),
-    m_image(type),
-    m_filter(filter)
-{
-    m_size = size;
-    m_pixels.resize(size * size);
-
-    switch (type)
-    {
-    case RANDOM:
-        MakeRandomNormals();
-        break;
-    }
 }
 
 Texture::~Texture()
@@ -55,9 +32,19 @@ const std::string& Texture::Name() const
     return m_name;
 }
 
+const std::string& Texture::Path() const
+{
+    return m_path;
+}
+
 bool Texture::IsCubeMap() const
 {
     return m_image == CUBE;
+}
+
+bool Texture::IsProcedural() const
+{
+    return m_image == PROCEDURAL;
 }
 
 bool Texture::Initialise()
@@ -103,31 +90,8 @@ bool Texture::InitialiseFromFile()
 
 bool Texture::InitialiseFromPixels()
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-        m_size, m_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-    if(HasCallFailed())
-    {
-        LogError("Failed to load " + m_name + " texture");
-        return false;
-    }
-
-    return SetFiltering() && ReloadPixels();
-}
-
-bool Texture::ReloadPixels()
-{
-    glBindTexture(GL_TEXTURE_2D, m_id);
-
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_size, 
-        m_size, GL_RGBA, GL_UNSIGNED_BYTE, &m_pixels[0]);
-
-    if(HasCallFailed())
-    {
-        LogError("Failed " + m_name + " texture");
-        return false;
-    }
-    return true;
+    LogError("Texture::InitialiseFromPixels unsupported");
+    return false;
 }
 
 bool Texture::SetFiltering()
@@ -191,50 +155,4 @@ bool Texture::LoadTexture(GLenum type, const std::string& path)
 GLuint Texture::GetID() const
 {
     return m_id;
-}
-
-bool Texture::SaveTexture()
-{
-    const int channels = 3;
-    std::vector<unsigned char> data(m_pixels.size() * channels);
-
-    for (unsigned int i = 0, j = 0; i < m_pixels.size(); ++i, j+=channels)
-    {
-        const unsigned int colour = m_pixels[i];
-        data[j] = Colour::RedAsChar(colour);
-        data[j+1] = Colour::GreenAsChar(colour);
-        data[j+2] = Colour::BlueAsChar(colour);
-    }
-
-    if (SOIL_save_image(m_path.c_str(), SOIL_SAVE_TYPE_BMP, 
-        m_size, m_size, channels, &data[0]) == 0)
-    {
-        LogError("Failed to save " + m_path);
-        return false;
-    }
-    else
-    {
-        LogInfo("Saved texture " + m_path);
-        return true;
-    }
-}
-
-void Texture::MakeRandomNormals()
-{
-    for (unsigned int i = 0; i < m_pixels.size(); ++i)
-    {
-        glm::vec3 colour(Random::Generate(0.0f, 1.0f),
-                         Random::Generate(0.0f, 1.0f),
-                         Random::Generate(0.0f, 1.0f));
-
-        colour = glm::normalize(colour);
-        Colour::SetRed(m_pixels[i], colour.x);
-        Colour::SetGreen(m_pixels[i], colour.y);
-        Colour::SetBlue(m_pixels[i], colour.z);
-    }
-}
-
-bool Texture::IsProcedural() const
-{
-    return m_image != FROM_FILE && !IsCubeMap();
 }

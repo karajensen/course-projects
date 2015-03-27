@@ -12,6 +12,7 @@ class Mesh;
 class Light;
 class Shader;
 class MeshData;
+class ProceduralTexture;
 struct EmitterData;
 
 /**
@@ -84,17 +85,23 @@ private:
     bool InitialiseEmitters();
 
     /**
+    * Initialises the terrain for the scene
+    * @return Whether the initialization was successful
+    */
+    bool InitialiseTerrain();
+
+    /**
     * Initialises a mesh
     * @param name The name of the mesh
     * @param filename The filename of the mesh
     * @param shaderID The shader to use
     * @param instances The number of instances to create
-    * @return The index of the created mesh or NO_INDEX if failed
+    * @return The mesh initialised
     */
-    int InitialiseMesh(const std::string& name,
-                       const std::string& filename,
-                       int shaderID,
-                       int instances = 1);
+    Mesh& InitialiseMesh(const std::string& name,
+                         const std::string& filename,
+                         int shaderID,
+                         int instances = 1);
 
     /**
     * Initialises a shader
@@ -135,19 +142,16 @@ private:
     /**
     * Initialises a procedural texture
     * @param name The name of the texture
-    * @param path The path of the texture
     * @param type The image type of the texture
     * @param filter The type of filtering to use
     * @param size The size of the texture
-    * @param index The index to initialise the texture at
-    * @return Whether the initialization was successful
+    * @param index The optional index to initialise the texture at
+    * @return The procedural texture
     */
-    bool InitialiseTexture(const std::string& name, 
-                           const std::string& path,
-                           Texture::Type type,
-                           Texture::Filter filter,
-                           int size,
-                           int index);
+    ProceduralTexture& InitialiseTexture(const std::string& name, 
+                                         Texture::Filter filter,
+                                         int size,
+                                         int index = NO_INDEX);
 
     /**
     * Initialises an emitter

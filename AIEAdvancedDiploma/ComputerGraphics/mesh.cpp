@@ -99,11 +99,6 @@ float Mesh::Ambience() const
     return m_ambience;
 }
 
-bool Mesh::BackfaceCull() const
-{
-    return m_backfacecull;
-}
-
 float Mesh::Caustics() const
 {
     return m_caustics;
@@ -127,11 +122,6 @@ void Mesh::Ambience(float value)
 void Mesh::Caustics(float value)
 {
     m_caustics = value;
-}
-
-void Mesh::BackfaceCull(bool value)
-{
-    m_backfacecull = value;
 }
 
 void Mesh::AddInstance()

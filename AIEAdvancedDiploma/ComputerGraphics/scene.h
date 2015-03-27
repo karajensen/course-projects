@@ -10,6 +10,7 @@
 #include <string>
 #include <memory>
 
+class ProceduralTexture;
 class Animation;
 class SceneBuilder;
 struct SceneData;
@@ -81,43 +82,45 @@ public:
     * Adds an animation to the scene
     * @param index The index to add the animation at
     * @param element The element to add to the scene
+    * @return the animation added
     */
-    void Add(int index, std::unique_ptr<Animation> element);
+    Animation& Add(int index, std::unique_ptr<Animation> element);
 
     /**
     * Adds a light to the scene
     * @param index The index to add the light at
     * @param element The element to add to the scene
+    * @return the light added
     */
-    void Add(int index, std::unique_ptr<Light> element);
+    Light& Add(int index, std::unique_ptr<Light> element);
 
     /**
     * Adds terrain to the scene
     * @param element The element to add to the scene
-    * @return the index the terrain was added at
+    * @return terrain added
     */
-    unsigned int Add(std::unique_ptr<Terrain> element);
+    Terrain& Add(std::unique_ptr<Terrain> element);
 
     /**
     * Adds water to the scene
     * @param element The element to add to the scene
-    * @return the index the water was added at
+    * @return the water added
     */
-    unsigned int Add(std::unique_ptr<Water> element);
+    Water& Add(std::unique_ptr<Water> element);
 
     /**
     * Adds an emitter to the scene
     * @param element The element to add to the scene
-    * @return the index the emitter was added at
+    * @return the emitter added
     */
-    unsigned int Add(std::unique_ptr<Emitter> element);
+    Emitter& Add(std::unique_ptr<Emitter> element);
 
     /**
     * Adds a mesh to the scene
     * @param element The element to add to the scene
-    * @return the index the mesh was added at
+    * @return the mesh added
     */
-    unsigned int Add(std::unique_ptr<Mesh> element);
+    Mesh& Add(std::unique_ptr<Mesh> element);
 
     /**
     * Adds a texture to the scene
@@ -128,10 +131,11 @@ public:
 
     /**
     * Adds a texture to the scene
-    * @param index The index to add the texture at
     * @param element The element to add to the scene
+    * @param index The optional index to add the texture at
+    * @return the index the texture was added at
     */
-    void Add(int index, std::unique_ptr<Texture> element);
+    ProceduralTexture& Add(std::unique_ptr<ProceduralTexture> element, int index = NO_INDEX);
 
     /**
     * @param index The index of the shader to get
@@ -140,53 +144,17 @@ public:
     virtual Shader& GetShader(int index) const override;
 
     /**
-    * @param index The index of the animation to get
-    * @return the animation 
+    * Retrieves a texture at the given index
+    * @param index The index of the texture to get
+    * @return the texture 
     */
-    Animation& GetAnimation(int index);
-
-    /**
-    * @param index The index of the mesh to get
-    * @return the mesh 
-    */
-    Mesh& GetMesh(int index);
-
-    /**
-    * @param index The index of the terrain to get
-    * @return the terrain 
-    */
-    Terrain& GetTerrain(int index);
-
-    /**
-    * @param index The index of the water to get
-    * @return the water 
-    */
-    Water& GetWater(int index);
-
-    /**
-    * @param index The index of the light to get
-    * @return the light 
-    */
-    Light& GetLight(int index);
-
-    /**
-    * @param index The index of the emitter to get
-    * @return the emitter 
-    */
-    Emitter& GetEmitter(int index);
+    virtual const Texture& GetTexture(int index) const;
 
     /**
     * @param index The index of the texture to get
     * @return the texture 
     */
     Texture& GetTexture(int index);
-
-    /**
-    * Retrieves a texture at the given index
-    * @param index The index of the texture to get
-    * @return the texture 
-    */
-    virtual const Texture& GetTexture(int index) const;
 
     /**
     * Gets the texture index from the name

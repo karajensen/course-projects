@@ -8,6 +8,7 @@
 #include <vector>
 #include "renderdata.h"
 
+
 /**
 * Base Mesh Information
 */
@@ -47,6 +48,12 @@ public:
     * @return whether initialisation was successful
     */
     bool Initialise();
+
+    /**
+    * Reloads the buffers for the mesh
+    * @return whether reloadig was successful
+    */
+    bool Reload();
 
     /**
     * Pre-renders the mesh
@@ -89,6 +96,16 @@ public:
     int VertexComponentCount() const;
 
     /**
+    * @return Whether back facing polygons are culled
+    */
+    bool BackfaceCull() const;
+
+    /**
+    * Sets Whether back facing polygons are culled
+    */
+    void BackfaceCull(bool value);
+
+    /**
     * Sets the ID of the texture to use
     * @param type The type of texture to set
     * @param ID The ID of the texture to use
@@ -113,15 +130,7 @@ protected:
     MeshData(const MeshData&) = delete;
     MeshData& operator=(const MeshData&) = delete;
 
-    /**
-    * Loads a grid into the buffers
-    * @param position The center of the grid
-    * @param spacing The spacing between vertices
-    * @param rows How many rows for the grid
-    * @param columns How many columns for the grid
-    */
-    void CreateGrid(const glm::vec3& position, float spacing, int rows, int columns);
-
+    bool m_backfacecull = true;       ///< Whether backface culling is enabled
     int m_vertexComponentCount = 0;   ///< Number of components that make up a vertex
     std::vector<float> m_vertices;    ///< Mesh Vertex information
     std::vector<DWORD> m_indices;     ///< Mesh Index information

@@ -17,6 +17,8 @@ class Emitter;
 class Particle;
 class Quad;
 class RenderTarget;
+class MeshData;
+class Terrain;
 
 /**
 * Engine for initialising and managing OpenGL
@@ -80,9 +82,26 @@ private:
     /**
     * Updates and switches to main shader the mesh requires
     * @param mesh The mesh currently rendering
+    * @param alphaBlend Whether to use alpha blending
+    * @param timer The timer to send or -1 if not to send
+    * @return whether the mesh can now be rendered
+    */
+    bool UpdateShader(const MeshData& mesh, 
+        bool alphaBlend, float timer = -1.0f);
+
+    /**
+    * Updates and switches to main shader the mesh requires
+    * @param mesh The mesh currently rendering
     * @return whether the mesh can now be rendered
     */
     bool UpdateShader(const Mesh& mesh);
+
+    /**
+    * Updates and switches to main shader the terrain requires
+    * @param terrain The terrain currently rendering
+    * @return whether the terrain can now be rendered
+    */
+    bool UpdateShader(const Terrain& terrain);
 
     /**
     * Updates the shader for a mesh per instance
@@ -170,6 +189,11 @@ private:
     * Renders all meshes
     */
     void RenderMeshes();
+
+    /**
+    * Renders all terrain
+    */
+    void RenderTerrain();
 
     /**
     * Renders all water

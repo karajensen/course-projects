@@ -64,6 +64,12 @@
     <ClCompile Include="rendertarget.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="grid.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="textureProcedural.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -111,9 +117,6 @@
     <ClInclude Include="quad.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="colour.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="animation.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -136,6 +139,12 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="rendertarget.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="grid.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="textureProcedural.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
