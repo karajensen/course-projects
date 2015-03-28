@@ -69,4 +69,13 @@ float Terrain::Caustics() const
 
 void Terrain::GenerateDiamondSquareTerrain()
 {
+
+
+
+
+
+
+
+
+
 }

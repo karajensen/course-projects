@@ -15,6 +15,7 @@ ProceduralTexture::ProceduralTexture(const std::string& name,
     m_size(size)
 {
     m_pixels.resize(size * size);
+    m_pixels.assign(m_pixels.size(), 0);
 }
 
 ProceduralTexture::~ProceduralTexture()
@@ -57,9 +58,9 @@ bool ProceduralTexture::SaveTexture()
 
     for (unsigned int i = 0, j = 0; i < m_pixels.size(); ++i, j+=channels)
     {
-        data[j] = RedAsChar(m_pixels[i]);
-        data[j+1] = GreenAsChar(m_pixels[i]);
-        data[j+2] = BlueAsChar(m_pixels[i]);
+        data[j] = RedAsChar(i);
+        data[j+1] = GreenAsChar(i);
+        data[j+2] = BlueAsChar(i);
     }
 
     if (SOIL_save_image(Path().c_str(), SOIL_SAVE_TYPE_BMP, 
@@ -117,6 +118,11 @@ void ProceduralTexture::SetBlue(unsigned int index, float value)
 void ProceduralTexture::SetAlpha(unsigned int index, float value)
 {
     SetAlpha(index, static_cast<int>(value * 255));
+}
+
+void ProceduralTexture::Set(int row, int column, float value)
+{
+    Set(Index(row, column), value, value, value, value);
 }
 
 void ProceduralTexture::Set(unsigned int index, float r, float g, float b, float a)
@@ -203,10 +209,10 @@ float ProceduralTexture::AlphaAsFlt(unsigned int index)
 
 unsigned int ProceduralTexture::Get(int row, int column) const
 {
-    return m_pixels[GetIndex(row, column)];
+    return m_pixels[Index(row, column)];
 }
 
-unsigned int ProceduralTexture::GetIndex(int row, int column) const
+unsigned int ProceduralTexture::Index(int row, int column) const
 {
     return row * m_size + column;
 }
@@ -238,68 +244,83 @@ void ProceduralTexture::MakeRandomNormals()
 
 void ProceduralTexture::MakeDiamondSquareFractal()
 {
-    const int minSize = 1;
+    // Based on: http://www.gameprogrammer.com/fractal.html
+
+	float scale = 2.0f;
     const int maxSize = m_size;
     const int maxIndex = maxSize - 1;
-    const float max = 1.0f;
-
-    auto SetPoint = [&](unsigned int p, 
-                        unsigned int p1, 
-                        unsigned int p2, 
-                        unsigned int p3, 
-                        unsigned int p4)
-    {
-        glm::vec3 average;
-        int count = 0;
-
-        if (Valid(p1))
-        {
-            average.x += RedAsFlt(p1);
-            average.y += GreenAsFlt(p1);
-            average.z += BlueAsFlt(p1);
-            ++count;
-        }
-        if (Valid(p2))
-        {
-            average.x += RedAsFlt(p2);
-            average.y += GreenAsFlt(p2);
-            average.z += BlueAsFlt(p2);
-            ++count;
-        }
-        if (Valid(p3))
-        {
-            average.x += RedAsFlt(p3);
-            average.y += GreenAsFlt(p3);
-            average.z += BlueAsFlt(p3);
-            ++count;
-        }
-        if (Valid(p4))
-        {
-            average.x += RedAsFlt(p4);
-            average.y += GreenAsFlt(p4);
-            average.z += BlueAsFlt(p4);
-            ++count;
-        }
-
-        average /= static_cast<float>(count);
-        Set(p, average.x, average.y, average.z, 0.0f);
-    };
-
     int size = maxSize;
     int half = size / 2;
 
-    while (half >= minSize)
+    // All four corners must have the same point to allow tiling
+    const float initial = 0.0f;
+    Set(0, 0, initial);
+    Set(maxIndex, 0, initial);
+    Set(maxIndex, maxIndex, initial);
+    Set(0, maxIndex, initial);
+
+    /**
+    * Averages the value of the four points in a square
+    * o  .  o
+    * .  .  .
+    * o  .  o
+    */
+    auto AverageSquare = [&](int row, int column) -> float
+    {
+        return (RedAsFlt(Index(row-half, column-half)) +
+            RedAsFlt(Index(row+half-1, column+half-1)) +
+            RedAsFlt(Index(row-half, column+half-1)) +
+            RedAsFlt(Index(row+half-1, column-half))) * 0.25f;
+    };
+
+    /**
+    * Averages the value of the four points in a diamond
+    * If row/column is on edge of texture looks at opposite side to support tiling
+    * .  o  .
+    * o  .  o
+    * .  o  .
+    */
+    auto AverageDiamond = [&](int row, int column) -> float
+    {
+        const auto top = Index(row, column-half);
+        const auto bot = Index(row, column+half-1);
+        const auto left = Index(row-half, column);
+        const auto right = Index(row+half-1, column);
+
+        if (row == 0)
+        {
+            return (RedAsFlt(top) + RedAsFlt(bot) + RedAsFlt(right)
+                + RedAsFlt(Index(maxIndex-half, column))) * 0.25f;
+        }
+        else if (row == maxIndex)
+        {
+            return (RedAsFlt(top) + RedAsFlt(bot) + RedAsFlt(left) 
+                + RedAsFlt(Index(half, column))) * 0.25f;
+        }
+        else if (column == 0)
+        {
+            return (RedAsFlt(right) + RedAsFlt(left) + RedAsFlt(bot) 
+                + RedAsFlt(Index(row, maxIndex-half))) * 0.25f;
+        }
+        else if (column == maxIndex)
+        {
+            return (RedAsFlt(right) + RedAsFlt(left) + RedAsFlt(bot) 
+                + RedAsFlt(Index(row, half))) * 0.25f;
+        }
+
+        return (RedAsFlt(right) + RedAsFlt(left) 
+            + RedAsFlt(top) + RedAsFlt(bot)) * 0.25f;
+    };
+
+    // Terminate loop when power of 2 texture halves to reach 0.5
+    while (half >= 1)
     {
         // Set the midpoint of the sections
-        for (int r = half; r < maxIndex; r += size) 
+        for (int r = half; r < maxSize; r += size) 
         {
-            for (int c = half; c < maxIndex; c += size)
+            for (int c = half; c < maxSize; c += size)
             {
-                SetPoint(GetIndex(r, c),
-                    GetIndex(r - half, c - half),  // Top left corner
-                    GetIndex(r + half, c - half),  // Top right corner
-                    GetIndex(r - half, c + half),  // Bot left corner
-                    GetIndex(r + half, c + half)); // Bot left corner
+                Set(r, c, AverageSquare(r, c) + scale * Random::Generate(-0.5f, 0.5f));
             }
         }
 
@@ -307,15 +328,20 @@ void ProceduralTexture::MakeDiamondSquareFractal()
         {
             for (int c = (r + half) % size; c <= maxIndex; c += size)
             {
-                SetPoint(GetIndex(r, c),
-                    GetIndex(r, c - half),  // Top 
-                    GetIndex(r, c + half),  // Bottom 
-                    GetIndex(r - half, c),  // Left 
-                    GetIndex(r + half, c)); // Right 
+                Set(r, c, AverageDiamond(r, c) + scale * Random::Generate(-0.5f, 0.5f));
+        
+                if (r == 0) // Ensure opposite side has matching value for wrapping
+                {
+                    m_pixels[Index(maxIndex, c)] = m_pixels[Index(r, c)];
+                }
+                if (c == 0) // Ensure opposite side has matching value for wrapping
+                {
+                    m_pixels[Index(r, maxIndex)] = m_pixels[Index(r, c)];
+                }
             }
         }
 
         size = half;
         half = size / 2;
-    }    
+    }   
 }

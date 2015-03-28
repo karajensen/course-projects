@@ -75,7 +75,7 @@ private:
     /**
     * @return the index from the row and column value
     */
-    unsigned int GetIndex(int row, int column) const;
+    unsigned int Index(int row, int column) const;
 
     /**
     * @return whether the row and colunn are inside the texture
@@ -96,6 +96,11 @@ private:
     * Sets the colour from each component
     */
     void Set(unsigned int index, float r, float g, float b, float a);
+
+    /**
+    * Sets the colour as a float
+    */
+    void Set(int row, int column, float value);
 
     /**
     * Sets the colour component as an int

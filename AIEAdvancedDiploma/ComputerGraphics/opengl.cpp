@@ -228,9 +228,10 @@ void OpenGL::RenderPostProcessing()
     EnableAlphaBlending(false);
     EnableBackfaceCull(false);
 
-    const auto& post = m_scene.Post();
+    SetSelectedShader(Shader::ID_POST_PROCESSING);
     auto& postShader = m_scene.GetShader(Shader::ID_POST_PROCESSING);
-    
+    const auto& post = m_scene.Post();
+
     postShader.SetActive();
     postShader.SendUniform("contrast", post.Contrast());
     postShader.SendUniform("saturation", post.Saturation());
@@ -273,10 +274,10 @@ void OpenGL::RenderBlur()
 
     m_blurTarget->SetActive();
     m_blurTarget->SwitchTextures();
-
     const auto& post = m_scene.Post();
+    
+    SetSelectedShader(Shader::ID_BLUR_HORIZONTAL);
     auto& blurHorizontalShader = m_scene.GetShader(Shader::ID_BLUR_HORIZONTAL);
-    auto& blurVerticalShader = m_scene.GetShader(Shader::ID_BLUR_VERTICAL);
 
     blurHorizontalShader.SetActive();
     blurHorizontalShader.SendUniform("blurStep", post.BlurStep());
@@ -287,6 +288,9 @@ void OpenGL::RenderBlur()
     m_screenQuad->Render();
 
     blurHorizontalShader.ClearTexture(0, *m_effectsTarget);
+
+    SetSelectedShader(Shader::ID_BLUR_VERTICAL);
+    auto& blurVerticalShader = m_scene.GetShader(Shader::ID_BLUR_VERTICAL);
 
     blurVerticalShader.SetActive();
     blurVerticalShader.SendUniform("blurStep", post.BlurStep());
@@ -305,8 +309,9 @@ void OpenGL::RenderPreEffects()
     EnableBackfaceCull(false);
     EnableAlphaBlending(false);
 
-    const auto& post = m_scene.Post();
+    SetSelectedShader(Shader::ID_PRE_PROCESSING);
     auto& preShader = m_scene.GetShader(Shader::ID_PRE_PROCESSING);
+    const auto& post = m_scene.Post();
 
     preShader.SetActive();
     
