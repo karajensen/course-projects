@@ -217,16 +217,6 @@ unsigned int ProceduralTexture::Index(int row, int column) const
     return row * m_size + column;
 }
 
-bool ProceduralTexture::Valid(int row, int column) const
-{
-    return row >= 0 && column >= 0 && row < m_size && column < m_size;
-}
-
-bool ProceduralTexture::Valid(unsigned int index) const
-{
-    return index >= 0 && index < m_pixels.size();
-}
-
 void ProceduralTexture::MakeRandomNormals()
 {
     for (unsigned int i = 0; i < m_pixels.size(); ++i)
@@ -244,13 +234,15 @@ void ProceduralTexture::MakeRandomNormals()
 
 void ProceduralTexture::MakeDiamondSquareFractal()
 {
-    // Based on: http://www.gameprogrammer.com/fractal.html
+    // Diamond Square Fractal References:
+    // http://www.gameprogrammer.com/fractal.html 
+    // http://www.playfuljs.com/realistic-terrain-in-130-lines/
 
-	float scale = 2.0f;
     const int maxSize = m_size;
     const int maxIndex = maxSize - 1;
     int size = maxSize;
     int half = size / 2;
+    float scale = 2.0f;
 
     // All four corners must have the same point to allow tiling
     const float initial = 0.0f;
@@ -315,7 +307,12 @@ void ProceduralTexture::MakeDiamondSquareFractal()
     // Terminate loop when power of 2 texture halves to reach 0.5
     while (half >= 1)
     {
-        // Set the midpoint of the sections
+        /**
+        * Set the midpoint of the sections
+        * .  .  .
+        * .  o  .
+        * .  .  .
+        */
         for (int r = half; r < maxSize; r += size) 
         {
             for (int c = half; c < maxSize; c += size)
@@ -324,6 +321,12 @@ void ProceduralTexture::MakeDiamondSquareFractal()
             }
         }
 
+        /**
+        * Set the four corners of the diamond surrounding the midpoint
+        * .  o  .
+        * o  .  o
+        * .  o  .
+        */
         for (int r = 0; r <= maxIndex; r += half)
         {
             for (int c = (r + half) % size; c <= maxIndex; c += size)

@@ -78,16 +78,6 @@ private:
     unsigned int Index(int row, int column) const;
 
     /**
-    * @return whether the row and colunn are inside the texture
-    */
-    bool Valid(int row, int column) const;
-
-    /**
-    * @return whether the index is inside the texture
-    */
-    bool Valid(unsigned int index) const;
-
-    /**
     * Sets the colour from each component
     */
     void Set(unsigned int index, int r, int g, int b, int a);
