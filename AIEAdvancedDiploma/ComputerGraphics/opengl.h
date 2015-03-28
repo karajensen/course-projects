@@ -142,11 +142,6 @@ private:
     void SendLights();
 
     /**
-    * Sends wave information to the selected shader
-    */
-    void SendWaves(const Water& water);
-
-    /**
     * Sends all textures to the selected shader
     */
     void SendTextures(const std::vector<int>& textures);

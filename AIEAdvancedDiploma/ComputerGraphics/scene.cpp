@@ -185,12 +185,21 @@ void Scene::Tick(float deltatime)
         animation->Tick(deltatime);
     }
 
+    const auto caustics = m_data->animation[Animation::ID_CAUSTICS]->GetFrame();
+
     for (auto& mesh : m_data->meshes)
     {
         if (GetShader(mesh->ShaderID()).HasComponent(Shader::CAUSTICS))
         {
-            mesh->SetTexture(Mesh::CAUSTICS, 
-                m_data->animation[Animation::ID_CAUSTICS]->GetFrame());
+            mesh->SetTexture(Mesh::CAUSTICS, caustics);
+        }
+    }
+
+    for (auto& terrain : m_data->terrain)
+    {
+        if (GetShader(terrain->ShaderID()).HasComponent(Shader::CAUSTICS))
+        {
+            terrain->SetTexture(Mesh::CAUSTICS, caustics);
         }
     }
 
@@ -207,11 +216,11 @@ bool Scene::Initialise()
     if (m_builder->Initialise())
     {
         // To prevent unnecessary shader switching, sort by shader used
-        //std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
-        //    [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool
-        //    {
-        //        return m1->ShaderID() < m2->ShaderID();
-        //    });
+        std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
+            [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool
+            {
+                return m1->ShaderID() < m2->ShaderID();
+            });
 
         LogInfo("Scene: Successfully created");
         return true;

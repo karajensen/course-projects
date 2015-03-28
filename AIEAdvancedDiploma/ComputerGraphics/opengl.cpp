@@ -386,6 +386,7 @@ bool OpenGL::UpdateShader(const Terrain& terrain)
         shader.SendUniform("meshAmbience", terrain.Ambience());
         shader.SendUniform("meshBump", terrain.Bump());
         shader.SendUniform("meshSpecularity", terrain.Specularity());
+        shader.SendUniform("world", glm::mat4());
         return true;
     }
     return false;
@@ -393,7 +394,7 @@ bool OpenGL::UpdateShader(const Terrain& terrain)
 
 bool OpenGL::UpdateShader(const Water& water, float timer)
 {
-    if (UpdateShader(water, false, timer))
+    if (UpdateShader(water, true, timer))
     {
         auto& shader = m_scene.GetShader(water.ShaderID());
         shader.SendUniform("speed", water.Speed());
@@ -405,7 +406,17 @@ bool OpenGL::UpdateShader(const Water& water, float timer)
         shader.SendUniform("reflectionTint", water.ReflectionTint());
         shader.SendUniform("reflectionIntensity", water.ReflectionIntensity());
         shader.SendUniform("fresnal", water.Fresnal());
-        SendWaves(water);
+
+        const auto& waves = water.Waves();
+        for (unsigned int i = 0; i < waves.size(); ++i)
+        {
+            shader.SendUniform("waveFrequency", waves[i].amplitude, i);
+            shader.SendUniform("waveAmplitude", waves[i].amplitude, i);
+            shader.SendUniform("wavePhase", waves[i].phase, i);
+            shader.SendUniform("waveDirectionX", waves[i].directionX, i);
+            shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
+        }
+
         return true;
     }
     return false;
@@ -437,20 +448,6 @@ void OpenGL::UpdateShader(const glm::mat4& world, const Particle& particle)
     shader.SendUniform("worldViewProjection", m_camera.ViewProjection() * world);
     shader.SendUniform("alpha", particle.Alpha());
     SendTexture(0, particle.Texture());
-}
-
-void OpenGL::SendWaves(const Water& water)
-{
-    const auto& waves = water.Waves();
-    auto& shader = m_scene.GetShader(m_selectedShader);
-    for (unsigned int i = 0; i < waves.size(); ++i)
-    {
-        shader.SendUniform("waveFrequency", waves[i].amplitude, i);
-        shader.SendUniform("waveAmplitude", waves[i].amplitude, i);
-        shader.SendUniform("wavePhase", waves[i].phase, i);
-        shader.SendUniform("waveDirectionX", waves[i].directionX, i);
-        shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
-    }
 }
 
 void OpenGL::SendLights()
