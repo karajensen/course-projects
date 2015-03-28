@@ -176,11 +176,11 @@ bool SceneBuilder::InitialiseMeshes()
         auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
         mesh.SetTextures(m_scene.GetTexture("blank"));
     }
-    {
-        auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE);
-        mesh.SetTextures(m_scene.GetTexture("water_colour"));
-        mesh.SetInstance(0, glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), 2.0f);
-    }
+    //{
+    //    auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE);
+    //    mesh.SetTextures(m_scene.GetTexture("water_colour"));
+    //    mesh.SetInstance(0, glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), 2.0f);
+    //}
     {
         auto& mesh = InitialiseMesh("sky", "mock_skybox.obj", Shader::ID_FLAT);
         mesh.SetTextures(m_scene.GetTexture("sky"));
