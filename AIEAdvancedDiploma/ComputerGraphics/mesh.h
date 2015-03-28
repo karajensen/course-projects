@@ -124,6 +124,18 @@ public:
     */
     void AddInstance();
 
+    /**
+    * Sets an instance for this mesh
+    * @param index The ID of this instance
+    * @param position The position offset 
+    * @param rotation How much to rotate 
+    * @param scale The size of the mesh
+    */
+    void SetInstance(int index,
+                     const glm::vec3& position,
+                     const glm::vec3& rotation,
+                     float scale);
+
 private:
 
     /**

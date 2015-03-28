@@ -84,6 +84,16 @@ const std::vector<Mesh::Instance>& Mesh::Instances() const
     return m_instances;
 }
 
+void Mesh::SetInstance(int index,
+                       const glm::vec3& position,
+                       const glm::vec3& rotation,
+                       float scale)
+{
+    m_instances[index].position = position;
+    m_instances[index].rotation = rotation;
+    m_instances[index].scale = scale;
+}
+
 float Mesh::Bump() const
 {
     return m_bump;
@@ -313,6 +323,7 @@ bool Mesh::InitialiseFromFBX(const std::string& path,
                     m_vertices.push_back(vertex.normal.z);
                     componentCount += 3;
                 }
+                else
                 {
                     LogError(Name() + " requires normals for requested shader");
                     return false;

@@ -167,44 +167,24 @@ bool SceneBuilder::InitialiseTerrain()
 bool SceneBuilder::InitialiseMeshes()
 {	
     {
-        auto& mesh = InitialiseMesh("sphereFBX", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
+        auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
         mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"), m_scene.GetTexture("specular"));
         mesh.Bump(20.0f);
         mesh.Specularity(5.0f);
     }
     {
-        auto& mesh = InitialiseMesh("sphereOBJ", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
+        auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
         mesh.SetTextures(m_scene.GetTexture("blank"));
     }
     {
-        auto& mesh = InitialiseMesh("bridge", "mock_bridge.obj", Shader::ID_DIFFUSE);
-        mesh.SetTextures(m_scene.GetTexture("bridge"));
-        mesh.BackfaceCull(false);
+        auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE);
+        mesh.SetTextures(m_scene.GetTexture("water_colour"));
+        mesh.SetInstance(0, glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), 2.0f);
     }
     {
         auto& mesh = InitialiseMesh("sky", "mock_skybox.obj", Shader::ID_FLAT);
         mesh.SetTextures(m_scene.GetTexture("sky"));
         mesh.BackfaceCull(false);
-    }
-    {
-        auto& mesh = InitialiseMesh("ground1", "mock_ground1.obj", Shader::ID_BUMP);
-        mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
-        mesh.Bump(20.0f);
-    }
-    {
-        auto& mesh = InitialiseMesh("ground2", "mock_ground2.obj", Shader::ID_BUMP);
-        mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
-        mesh.Bump(20.0f);
-    }
-    {
-        auto& mesh = InitialiseMesh("hill1", "mock_hill1.obj", Shader::ID_BUMP);
-        mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
-        mesh.Bump(20.0f);
-    }
-    {
-        auto& mesh = InitialiseMesh("hill2", "mock_hill2.obj", Shader::ID_BUMP);
-        mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"));
-        mesh.Bump(20.0f);
     }
 
     return true;
