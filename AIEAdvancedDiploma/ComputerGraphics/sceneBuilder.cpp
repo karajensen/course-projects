@@ -253,7 +253,7 @@ bool SceneBuilder::InitialiseCaustics()
     const std::string name("Caustics_0");
     const std::string extension(".bmp");
 
-    const int maxFrames = 40;
+    const int maxFrames = 45;
     for (int frame = 1; frame <= maxFrames; ++frame)
     {
         const std::string number(std::to_string(frame));
