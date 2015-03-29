@@ -155,13 +155,15 @@ bool SceneBuilder::InitialiseTextures()
 
 bool SceneBuilder::InitialiseTerrain()
 {
-    bool success = true;
+    {
+        Terrain& terrain = InitialiseTerrain("sand", Shader::ID_BUMP, Terrain::DIAMOND_SQUARE,
+            glm::vec3(0.0f, -5.0f, 0.0f), glm::vec2(0.25f, 0.25f), 1.0f, 100);
+        terrain.SetTexture(MeshData::COLOUR, m_scene.GetTexture("blank"));
+        terrain.SetTexture(MeshData::NORMAL, m_scene.GetTexture("bump"));
+        terrain.Bump(20.0f);
+    }
 
-    Terrain& sand = m_scene.Add(std::make_unique<Terrain>("sand", Shader::ID_DIFFUSE));
-    sand.SetTexture(MeshData::COLOUR, m_scene.GetTexture("ground"));
-    success &= sand.Initialise(Terrain::DIAMOND_SQUARE, glm::vec3(0, -5, 0), 1.0f, 100);
-
-    return success;
+    return true;
 }
 
 bool SceneBuilder::InitialiseMeshes()
@@ -328,4 +330,21 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
     }
 
     return emitter.Initialise(data);
+}
+
+Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
+                                         int shaderID,
+                                         Terrain::Type type,
+                                         const glm::vec3& position,
+                                         const glm::vec2& uvStretch,
+                                         float spacing,
+                                         int size)
+{
+    Terrain& terrain = m_scene.Add(std::make_unique<Terrain>(name, shaderID));
+    if (!terrain.Initialise(type, position, uvStretch, spacing, size, true,
+        m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
+    {
+        LogError("Terrain: " + name + " failed initialisation");
+    }
+    return terrain;
 }

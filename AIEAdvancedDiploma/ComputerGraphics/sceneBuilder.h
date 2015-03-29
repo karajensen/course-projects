@@ -6,6 +6,7 @@
 
 #include <string>
 #include "texture.h"
+#include "terrain.h"
 
 class Scene;
 class Mesh;
@@ -103,6 +104,24 @@ private:
                          int shaderID,
                          int instances = 1);
 
+    /**
+    * Initialises terrain
+    * @param name The name of the mesh
+    * @param shaderID The shader to use
+    * @param type The type of terrain to create
+    * @param position The center of the terrain
+    * @param uvStretch The texture stretch multipliers
+    * @param spacing The spacing between vertices
+    * @param size The number of vertices
+    * @return The terrain initialised
+    */
+    Terrain& InitialiseTerrain(const std::string& name,
+                               int shaderID,
+                               Terrain::Type type,
+                               const glm::vec3& position,
+                               const glm::vec2& uvStretch,
+                               float spacing,
+                               int size);
     /**
     * Initialises a shader
     * @param index The index to add the shader at

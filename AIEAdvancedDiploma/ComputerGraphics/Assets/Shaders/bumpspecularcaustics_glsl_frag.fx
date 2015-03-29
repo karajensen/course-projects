@@ -17,8 +17,8 @@ uniform vec3 lightDiffuse[MAX_LIGHTS];
 uniform vec3 lightAttenuation[MAX_LIGHTS];
 uniform vec3 lightSpecular[MAX_LIGHTS];
 uniform float lightSpecularity[MAX_LIGHTS];
-uniform float meshSpecularity;
 
+uniform float meshSpecularity;
 uniform float meshAmbience;
 uniform float meshBump;
 uniform float meshCaustics;

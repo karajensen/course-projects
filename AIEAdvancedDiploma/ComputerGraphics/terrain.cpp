@@ -9,14 +9,37 @@ Terrain::Terrain(const std::string& name, int shaderID) :
 {
 }
 
+void Terrain::Specularity(float value)
+{
+    m_specularity = value;
+}
+
+void Terrain::Bump(float value)
+{
+    m_bump = value;
+}
+
+void Terrain::Ambience(float value)
+{
+    m_ambience = value;
+}
+
+void Terrain::Caustics(float value)
+{
+    m_caustics = value;
+}
+
 bool Terrain::Initialise(Type type,
                          const glm::vec3& position,
+                         const glm::vec2& uvStretch,
                          float spacing,
-                         int size)
+                         int size,
+                         bool hasNormals,
+                         bool hasTangents)
 {
     m_type = type;
 
-    if (CreateGrid(position, spacing, size, size, true, false))
+    if (CreateGrid(position, uvStretch, spacing, size, size, hasNormals, hasTangents))
     {
         GenerateTerrain();
         RecalculateNormals();

@@ -31,15 +31,21 @@ public:
     /**
     * Initialises the terrain
     * @param type The type of terrain algorithm to use
+    * @param uvStretch Texture stretch multiplier
     * @param position The center of the grid
     * @param spacing The spacing between vertices
     * @param size How many rows/columns for the grid
+    * @param hasNormals Whether the terrain requires normals
+    * @param hasNormals Whether the terrain requires tangents
     * @return whether call was successful
     */
     bool Initialise(Type type, 
-                    const glm::vec3& position, 
+                    const glm::vec3& position,
+                    const glm::vec2& uvStretch,
                     float spacing, 
-                    int size);
+                    int size,
+                    bool hasNormals,
+                    bool hasTangents);
 
     /**
     * Reloads the terrain
@@ -66,6 +72,26 @@ public:
     * @return Caustics multiplier
     */
     float Caustics() const;
+
+    /**
+    * Sets the Brightness of the specular highlights
+    */
+    void Specularity(float value);
+
+    /**
+    * Sets The saturation of the bump
+    */
+    void Bump(float value);
+
+    /**
+    * Sets the Ambient light multiplier
+    */
+    void Ambience(float value);
+
+    /**
+    * Sets the Caustics multiplier
+    */
+    void Caustics(float value);
 
 private:
 

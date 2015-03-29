@@ -23,6 +23,7 @@ protected:
     /**
     * Loads a grid into the buffers
     * @param position The center of the grid
+    * @param uvStretch Texture stretch multiplier
     * @param spacing The spacing between vertices
     * @param rows How many rows for the grid
     * @param columns How many columns for the grid
@@ -30,6 +31,7 @@ protected:
     * @param tangents Whether to generate the tangent/bitangent
     */
     bool CreateGrid(const glm::vec3& position, 
+                    const glm::vec2& uvStretch,
                     float spacing,
                     int rows, 
                     int columns, 
@@ -50,11 +52,6 @@ protected:
     * @return the value at the given row/column
     */
     float Get(int row, int column) const;
-
-    /**
-    * @return whether the given row/column is valid
-    */
-    bool Valid(int row, int column) const;
 
     /**
     * @return the number of rows of the grid
@@ -91,6 +88,7 @@ private:
     */
     unsigned int GetIndex(int row, int column) const;
 
+    glm::vec2 m_uvStretch;                      ///< Texture stretch multiplier
     float m_spacing = 0.0f;                     ///< The spacing between vertices
     int m_columns = 0;                          ///< The number of columns of this mesh
     int m_rows = 0;                             ///< The number of rows of this mesh

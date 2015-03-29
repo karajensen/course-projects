@@ -16,7 +16,13 @@ namespace
         TEXTURE_V,
         NORMAL_X, 
         NORMAL_Y, 
-        NORMAL_Z
+        NORMAL_Z,
+        TANGENT_X,
+        TANGENT_Y,
+        TANGENT_Z,
+        BITANGENT_X,
+        BITANGENT_Y,
+        BITANGENT_Z
     };
 }
 
@@ -26,6 +32,7 @@ Grid::Grid(const std::string& name, int shader) :
 }
 
 bool Grid::CreateGrid(const glm::vec3& position, 
+                      const glm::vec2& uvStretch,
                       float spacing, 
                       int rows, 
                       int columns, 
@@ -45,6 +52,7 @@ bool Grid::CreateGrid(const glm::vec3& position,
     m_vertexComponentCount = tangents ? 14 : (normals ? 8 : 5);
     m_hasNormals = normals;
     m_hasTangents = tangents;
+    m_uvStretch = uvStretch;
 
     ResetGrid();
     return true;
@@ -88,12 +96,22 @@ void Grid::ResetGrid()
                 m_vertices[index + NORMAL_Z] = 0.0f;
             }
 
+            if (m_hasTangents)
+            {
+                m_vertices[index + TANGENT_X] = 1.0f;
+                m_vertices[index + TANGENT_Y] = 0.0f;
+                m_vertices[index + TANGENT_Z] = 0.0f;
+                m_vertices[index + BITANGENT_X] = 0.0f;
+                m_vertices[index + BITANGENT_Y] = 0.0f;
+                m_vertices[index + BITANGENT_Z] = 1.0f;
+            }
+
             index += m_vertexComponentCount;
-            u += 0.5;
+            u += 0.5 * m_uvStretch.x;
         }
 
         u = 0;
-        v += 0.5;
+        v += 0.5 * m_uvStretch.y;
     }
 
     index = 0;
@@ -130,12 +148,6 @@ float Grid::Get(int row, int column) const
     return m_vertices[GetIndex(row, column)];
 }
 
-bool Grid::Valid(int row, int column) const
-{
-    const auto index = GetIndex(row, column);
-    return index >= 0 && index < m_vertices.size();
-}
-
 int Grid::Rows() const
 {
     return m_rows;
@@ -158,7 +170,8 @@ void Grid::RecalculateNormals()
 
     assert(m_hasNormals);
 
-    glm::vec3 normal;
+    glm::vec3 normal, tangent, bitangent;
+
     for(int r = 0; r < m_rows-1; ++r)
     {
         for(int c = 0; c < m_columns-1; ++c)

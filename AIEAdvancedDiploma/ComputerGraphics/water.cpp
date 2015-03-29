@@ -34,7 +34,9 @@ Water::Water(const std::string& name, int shaderID) :
 
 bool Water::Initialise(const glm::vec3& position, float spacing, int rows, int columns)
 {
-    return CreateGrid(position, spacing, rows, columns, false, false) && MeshData::Initialise();
+    const glm::vec2 uvs(1.0f, 1.0f);
+    return CreateGrid(position, uvs, spacing, rows, columns, false, false) && 
+        MeshData::Initialise();
 }
 
 const std::vector<Water::Wave>& Water::Waves() const
