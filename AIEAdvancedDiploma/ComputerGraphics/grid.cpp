@@ -24,6 +24,22 @@ namespace
         BITANGENT_Y,
         BITANGENT_Z
     };
+
+    /**
+    * Utility function for multiplying a vector
+    */
+    glm::vec3 operator*(const glm::vec3& v, double x)
+    {
+        return v * glm::vec3(x, x, x);
+    }
+
+    /**
+    * Utility function for dividing a vector
+    */
+    glm::vec3 operator/(const glm::vec3& v, double x)
+    {
+        return v / glm::vec3(x, x, x);
+    }
 }
 
 Grid::Grid(const std::string& name, int shader) :
@@ -107,11 +123,11 @@ void Grid::ResetGrid()
             }
 
             index += m_vertexComponentCount;
-            u += 0.5 * m_uvStretch.x;
+            u += 0.5f * m_uvStretch.x;
         }
 
         u = 0;
-        v += 0.5 * m_uvStretch.y;
+        v += 0.5f * m_uvStretch.y;
     }
 
     index = 0;
@@ -163,37 +179,53 @@ const glm::vec3& Grid::Position() const
     return m_position;
 }
 
+glm::vec3 Grid::GetPosition(int index) const
+{
+    return glm::vec3(m_vertices[index + POS_X],
+        m_vertices[index + POS_Y], m_vertices[index + POS_Z]);
+}
+
+glm::vec3 Grid::GetNormal(int index) const
+{
+    return glm::vec3(m_vertices[index + NORMAL_X],
+        m_vertices[index + NORMAL_Y], m_vertices[index + NORMAL_Z]);
+}
+
+glm::vec3 Grid::GetTangent(int index) const
+{
+    return glm::vec3(m_vertices[index + TANGENT_X],
+        m_vertices[index + TANGENT_Y], m_vertices[index + TANGENT_Z]);
+}
+
+glm::vec2 Grid::GetUVs(int index) const
+{
+    return glm::vec2(m_vertices[index + TEXTURE_U],
+        m_vertices[index + TEXTURE_V]);
+}
+
 void Grid::RecalculateNormals()
 {
-    // For each triangle add the normal to the vertex
-    // No need to renormalise as it is done in the fragment shader
-
-    assert(m_hasNormals);
-
-    glm::vec3 normal, tangent, bitangent;
-
-    for(int r = 0; r < m_rows-1; ++r)
+    if (!m_hasNormals)
     {
-        for(int c = 0; c < m_columns-1; ++c)
+        return;
+    }
+
+    // For each triangle add the normal to the vertex
+    for (int r = 0; r < m_rows - 1; ++r)
+    {
+        for (int c = 0; c < m_columns - 1; ++c)
         {
             const int p1index = GetIndex(r, c);
-            const int p2index = GetIndex(r+1, c);
-            const int p3index = GetIndex(r, c+1);
-            const int p4index = GetIndex(r+1, c+1);
+            const int p2index = GetIndex(r + 1, c);
+            const int p3index = GetIndex(r, c + 1);
+            const int p4index = GetIndex(r + 1, c + 1);
 
-            const glm::vec3 p1(m_vertices[p1index+POS_X], 
-                m_vertices[p1index+POS_Y], m_vertices[p1index+POS_Z]);
+            const glm::vec3 p1(GetPosition(p1index));
+            const glm::vec3 p2(GetPosition(p2index));
+            const glm::vec3 p3(GetPosition(p3index));
+            const glm::vec3 p4(GetPosition(p4index));
 
-            const glm::vec3 p2(m_vertices[p2index+POS_X], 
-                m_vertices[p2index+POS_Y], m_vertices[p2index+POS_Z]);
-
-            const glm::vec3 p3(m_vertices[p3index+POS_X], 
-                m_vertices[p3index+POS_Y], m_vertices[p3index+POS_Z]);
-
-            const glm::vec3 p4(m_vertices[p4index+POS_X], 
-                m_vertices[p4index+POS_Y], m_vertices[p4index+POS_Z]);
-
-            normal = glm::cross(p1 - p2, p3 - p2);
+            glm::vec3 normal = glm::cross(p1 - p2, p3 - p2);
             normal = glm::normalize(normal);
 
             m_vertices[p1index + NORMAL_X] += normal.x;
@@ -222,6 +254,76 @@ void Grid::RecalculateNormals()
             m_vertices[p4index + NORMAL_X] += normal.x;
             m_vertices[p4index + NORMAL_Y] += normal.y;
             m_vertices[p4index + NORMAL_Z] += normal.z;
+        }
+    }
+
+    // For each triangle add the tangent to the vertex
+    if (m_hasTangents)
+    {
+        for (int r = 0; r < m_rows - 1; ++r)
+        {
+            for (int c = 0; c < m_columns - 1; ++c)
+            {
+                const int p0index = GetIndex(r, c);
+                const int p1index = GetIndex(r + 1, c);
+                const int p2index = GetIndex(r, c + 1);
+
+                const glm::vec3 p0(GetPosition(p0index));
+                const glm::vec3 p1(GetPosition(p1index));
+                const glm::vec3 p2(GetPosition(p2index));
+
+                const glm::vec2 uv0(GetUVs(p0index));
+                const glm::vec2 uv1(GetUVs(p1index));
+                const glm::vec2 uv2(GetUVs(p2index));
+
+                const glm::vec3 q1(p1 - p0);
+                const glm::vec3 q2(p2 - p0);
+                const double s1 = uv1.x - uv0.x;
+                const double s2 = uv2.x - uv0.x;
+                const double t1 = uv1.y - uv0.y;
+                const double t2 = uv2.y - uv0.y;
+
+                // Mathematics for 3D Game Programming and Computer Graphics p184
+                // Plane Equation is p - p0 = sT + tB
+                // Solve T using q1 = s1T + t1B and q2 = s2T + t2B
+                // Substitute B = (q1 - s1T) / t1 into q2 = s2T + t2B
+                // Rearranging T = (q2 - t2q1/t1) / (s2 - (t2s1/t1))
+                const glm::vec3 tangent = (q2 - ((q1 * t2) / t1)) / (s2 - ((t2 * s1) / t1));
+
+                m_vertices[p0index + TANGENT_X] += tangent.x;
+                m_vertices[p0index + TANGENT_Y] += tangent.y;
+                m_vertices[p0index + TANGENT_Z] += tangent.z;
+
+                m_vertices[p1index + TANGENT_X] += tangent.x;
+                m_vertices[p1index + TANGENT_Y] += tangent.y;
+                m_vertices[p1index + TANGENT_Z] += tangent.z;
+
+                m_vertices[p2index + TANGENT_X] += tangent.x;
+                m_vertices[p2index + TANGENT_Y] += tangent.y;
+                m_vertices[p2index + TANGENT_Z] += tangent.z;
+            }
+        }
+
+        for (unsigned int vertex = 0; vertex < m_vertices.size(); vertex += m_vertexComponentCount)
+        {
+            const glm::vec3 normal = glm::normalize(GetNormal(vertex));
+            m_vertices[vertex + NORMAL_X] = normal.x;
+            m_vertices[vertex + NORMAL_Y] = normal.y;
+            m_vertices[vertex + NORMAL_Z] = normal.z;                
+
+            if (m_hasTangents)
+            {
+                const glm::vec3 tangent = glm::normalize(GetTangent(vertex));
+                m_vertices[vertex + TANGENT_X] = tangent.x;
+                m_vertices[vertex + TANGENT_Y] = tangent.y;
+                m_vertices[vertex + TANGENT_Z] = tangent.z;                
+
+                // Bitangent is orthogonal to the normal/tangent
+                const glm::vec3 bitangent = glm::normalize(glm::cross(normal, tangent));
+                m_vertices[vertex + BITANGENT_X] = bitangent.x;
+                m_vertices[vertex + BITANGENT_Y] = bitangent.y;
+                m_vertices[vertex + BITANGENT_Z] = bitangent.z;
+            }
         }
     }
 }

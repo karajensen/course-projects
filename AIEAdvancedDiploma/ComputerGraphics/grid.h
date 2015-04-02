@@ -88,6 +88,34 @@ private:
     */
     unsigned int GetIndex(int row, int column) const;
 
+    /**
+    * Gets the position from the vertex
+    * @param index The index of the start of the vertex
+    * @return the position
+    */
+    glm::vec3 GetPosition(int index) const;
+
+    /**
+    * Gets the normal from the vertex
+    * @param index The index of the start of the vertex
+    * @return the normal
+    */
+    glm::vec3 GetNormal(int index) const;
+
+    /**
+    * Gets the tangent from the vertex
+    * @param index The index of the start of the vertex
+    * @return the tangent
+    */
+    glm::vec3 GetTangent(int index) const;
+
+    /**
+    * Gets the uvs from the vertex
+    * @param index The index of the start of the vertex
+    * @return the uvs
+    */
+    glm::vec2 GetUVs(int index) const;
+
     glm::vec2 m_uvStretch;                      ///< Texture stretch multiplier
     float m_spacing = 0.0f;                     ///< The spacing between vertices
     int m_columns = 0;                          ///< The number of columns of this mesh
