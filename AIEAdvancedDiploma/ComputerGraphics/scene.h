@@ -159,7 +159,13 @@ public:
     /**
     * Gets the texture index from the name
     */
-    int GetTexture(const std::string& name);
+    int GetTexture(const std::string& name) const;
+
+    /**
+    * @param name The name of the texture to get
+    * @return the texture 
+    */
+    const ProceduralTexture& GetProceduralTexture(const std::string& name) const;
 
     /**
     * Sets which post map will currently be rendered

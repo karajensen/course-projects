@@ -154,14 +154,9 @@ unsigned int Grid::GetIndex(int row, int column) const
         + (column * m_vertexComponentCount);
 }
 
-void Grid::Set(int row, int column, float height)
+void Grid::SetHeight(int row, int column, float height)
 {
-    m_vertices[GetIndex(row, column)] = height;
-}
-
-float Grid::Get(int row, int column) const
-{
-    return m_vertices[GetIndex(row, column)];
+    m_vertices[GetIndex(row, column) + POS_Y] = m_position.y + height;
 }
 
 int Grid::Rows() const

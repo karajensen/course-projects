@@ -146,7 +146,7 @@ bool SceneBuilder::InitialiseTextures()
     random.MakeRandomNormals();
     success &= random.Initialise();
 
-    auto& test = InitialiseTexture("test", Texture::NEAREST, 256);
+    auto& test = InitialiseTexture("heightmap", Texture::NEAREST, 256);
     test.MakeDiamondSquareFractal();
     success &= test.Initialise();
     
@@ -156,8 +156,8 @@ bool SceneBuilder::InitialiseTextures()
 bool SceneBuilder::InitialiseTerrain()
 {
     {
-        Terrain& terrain = InitialiseTerrain("sand", Shader::ID_BUMP, Terrain::DIAMOND_SQUARE,
-            glm::vec3(0.0f, -5.0f, 0.0f), glm::vec2(0.25f, 0.25f), 1.0f, 100);
+        Terrain& terrain = InitialiseTerrain("sand", "heightmap", Shader::ID_BUMP,
+            glm::vec3(0.0f, -5.0f, 0.0f), glm::vec2(0.25f, 0.25f), 0.0f, 0.5f, 1.0f, 100);
         terrain.SetTexture(MeshData::COLOUR, m_scene.GetTexture("blank"));
         terrain.SetTexture(MeshData::NORMAL, m_scene.GetTexture("bump"));
         terrain.Bump(20.0f);
@@ -333,16 +333,20 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
 }
 
 Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
+                                         const std::string& heightmap,
                                          int shaderID,
-                                         Terrain::Type type,
                                          const glm::vec3& position,
                                          const glm::vec2& uvStretch,
+                                         float minHeight,
+                                         float maxHeight,
                                          float spacing,
                                          int size)
 {
     Terrain& terrain = m_scene.Add(std::make_unique<Terrain>(name, shaderID));
-    if (!terrain.Initialise(type, position, uvStretch, spacing, size, true,
-        m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
+    const ProceduralTexture& texture = m_scene.GetProceduralTexture(heightmap);
+
+    if (!terrain.Initialise(texture.GetPixels(), position, uvStretch, minHeight, maxHeight, 
+        spacing, size, true, m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
     {
         LogError("Terrain: " + name + " failed initialisation");
     }

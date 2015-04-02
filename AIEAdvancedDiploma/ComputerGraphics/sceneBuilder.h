@@ -6,12 +6,12 @@
 
 #include <string>
 #include "texture.h"
-#include "terrain.h"
 
 class Scene;
 class Mesh;
 class Light;
 class Shader;
+class Terrain;
 class MeshData;
 class ProceduralTexture;
 struct EmitterData;
@@ -107,19 +107,23 @@ private:
     /**
     * Initialises terrain
     * @param name The name of the mesh
+    * @param heightmap The name of the height map
     * @param shaderID The shader to use
-    * @param type The type of terrain to create
     * @param position The center of the terrain
     * @param uvStretch The texture stretch multipliers
+    * @param minHeight The minimum height of the terrain
+    * @param maxHeight The maximum height of the terrain
     * @param spacing The spacing between vertices
     * @param size The number of vertices
     * @return The terrain initialised
     */
     Terrain& InitialiseTerrain(const std::string& name,
+                               const std::string& heightmap,
                                int shaderID,
-                               Terrain::Type type,
                                const glm::vec3& position,
                                const glm::vec2& uvStretch,
+                               float minHeight,
+                               float maxHeight,
                                float spacing,
                                int size);
     /**

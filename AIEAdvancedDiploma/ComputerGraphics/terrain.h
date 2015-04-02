@@ -14,14 +14,6 @@ class Terrain : public Grid
 public:
 
     /**
-    * The type of terrain to generate
-    */
-    enum Type
-    {
-        DIAMOND_SQUARE
-    };
-
-    /**
     * Constructor
     * @param name The name of the terrain
     * @param shaderID The id of the shader to use
@@ -30,18 +22,22 @@ public:
 
     /**
     * Initialises the terrain
-    * @param type The type of terrain algorithm to use
-    * @param uvStretch Texture stretch multiplier
+    * @param pixels The pixels of the height map
     * @param position The center of the grid
+    * @param uvStretch Texture stretch multiplier
+    * @param minHeight The minimum height of the terrain
+    * @param maxHeight The maximum height of the terrain
     * @param spacing The spacing between vertices
     * @param size How many rows/columns for the grid
     * @param hasNormals Whether the terrain requires normals
     * @param hasNormals Whether the terrain requires tangents
     * @return whether call was successful
     */
-    bool Initialise(Type type, 
+    bool Initialise(const std::vector<unsigned int>& pixels,
                     const glm::vec3& position,
                     const glm::vec2& uvStretch,
+                    float minHeight,
+                    float maxHeight,
                     float spacing, 
                     int size,
                     bool hasNormals,
@@ -49,9 +45,10 @@ public:
 
     /**
     * Reloads the terrain
+    * @param pixels The pixels of the height map
     * @return whether call was successful
     */
-    bool Reload();
+    bool Reload(const std::vector<unsigned int>& pixels);
 
     /**
     * @return Brightness of the specular highlights
@@ -103,15 +100,12 @@ private:
 
     /**
     * Generates terrain using the given type
+    * @param pixels The pixels of the height map
     */
-    void GenerateTerrain();
+    void GenerateTerrain(const std::vector<unsigned int>& pixels);
 
-    /**
-    * Generates terrain using the seamless diamond square algorithm
-    */
-    void GenerateDiamondSquareTerrain();
-
-    Type m_type;                   ///< The type of terrain to generate
+    float m_maxHeight = 1.0f;      ///< The maximum height of the terrain
+    float m_minHeight = 0.0f;      ///< The minimum height of the terrain
     float m_bump = 1.0f;           ///< Saturation of bump
     float m_caustics = 1.0f;       ///< How much of the caustics are visible
     float m_specularity = 1.0f;    ///< Brightness of the specular highlights

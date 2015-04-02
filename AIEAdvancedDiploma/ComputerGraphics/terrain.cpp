@@ -29,19 +29,22 @@ void Terrain::Caustics(float value)
     m_caustics = value;
 }
 
-bool Terrain::Initialise(Type type,
+bool Terrain::Initialise(const std::vector<unsigned int>& pixels,
                          const glm::vec3& position,
                          const glm::vec2& uvStretch,
+                         float minHeight,
+                         float maxHeight,
                          float spacing,
                          int size,
                          bool hasNormals,
                          bool hasTangents)
 {
-    m_type = type;
+    m_minHeight = minHeight;
+    m_maxHeight = maxHeight;
 
     if (CreateGrid(position, uvStretch, spacing, size, size, hasNormals, hasTangents))
     {
-        GenerateTerrain();
+        GenerateTerrain(pixels);
         RecalculateNormals();
         return MeshData::Initialise();
     }
@@ -49,23 +52,11 @@ bool Terrain::Initialise(Type type,
     return false;
 }
 
-void Terrain::GenerateTerrain()
-{
-    switch (m_type)
-    {
-    case DIAMOND_SQUARE:
-        GenerateDiamondSquareTerrain();
-        break;
-    default:
-        LogError("Unknown terrain type");
-    }
-}
-
-bool Terrain::Reload()
+bool Terrain::Reload(const std::vector<unsigned int>& pixels)
 {
     ResetGrid();
 
-    GenerateTerrain();
+    GenerateTerrain(pixels);
 
     return MeshData::Reload();
 }
@@ -90,15 +81,24 @@ float Terrain::Caustics() const
     return m_caustics;
 }
 
-void Terrain::GenerateDiamondSquareTerrain()
+void Terrain::GenerateTerrain(const std::vector<unsigned int>& pixels)
 {
+    assert(Rows() == Columns());
 
+    const int gridSize = Rows();
+    const int mapSize = static_cast<int>(sqrt(static_cast<double>(pixels.size())));
+    const double stepIncrease = static_cast<double>(mapSize / gridSize);
+    double step = 0.0;
 
-
-
-
-
-
-
-
+    for (int r = 0; r < gridSize; ++r)
+    {
+        for (int c = 0; c < gridSize; ++c)
+        {
+            const int index = static_cast<int>(std::round(step));
+            const float colour = Clamp((pixels[index] & 0xFF) / 255.0f, 0.0f, 1.0f);
+            const float height = ConvertRange(colour, 0.0f, 1.0f, m_minHeight, m_maxHeight);
+            SetHeight(r, c, height);
+            step += stepIncrease;
+        }
+    }
 }

@@ -76,6 +76,11 @@ bool ProceduralTexture::SaveTexture()
     }
 }
 
+const std::vector<unsigned int>& ProceduralTexture::GetPixels() const
+{
+    return m_pixels;
+}
+
 void ProceduralTexture::SetRed(unsigned int index, int value)
 {
     Set(index, value, GreenAsInt(index),
@@ -230,6 +235,7 @@ void ProceduralTexture::MakeRandomNormals()
         SetGreen(i, colour.y);
         SetBlue(i, colour.z);
     }
+    LogInfo("Texture: " + Name() + " generated");
 }
 
 void ProceduralTexture::MakeDiamondSquareFractal()
@@ -347,4 +353,5 @@ void ProceduralTexture::MakeDiamondSquareFractal()
         size = half;
         half = size / 2;
     }   
+    LogInfo("Texture: " + Name() + " generated");
 }

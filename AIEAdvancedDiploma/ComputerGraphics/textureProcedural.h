@@ -44,6 +44,11 @@ public:
     bool SaveTexture();
 
     /**
+    * @return the pixels of the texture
+    */
+    const std::vector<unsigned int>& GetPixels() const;
+
+    /**
     * Creates a texture of random normals used for ambient occlusion
     */
     void MakeRandomNormals();
