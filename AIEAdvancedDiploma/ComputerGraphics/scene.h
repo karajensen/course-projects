@@ -162,12 +162,6 @@ public:
     int GetTexture(const std::string& name) const;
 
     /**
-    * @param name The name of the texture to get
-    * @return the texture 
-    */
-    const ProceduralTexture& GetProceduralTexture(const std::string& name) const;
-
-    /**
     * Sets which post map will currently be rendered
     * @param map Which map to render
     */
@@ -183,6 +177,11 @@ public:
     * @return whether initialisation was successful
     */
     bool Initialise();
+
+    /**
+    * Reloads the scene
+    */
+    void Reload();
 
 private:
 

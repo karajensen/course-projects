@@ -4,8 +4,12 @@
 
 #include "terrain.h"
 
-Terrain::Terrain(const std::string& name, int shaderID) :
-    Grid(name, shaderID)
+Terrain::Terrain(const std::string& name, 
+                 int shaderID,
+                 const std::vector<unsigned int>& pixels) :
+
+    Grid(name, shaderID),
+    m_pixels(pixels)
 {
 }
 
@@ -29,8 +33,7 @@ void Terrain::Caustics(float value)
     m_caustics = value;
 }
 
-bool Terrain::Initialise(const std::vector<unsigned int>& pixels,
-                         const glm::vec3& position,
+bool Terrain::Initialise(const glm::vec3& position,
                          const glm::vec2& uvStretch,
                          float minHeight,
                          float maxHeight,
@@ -44,7 +47,7 @@ bool Terrain::Initialise(const std::vector<unsigned int>& pixels,
 
     if (CreateGrid(position, uvStretch, spacing, size, size, hasNormals, hasTangents))
     {
-        GenerateTerrain(pixels);
+        GenerateTerrain();
         RecalculateNormals();
         return MeshData::Initialise();
     }
@@ -52,13 +55,14 @@ bool Terrain::Initialise(const std::vector<unsigned int>& pixels,
     return false;
 }
 
-bool Terrain::Reload(const std::vector<unsigned int>& pixels)
+void Terrain::Reload()
 {
     ResetGrid();
-
-    GenerateTerrain(pixels);
-
-    return MeshData::Reload();
+    GenerateTerrain();
+    RecalculateNormals();
+    MeshData::Reload() ?
+        LogInfo("Terrain: Reload succeeded for " + Name()) :
+        LogError("Terrain: Reload failed for " + Name());
 }
 
 float Terrain::Specularity() const
@@ -81,12 +85,12 @@ float Terrain::Caustics() const
     return m_caustics;
 }
 
-void Terrain::GenerateTerrain(const std::vector<unsigned int>& pixels)
+void Terrain::GenerateTerrain()
 {
     assert(Rows() == Columns());
 
     const int gridSize = Rows();
-    const int mapSize = static_cast<int>(sqrt(static_cast<double>(pixels.size())));
+    const int mapSize = static_cast<int>(sqrt(static_cast<double>(m_pixels.size())));
     const double stepIncrease = static_cast<double>(mapSize / gridSize);
     double step = 0.0;
 
@@ -95,7 +99,7 @@ void Terrain::GenerateTerrain(const std::vector<unsigned int>& pixels)
         for (int c = 0; c < gridSize; ++c)
         {
             const int index = static_cast<int>(std::round(step));
-            const float colour = Clamp((pixels[index] & 0xFF) / 255.0f, 0.0f, 1.0f);
+            const float colour = Clamp((m_pixels[index] & 0xFF) / 255.0f, 0.0f, 1.0f);
             const float height = ConvertRange(colour, 0.0f, 1.0f, m_minHeight, m_maxHeight);
             SetHeight(r, c, height);
             step += stepIncrease;

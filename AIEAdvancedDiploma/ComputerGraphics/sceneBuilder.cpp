@@ -142,13 +142,16 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
     success &= InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
 
-    auto& random = InitialiseTexture("random", Texture::NEAREST, Texture::RANDOM_SIZE, Texture::ID_RANDOM);
-    random.MakeRandomNormals();
-    success &= random.Initialise();
-
-    auto& test = InitialiseTexture("heightmap", Texture::NEAREST, 256);
-    test.MakeDiamondSquareFractal();
-    success &= test.Initialise();
+    {
+        auto& texture = InitialiseTexture("random", Texture::NEAREST,
+            ProceduralTexture::RANDOM, Texture::RANDOM_SIZE, Texture::ID_RANDOM);
+        success &= texture.Initialise();
+    }
+    {
+        auto& texture = InitialiseTexture("heightmap", Texture::NEAREST,
+            ProceduralTexture::DIAMOND_SQUARE, 256);
+        success &= texture.Initialise();
+    }
     
     return success && InitialiseCaustics();
 }
@@ -293,11 +296,12 @@ bool SceneBuilder::InitialiseTexture(const std::string& name,
 
 ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name, 
                                                    Texture::Filter filter,
+                                                   ProceduralTexture::Type type,
                                                    int size,
                                                    int index)
 {
     return m_scene.Add(std::make_unique<ProceduralTexture>(
-            name, GENERATED_TEXTURES + name + ".bmp", size, filter), index);
+            name, GENERATED_TEXTURES + name + ".bmp", size, filter, type), index);
 }
 
 Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
@@ -342,10 +346,16 @@ Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
                                          float spacing,
                                          int size)
 {
-    Terrain& terrain = m_scene.Add(std::make_unique<Terrain>(name, shaderID));
-    const ProceduralTexture& texture = m_scene.GetProceduralTexture(heightmap);
+    const int ID = m_scene.GetTexture(heightmap);
+    if (ID == NO_INDEX)
+    {
+        LogError("Terrain: " + name + " could not find texture " + heightmap);
+    }
 
-    if (!terrain.Initialise(texture.GetPixels(), position, uvStretch, minHeight, maxHeight, 
+    Terrain& terrain = m_scene.Add(std::make_unique<Terrain>(name, shaderID, 
+        m_scene.GetTexture(ID).GetPixels()));
+
+    if (!terrain.Initialise(position, uvStretch, minHeight, maxHeight, 
         spacing, size, true, m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
     {
         LogError("Terrain: " + name + " failed initialisation");

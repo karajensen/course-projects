@@ -5,7 +5,7 @@
 #pragma once
 
 #include <string>
-#include "texture.h"
+#include "textureProcedural.h"
 
 class Scene;
 class Mesh;
@@ -13,7 +13,6 @@ class Light;
 class Shader;
 class Terrain;
 class MeshData;
-class ProceduralTexture;
 struct EmitterData;
 
 /**
@@ -173,6 +172,7 @@ private:
     */
     ProceduralTexture& InitialiseTexture(const std::string& name, 
                                          Texture::Filter filter,
+                                         ProceduralTexture::Type type,
                                          int size,
                                          int index = NO_INDEX);
 

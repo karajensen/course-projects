@@ -17,12 +17,13 @@ public:
     * Constructor
     * @param name The name of the terrain
     * @param shaderID The id of the shader to use
+    * @param pixels The pixels of the height map
     */
-    Terrain(const std::string& name, int shaderID);
+    Terrain(const std::string& name, int shaderID,
+        const std::vector<unsigned int>& pixels);
 
     /**
     * Initialises the terrain
-    * @param pixels The pixels of the height map
     * @param position The center of the grid
     * @param uvStretch Texture stretch multiplier
     * @param minHeight The minimum height of the terrain
@@ -33,8 +34,7 @@ public:
     * @param hasNormals Whether the terrain requires tangents
     * @return whether call was successful
     */
-    bool Initialise(const std::vector<unsigned int>& pixels,
-                    const glm::vec3& position,
+    bool Initialise(const glm::vec3& position,
                     const glm::vec2& uvStretch,
                     float minHeight,
                     float maxHeight,
@@ -45,10 +45,8 @@ public:
 
     /**
     * Reloads the terrain
-    * @param pixels The pixels of the height map
-    * @return whether call was successful
     */
-    bool Reload(const std::vector<unsigned int>& pixels);
+    void Reload();
 
     /**
     * @return Brightness of the specular highlights
@@ -100,14 +98,15 @@ private:
 
     /**
     * Generates terrain using the given type
-    * @param pixels The pixels of the height map
     */
-    void GenerateTerrain(const std::vector<unsigned int>& pixels);
+    void GenerateTerrain();
 
-    float m_maxHeight = 1.0f;      ///< The maximum height of the terrain
-    float m_minHeight = 0.0f;      ///< The minimum height of the terrain
-    float m_bump = 1.0f;           ///< Saturation of bump
-    float m_caustics = 1.0f;       ///< How much of the caustics are visible
-    float m_specularity = 1.0f;    ///< Brightness of the specular highlights
-    float m_ambience = 1.0f;       ///< Ambient light multiplier
+    float m_maxHeight = 1.0f;   ///< The maximum height of the terrain
+    float m_minHeight = 0.0f;   ///< The minimum height of the terrain
+    float m_bump = 1.0f;        ///< Saturation of bump
+    float m_caustics = 1.0f;    ///< How much of the caustics are visible
+    float m_specularity = 1.0f; ///< Brightness of the specular highlights
+    float m_ambience = 1.0f;    ///< Ambient light multiplier
+
+    const std::vector<unsigned int>& m_pixels; ///< The pixel of the height map
 };                                

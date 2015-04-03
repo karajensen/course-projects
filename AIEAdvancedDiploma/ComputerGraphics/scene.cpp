@@ -159,16 +159,6 @@ Texture& Scene::GetTexture(int index)
     return *m_data->textures[index];
 }
 
-const ProceduralTexture& Scene::GetProceduralTexture(const std::string& name) const
-{
-    const Texture& texture = *m_data->textures[GetTexture(name)];
-    if (texture.IsProcedural())
-    {
-        LogError("Texture is not procedural");
-    }
-    return static_cast<const ProceduralTexture&>(texture);
-}
-
 int Scene::GetTexture(const std::string& name) const
 {
     for (unsigned int i = 0; i < m_data->textures.size(); ++i)
@@ -250,7 +240,23 @@ void Scene::SaveTextures()
     {
         if (texture->IsProcedural())
         {
-            static_cast<ProceduralTexture&>(*texture).SaveTexture();
+            texture->Save();
         }
+    }
+}
+
+void Scene::Reload()
+{
+    for (auto& texture : m_data->textures)
+    {
+        if (texture->IsProcedural())
+        {
+            texture->Reload();
+        }
+    }
+
+    for (auto& terrain : m_data->terrain)
+    {
+        terrain->Reload();
     }
 }

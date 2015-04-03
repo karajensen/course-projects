@@ -90,8 +90,22 @@ bool Texture::InitialiseFromFile()
 
 bool Texture::InitialiseFromPixels()
 {
-    LogError("Texture::InitialiseFromPixels unsupported");
-    return false;
+    throw std::exception("Texture::InitialiseFromPixels not implemented");
+}
+
+void Texture::Reload()
+{
+    throw std::exception("Texture::Reload not implemented");
+}
+
+void Texture::Save()
+{
+    throw std::exception("Texture::Save not implemented");
+}
+
+const std::vector<unsigned int>& Texture::GetPixels() const
+{
+    throw std::exception("Texture::GetPixels not implemented");
 }
 
 bool Texture::SetFiltering()

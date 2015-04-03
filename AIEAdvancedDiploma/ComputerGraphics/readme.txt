@@ -27,6 +27,7 @@ INPUT:
 1 -> 9     Render a specific layer
 0          Toggle Wireframe
 P          Save procedural textures to file
+O          Reload the procedural scene
 WASDQE     Move the camera
 LMC        Rotate the camera
 

@@ -14,17 +14,28 @@ class ProceduralTexture : public Texture
 public:
 
     /**
+    * Avaliable types
+    */
+    enum Type
+    {
+        RANDOM,
+        DIAMOND_SQUARE
+    };
+
+    /**
     * Constructor for a procedurally generated texture
     * @param name The filename of the texture
     * @param path The full path to save the texture
     * @param size The dimensions of the texture
     * @param type The type of texture to make
     * @param filter The type of filtering for this texture
+    * @Param type The type of texture to create
     */
     ProceduralTexture(const std::string& name, 
                       const std::string& path,
                       int size,
-                      Filter filter);
+                      Filter filter,
+                      Type type);
                      
     /**
     * Destructor
@@ -32,21 +43,32 @@ public:
     ~ProceduralTexture();
 
     /**
-    * Reloads the texture from pixels
-    * @return whether reloading was successful
+    * Reloads the texture
     */
-    bool ReloadPixels();
+    virtual void Reload() override;
 
     /**
     * Saves a texture to file from its pixels
-    * @return whether saving was successful
     */
-    bool SaveTexture();
+    virtual void Save() override;
 
     /**
     * @return the pixels of the texture
     */
-    const std::vector<unsigned int>& GetPixels() const;
+    virtual const std::vector<unsigned int>& GetPixels() const override;
+
+private:
+
+    /**
+    * Prevent copying
+    */
+    ProceduralTexture(const ProceduralTexture&) = delete;
+    ProceduralTexture& operator=(const ProceduralTexture&) = delete;
+
+    /**
+    * Generates the texture
+    */
+    void Generate();
 
     /**
     * Creates a texture of random normals used for ambient occlusion
@@ -58,13 +80,11 @@ public:
     */
     void MakeDiamondSquareFractal();
 
-private:
-
     /**
-    * Prevent copying
+    * Reloads the texture from pixels
+    * @return whether reloading was successful
     */
-    ProceduralTexture(const ProceduralTexture&) = delete;
-    ProceduralTexture& operator=(const ProceduralTexture&) = delete;
+    bool ReloadPixels();
 
     /**
     * Initialises the texture from pixels
@@ -139,4 +159,5 @@ private:
 
     std::vector<unsigned int> m_pixels; ///< pixels of the texture
     int m_size = 0;                     ///< Dimensions of the texture
+    Type m_type;                        ///< The type of texture this is
 };

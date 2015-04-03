@@ -100,6 +100,24 @@ public:
     */
     GLuint GetID() const;
 
+    /**
+    * Reloads the texture
+    * @throw not implemented exception
+    */
+    virtual void Reload();
+
+    /**
+    * Saves a texture to file from its pixels
+    * @throw not implemented exception
+    */
+    virtual void Save();
+
+    /**
+    * @return the pixels of the texture
+    * @throw not implemented exception
+    */
+    virtual const std::vector<unsigned int>& GetPixels() const;
+
 protected:
 
     /**
@@ -138,6 +156,7 @@ private:
     /**
     * Initialises the texture from pixels
     * @return whether initialisation was successful
+    * @throw not implemented exception
     */
     virtual bool InitialiseFromPixels();
 

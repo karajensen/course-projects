@@ -9,17 +9,33 @@
 ProceduralTexture::ProceduralTexture(const std::string& name, 
                                      const std::string& path, 
                                      int size, 
-                                     Filter filter) :
+                                     Filter filter,
+                                     Type type) :
 
     Texture(name, path, PROCEDURAL, filter),
-    m_size(size)
+    m_size(size),
+    m_type(type)
 {
     m_pixels.resize(size * size);
     m_pixels.assign(m_pixels.size(), 0);
+    Generate();
 }
 
 ProceduralTexture::~ProceduralTexture()
 {
+}
+
+void ProceduralTexture::Generate()
+{
+    switch (m_type)
+    {
+    case RANDOM:
+        MakeRandomNormals();
+        break;
+    case DIAMOND_SQUARE:
+        MakeDiamondSquareFractal();
+        break;
+    }
 }
 
 bool ProceduralTexture::InitialiseFromPixels()
@@ -51,7 +67,15 @@ bool ProceduralTexture::ReloadPixels()
     return true;
 }
 
-bool ProceduralTexture::SaveTexture()
+void ProceduralTexture::Reload()
+{
+    Generate();
+    ReloadPixels() ?
+        LogInfo("Texture: Reload succeeded for " + Name()) :
+        LogError("Texture: Reload failed for " + Name());
+}
+
+void ProceduralTexture::Save()
 {
     const int channels = 3;
     std::vector<unsigned char> data(m_pixels.size() * channels);
@@ -67,12 +91,10 @@ bool ProceduralTexture::SaveTexture()
         m_size, m_size, channels, &data[0]) == 0)
     {
         LogError("Failed to save " + Name());
-        return false;
     }
     else
     {
         LogInfo("Saved texture " + Path());
-        return true;
     }
 }
 

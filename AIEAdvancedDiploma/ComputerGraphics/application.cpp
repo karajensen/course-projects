@@ -103,6 +103,9 @@ void Application::InitialiseInput()
     m_input->AddCallback(GLFW_KEY_P, false, 
         [this](){ m_scene->SaveTextures(); });
 
+    m_input->AddCallback(GLFW_KEY_O, false, 
+        [this](){ m_scene->Reload(); });
+
     m_input->AddCallback(GLFW_KEY_W, true, 
         [this](){ m_camera->Forward(-m_deltaTime); });
 
