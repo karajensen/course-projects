@@ -250,11 +250,10 @@ void OpenGL::RenderPostProcessing()
     postShader.SendUniform("depthOfFieldMask", post.Mask(PostProcessing::DOF_MAP));
     postShader.SendUniform("fogMask", post.Mask(PostProcessing::FOG_MAP));
     postShader.SendUniform("bloomMask", post.Mask(PostProcessing::BLOOM_MAP));
-    postShader.SendUniform("ambienceMask", post.Mask(PostProcessing::AMBIENCE_MAP));
 
     postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
-    postShader.SendTexture(1, *m_effectsTarget, RenderTarget::EFFECTS_ID);
-    postShader.SendTexture(2, *m_blurTarget);
+    postShader.SendTexture(1, *m_blurTarget, RenderTarget::BLUR_ID);
+    postShader.SendTexture(2, *m_sceneTarget, RenderTarget::NORMAL_ID);
 
     m_backBuffer->SetActive();
     m_screenQuad->PreRender();
@@ -262,8 +261,8 @@ void OpenGL::RenderPostProcessing()
     m_screenQuad->Render();
 
     postShader.ClearTexture(0, *m_effectsTarget);
-    postShader.ClearTexture(1, *m_effectsTarget);
-    postShader.ClearTexture(2, *m_blurTarget);
+    postShader.ClearTexture(1, *m_blurTarget);
+    postShader.ClearTexture(2, *m_sceneTarget);
 }
 
 void OpenGL::RenderBlur()
@@ -310,13 +309,10 @@ void OpenGL::RenderPreEffects()
     auto& preShader = m_scene.GetShader(Shader::ID_PRE_PROCESSING);
     const auto& post = m_scene.Post();
     
-    preShader.SendUniform("normalMask", post.Mask(PostProcessing::NORMAL_MAP));
     preShader.SendUniform("bloomStart", post.BloomStart());
     preShader.SendUniform("bloomFade", post.BloomFade());
 
     preShader.SendTexture(0, *m_sceneTarget, RenderTarget::SCENE_ID);
-    preShader.SendTexture(1, *m_sceneTarget, RenderTarget::NORMAL_ID);
-    preShader.SendTexture(2, m_scene.GetTexture(Texture::ID_RANDOM).GetID(), false);
     
     m_effectsTarget->SetActive();
     m_screenQuad->PreRender();
@@ -324,7 +320,6 @@ void OpenGL::RenderPreEffects()
     m_screenQuad->Render();
 
     preShader.ClearTexture(0, *m_sceneTarget);
-    preShader.ClearTexture(1, *m_sceneTarget);
 }
 
 void OpenGL::UpdateShader(const glm::mat4& world)

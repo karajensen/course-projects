@@ -37,7 +37,6 @@ Scene::Scene() :
     m_data->lights.resize(Light::MAX_LIGHTS);
     m_data->shaders.resize(Shader::MAX_SHADERS);
     m_data->animation.resize(Animation::MAX_ANIMATION);
-    m_data->textures.resize(Texture::MAX_TEXTURES);
     m_data->post = std::make_unique<PostProcessing>();
 }
 
@@ -84,17 +83,10 @@ Mesh& Scene::Add(std::unique_ptr<Mesh> element)
     return *m_data->meshes[m_data->meshes.size()-1];
 }
 
-ProceduralTexture& Scene::Add(std::unique_ptr<ProceduralTexture> element, int index)
+ProceduralTexture& Scene::Add(std::unique_ptr<ProceduralTexture> element)
 {
-    if (index == NO_INDEX)
-    {
-        index = m_data->textures.size();
-        m_data->textures.push_back(std::move(element));
-    }
-    else
-    {
-        m_data->textures[index] = std::move(element);
-    }
+    const int index = m_data->textures.size();
+    m_data->textures.push_back(std::move(element));
     return static_cast<ProceduralTexture&>(*m_data->textures[index]);
 }
 

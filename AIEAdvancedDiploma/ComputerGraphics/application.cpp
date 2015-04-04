@@ -89,12 +89,9 @@ void Application::InitialiseInput()
         [this](){ m_scene->SetPostMap(PostProcessing::BLOOM_MAP); });
 
     m_input->AddCallback(GLFW_KEY_7, false, 
-        [this](){ m_scene->SetPostMap(PostProcessing::AMBIENCE_MAP); });
-
-    m_input->AddCallback(GLFW_KEY_8, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::FOG_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_9, false, 
+    m_input->AddCallback(GLFW_KEY_8, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::DOF_MAP); });
 
     m_input->AddCallback(GLFW_KEY_0, false, 

@@ -132,10 +132,9 @@ public:
     /**
     * Adds a texture to the scene
     * @param element The element to add to the scene
-    * @param index The optional index to add the texture at
-    * @return the index the texture was added at
+    * @return the texture added
     */
-    ProceduralTexture& Add(std::unique_ptr<ProceduralTexture> element, int index = NO_INDEX);
+    ProceduralTexture& Add(std::unique_ptr<ProceduralTexture> element);
 
     /**
     * @param index The index of the shader to get

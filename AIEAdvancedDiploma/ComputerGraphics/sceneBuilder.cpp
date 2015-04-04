@@ -69,9 +69,6 @@ bool SceneBuilder::InitialiseLighting()
 bool SceneBuilder::InitialiseShaderConstants()
 {
     const auto& post = m_scene.Post();
-    const float randomU = WINDOW_WIDTH / static_cast<float>(Texture::RANDOM_SIZE);
-    const float randomV = WINDOW_HEIGHT / static_cast<float>(Texture::RANDOM_SIZE);
-
     Shader::ShaderConstants constants = 
     {
         std::make_pair("MAX_LIGHTS", std::to_string(Light::MAX_LIGHTS)),
@@ -80,16 +77,13 @@ bool SceneBuilder::InitialiseShaderConstants()
         std::make_pair("WINDOW_HEIGHT", std::to_string(WINDOW_HEIGHT)),
         std::make_pair("SAMPLES", std::to_string(MULTISAMPLING_COUNT)),
         std::make_pair("SCENE_TEXTURES", std::to_string(RenderTarget::SCENE_TEXTURES)),
-        std::make_pair("EFFECTS_TEXTURES", std::to_string(RenderTarget::EFFECTS_TEXTURES)),
         std::make_pair("ID_COLOUR", std::to_string(RenderTarget::SCENE_ID)),
         std::make_pair("ID_NORMAL", std::to_string(RenderTarget::NORMAL_ID)),
-        std::make_pair("ID_EFFECTS", std::to_string(RenderTarget::EFFECTS_ID)),
         std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
         std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
         std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),
         std::make_pair("WEIGHT3", std::to_string(post.BlurWeight(3))),
         std::make_pair("WEIGHT4", std::to_string(post.BlurWeight(4))),
-        std::make_pair("RANDOM_UVS", std::to_string(randomU) + "," + std::to_string(randomV))
     };
 
     Shader::InitialiseConstants(constants);
@@ -142,11 +136,6 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
     success &= InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
 
-    {
-        auto& texture = InitialiseTexture("random", Texture::NEAREST,
-            ProceduralTexture::RANDOM, Texture::RANDOM_SIZE, Texture::ID_RANDOM);
-        success &= texture.Initialise();
-    }
     {
         auto& texture = InitialiseTexture("heightmap", Texture::NEAREST,
             ProceduralTexture::DIAMOND_SQUARE, 256);
@@ -297,11 +286,10 @@ bool SceneBuilder::InitialiseTexture(const std::string& name,
 ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name, 
                                                    Texture::Filter filter,
                                                    ProceduralTexture::Type type,
-                                                   int size,
-                                                   int index)
+                                                   int size)
 {
     return m_scene.Add(std::make_unique<ProceduralTexture>(
-            name, GENERATED_TEXTURES + name + ".bmp", size, filter, type), index);
+            name, GENERATED_TEXTURES + name + ".bmp", size, filter, type));
 }
 
 Mesh& SceneBuilder::InitialiseMesh(const std::string& name,

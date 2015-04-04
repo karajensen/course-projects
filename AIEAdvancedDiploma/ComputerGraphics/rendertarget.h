@@ -19,12 +19,12 @@ public:
     */
     enum AttachedTextureData
     {
-        EFFECTS_TEXTURES = 2,
         SCENE_TEXTURES = 2,
+        EFFECTS_TEXTURES = 1,
         BLUR_TEXTURES = 1,
         SCENE_ID = 0,
-        NORMAL_ID = 1,
-        EFFECTS_ID = 1
+        BLUR_ID = 0,
+        NORMAL_ID = 1
     };
 
     /**

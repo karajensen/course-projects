@@ -36,23 +36,6 @@ public:
     };
 
     /**
-    * Special textures that are not attached to a mesh 
-    */
-    enum Index
-    {
-        ID_RANDOM,
-        MAX_TEXTURES
-    };
-
-    /**
-    * Dimensions of the procedural textures
-    */
-    enum ProceduralSize
-    {
-        RANDOM_SIZE = 128
-    };
-
-    /**
     * Constructor for a texture
     * @param name The filename of the texture
     * @param path The full path to the texture

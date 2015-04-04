@@ -167,14 +167,12 @@ private:
     * @param type The image type of the texture
     * @param filter The type of filtering to use
     * @param size The size of the texture
-    * @param index The optional index to initialise the texture at
     * @return The procedural texture
     */
     ProceduralTexture& InitialiseTexture(const std::string& name, 
                                          Texture::Filter filter,
                                          ProceduralTexture::Type type,
-                                         int size,
-                                         int index = NO_INDEX);
+                                         int size);
 
     /**
     * Initialises an emitter
