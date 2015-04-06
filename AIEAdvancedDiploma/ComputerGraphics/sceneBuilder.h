@@ -7,13 +7,13 @@
 #include <string>
 #include "textureProcedural.h"
 
-class Scene;
 class Mesh;
 class Light;
 class Shader;
 class Terrain;
 class MeshData;
 struct EmitterData;
+struct SceneData;
 
 /**
 * Builds all objects and diagnostics for the scene
@@ -22,7 +22,15 @@ class SceneBuilder
 {
 public:
 
-    SceneBuilder(Scene& scene);
+    /**
+    * Constructor
+    * @param data All information for the scene
+    */
+    SceneBuilder(SceneData& data);
+
+    /**
+    * Destructor
+    */
     ~SceneBuilder();
 
     /**
@@ -108,10 +116,10 @@ private:
     * @param name The name of the mesh
     * @param heightmap The name of the height map
     * @param shaderID The shader to use
-    * @param position The center of the terrain
     * @param uvStretch The texture stretch multipliers
-    * @param minHeight The minimum height of the terrain
-    * @param maxHeight The maximum height of the terrain
+    * @param height The height the terrain is rendered at
+    * @param minHeight The minimum height offset of the terrain
+    * @param maxHeight The maximum height offset of the terrain
     * @param spacing The spacing between vertices
     * @param size The number of vertices
     * @return The terrain initialised
@@ -119,8 +127,8 @@ private:
     Terrain& InitialiseTerrain(const std::string& name,
                                const std::string& heightmap,
                                int shaderID,
-                               const glm::vec3& position,
                                const glm::vec2& uvStretch,
+                               float height,
                                float minHeight,
                                float maxHeight,
                                float spacing,
@@ -188,5 +196,5 @@ private:
                            const std::vector<int>& textures,
                            const EmitterData& data);
 
-    Scene& m_scene; ///< The scene to build
+    SceneData& m_data; ///< The scene to build
 };                     

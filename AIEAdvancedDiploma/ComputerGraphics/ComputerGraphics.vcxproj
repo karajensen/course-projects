@@ -108,7 +108,9 @@
     <ClInclude Include="rendertarget.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="sceneBuilder.h" />
+    <ClInclude Include="sceneData.h" />
     <ClInclude Include="sceneInterface.h" />
+    <ClInclude Include="sceneUpdater.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="terrain.h" />
     <ClInclude Include="texture.h" />
@@ -134,6 +136,7 @@
     <ClCompile Include="rendertarget.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="sceneBuilder.cpp" />
+    <ClCompile Include="sceneUpdater.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="terrain.cpp" />
     <ClCompile Include="texture.cpp" />

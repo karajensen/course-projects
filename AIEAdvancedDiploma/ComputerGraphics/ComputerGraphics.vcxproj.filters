@@ -70,6 +70,9 @@
     <ClCompile Include="textureProcedural.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="sceneUpdater.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -145,6 +148,12 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="textureProcedural.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="sceneUpdater.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="sceneData.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

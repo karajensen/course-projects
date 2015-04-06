@@ -55,7 +55,7 @@ bool Application::Initialise()
         return false;
     }
 
-    if (!m_scene->Initialise())
+    if (!m_scene->Initialise(m_camera->Position()))
     {
         LogError("Could not initialise scene");
         return false;

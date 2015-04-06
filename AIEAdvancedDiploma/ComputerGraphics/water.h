@@ -36,12 +36,19 @@ public:
 
     /**
     * Initialises the water
-    * @param position The center of the grid
+    * @param height The height of the water
     * @param spacing The spacing between vertices
-    * @param rows How many rows for the grid
-    * @param columns How many columns for the grid
+    * @param size How many rows/columns for the grid
     */
-    bool Initialise(const glm::vec3& position, float spacing, int rows, int columns);
+    bool Initialise(float height, float spacing, int size);
+
+    /**
+    * Sets the position of the water
+    * @param position The world position of the center
+    * @param flippedX Whether to flip the water in the x axis for tiling
+    * @param flippedZ Whether to flip the water in the z axis for tiling
+    */
+    void Set(const glm::vec2& position, bool flippedX, bool flippedZ);
 
     /**
     * @return The Wave information for the water
@@ -93,6 +100,23 @@ public:
     */
     float Bump() const;
 
+    /**
+    * Adds a new instance for the water
+    * @param position The world position of the center
+    * @param flippedX Whether to flip the water in the x axis for tiling
+    * @param flippedZ Whether to flip the water in the z axis for tiling
+    */
+    void AddInstance(const glm::vec2& position, bool flippedX, bool flippedZ);
+
+    /**
+    * Sets the instance of the water
+    * @param index The index of the instance to set
+    * @param position The world position of the center
+    * @param flippedX Whether to flip the water in the x axis for tiling
+    * @param flippedZ Whether to flip the water in the z axis for tiling
+    */
+    void SetInstance(int index, const glm::vec2& position, bool flippedX, bool flippedZ);
+
 private:
 
     /**
@@ -101,6 +125,7 @@ private:
     Water(const Water&) = delete;
     Water& operator=(const Water&) = delete;
 
+    float m_height = 0.0f;               ///< The initial height of the terrain
     float m_speed = 0.0f;                ///< Overall speed of the wave
     float m_bump = 0.0f;                 ///< Saturation of bump
     glm::vec2 m_bumpVelocity;            ///< Velocity of the bump movement

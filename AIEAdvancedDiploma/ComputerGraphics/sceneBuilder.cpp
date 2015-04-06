@@ -3,17 +3,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "sceneBuilder.h"
-#include "scene.h"
-#include "mesh.h"
-#include "shader.h"
-#include "light.h"
-#include "texture.h"
-#include "water.h"
-#include "emitter.h"
-#include "terrain.h"
-#include "animation.h"
+#include "sceneData.h"
 #include "rendertarget.h"
-#include "textureProcedural.h"
 #include <assert.h>
 
 namespace
@@ -26,10 +17,26 @@ namespace
     const std::string MESHES_PATH(ASSETS_PATH + "Meshes//");
     const std::string TEXTURE_PATH(ASSETS_PATH + "Textures//");
     const std::string GENERATED_TEXTURES(TEXTURE_PATH + "Generated//");
+
+    /**
+    * Helper function to get a texture by name
+    */
+    int GetTexture(const SceneData& data, const std::string& name)
+    {
+        for (unsigned int i = 0; i < data.textures.size(); ++i)
+        {
+            if (IsStrEqual(name, data.textures[i]->Name()))
+            {
+                return i;
+            }
+        }
+        LogError("Could not find texture " + name);
+        return NO_INDEX;
+    }
 }
 
-SceneBuilder::SceneBuilder(Scene& scene) :
-    m_scene(scene)
+SceneBuilder::SceneBuilder(SceneData& data) :
+    m_data(data)
 {
 }
 
@@ -49,26 +56,30 @@ bool SceneBuilder::Initialise()
 
 bool SceneBuilder::InitialiseLighting()
 {
-    auto& sun = m_scene.Add(Light::ID_SUN, std::make_unique<Light>("Sun"));
-    sun.Position(glm::vec3(0.0, 12.0, 0.0));
-    sun.Attenuation(glm::vec3(1.3, 0.0, 0.0));
-    sun.Diffuse(glm::vec3(1.0, 1.0, 1.0));
-    sun.Specular(glm::vec3(0.0, 0.0, 0.0));
-    sun.Specularity(1.0f);
+    m_data.lights.resize(Light::MAX_LIGHTS);
+    
+    auto& sun = m_data.lights[Light::ID_SUN];
+    sun = std::make_unique<Light>("Sun");
+    sun->Position(glm::vec3(0.0, 12.0, 0.0));
+    sun->Attenuation(glm::vec3(1.3, 0.0, 0.0));
+    sun->Diffuse(glm::vec3(1.0, 1.0, 1.0));
+    sun->Specular(glm::vec3(0.0, 0.0, 0.0));
+    sun->Specularity(1.0f);
 
-    auto& spot = m_scene.Add(Light::ID_SPOT, std::make_unique<Light>("Spot"));
-    spot.Position(glm::vec3(0.0, 6.0, 0.0));
-    spot.Attenuation(glm::vec3(0.0, 0.0, 0.08));
-    spot.Diffuse(glm::vec3(0.0, 1.0, 0.0));
-    spot.Specular(glm::vec3(1.0, 0.0, 0.0));
-    spot.Specularity(1.0f);
+    auto& spot = m_data.lights[Light::ID_SPOT];
+    spot = std::make_unique<Light>("Spot");
+    spot->Position(glm::vec3(0.0, 6.0, 0.0));
+    spot->Attenuation(glm::vec3(0.0, 0.0, 0.08));
+    spot->Diffuse(glm::vec3(0.0, 1.0, 0.0));
+    spot->Specular(glm::vec3(1.0, 0.0, 0.0));
+    spot->Specularity(1.0f);
 
     return true;
 }
 
 bool SceneBuilder::InitialiseShaderConstants()
 {
-    const auto& post = m_scene.Post();
+    const auto& post = *m_data.post;
     Shader::ShaderConstants constants = 
     {
         std::make_pair("MAX_LIGHTS", std::to_string(Light::MAX_LIGHTS)),
@@ -93,6 +104,7 @@ bool SceneBuilder::InitialiseShaderConstants()
 bool SceneBuilder::InitialiseShaders()
 {
     bool success = true;
+    m_data.shaders.resize(Shader::MAX_SHADERS);
 
     success &= InitialiseShader(Shader::ID_POST_PROCESSING, "post_effects", Shader::NONE);
 
@@ -133,8 +145,8 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("ground", "ground.png", Texture::FROM_FILE);
     success &= InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
     success &= InitialiseTexture("bridge", "bridge.bmp", Texture::FROM_FILE);
-    success &= InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
     success &= InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
 
     {
         auto& texture = InitialiseTexture("heightmap", Texture::NEAREST,
@@ -148,36 +160,49 @@ bool SceneBuilder::InitialiseTextures()
 bool SceneBuilder::InitialiseTerrain()
 {
     {
-        Terrain& terrain = InitialiseTerrain("sand", "heightmap", Shader::ID_BUMP,
-            glm::vec3(0.0f, -5.0f, 0.0f), glm::vec2(0.25f, 0.25f), 0.0f, 0.5f, 1.0f, 100);
-        terrain.SetTexture(MeshData::COLOUR, m_scene.GetTexture("blank"));
-        terrain.SetTexture(MeshData::NORMAL, m_scene.GetTexture("bump"));
+        m_data.sandIndex = m_data.terrain.size();
+        Terrain& terrain = InitialiseTerrain("sand", "heightmap",
+            Shader::ID_BUMP, glm::vec2(0.25f, 0.25f), -15.0f, 0.0f, 0.5f, 5.0f, 20);
+        terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
+        terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
         terrain.Bump(20.0f);
     }
 
     return true;
 }
 
+bool SceneBuilder::InitialiseWater()
+{
+    const auto index = m_data.water.size();
+    m_data.water.push_back(std::make_unique<Water>("water", Shader::ID_WATER));
+    auto& water = m_data.water[index];
+
+    water->SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
+    water->SetTexture(MeshData::NORMAL, GetTexture(m_data, "water_normal"));
+    water->SetTexture(MeshData::ENVIRONMENT, GetTexture(m_data, "water_cube"));
+    return water->Initialise(15.0f, 10.0f, 10);
+}
+
 bool SceneBuilder::InitialiseMeshes()
 {	
     {
         auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
-        mesh.SetTextures(m_scene.GetTexture("ground"), m_scene.GetTexture("bump"), m_scene.GetTexture("specular"));
+        mesh.SetTextures(GetTexture(m_data, "ground"), GetTexture(m_data, "bump"), GetTexture(m_data, "specular"));
         mesh.Bump(20.0f);
         mesh.Specularity(5.0f);
     }
     {
         auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
-        mesh.SetTextures(m_scene.GetTexture("blank"));
+        mesh.SetTextures(GetTexture(m_data, "blank"));
     }
     {
         auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE_CAUSTICS);
-        mesh.SetTextures(m_scene.GetTexture("water_colour"));
+        mesh.SetTextures(GetTexture(m_data, "water_colour"));
         mesh.SetInstance(0, glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), 2.0f);
     }
     {
         auto& mesh = InitialiseMesh("sky", "mock_skybox.obj", Shader::ID_FLAT);
-        mesh.SetTextures(m_scene.GetTexture("sky"));
+        mesh.SetTextures(GetTexture(m_data, "sky"));
         mesh.BackfaceCull(false);
     }
 
@@ -193,8 +218,8 @@ bool SceneBuilder::InitialiseBubbles()
 {
     std::vector<int> textures = 
     {
-        m_scene.GetTexture("particle1"),
-        m_scene.GetTexture("particle2")
+        GetTexture(m_data, "particle1"),
+        GetTexture(m_data, "particle2")
     };
 
     EmitterData data;
@@ -224,24 +249,14 @@ bool SceneBuilder::InitialiseBubbles()
     return InitialiseEmitter("test", Shader::ID_PARTICLE, 10, textures, data);
 }
 
-bool SceneBuilder::InitialiseWater()
-{
-    bool success = true;
-
-    Water& water = m_scene.Add(std::make_unique<Water>("water", Shader::ID_WATER));
-    water.SetTexture(MeshData::COLOUR, m_scene.GetTexture("water_colour"));
-    water.SetTexture(MeshData::NORMAL, m_scene.GetTexture("water_normal"));
-    water.SetTexture(MeshData::ENVIRONMENT, m_scene.GetTexture("water_cube"));
-    success &= water.Initialise(glm::vec3(0,5,0), 10.0f, 10, 20);
-
-    return success;
-}
-
 bool SceneBuilder::InitialiseCaustics()
 {
-    Animation& caustics = m_scene.Add(Animation::ID_CAUSTICS, std::make_unique<Animation>());
+    m_data.animation.resize(Animation::MAX_ANIMATION);
 
-    const std::string path(TEXTURE_PATH + "Caustics//");
+    auto& caustics = m_data.animation[Animation::ID_CAUSTICS];
+    caustics = std::make_unique<Animation>();
+
+    const std::string path("Caustics//");
     const std::string name("Caustics_0");
     const std::string extension(".bmp");
 
@@ -250,13 +265,9 @@ bool SceneBuilder::InitialiseCaustics()
     {
         const std::string number(std::to_string(frame));
         const std::string frameName(name + (frame < 10 ? "0" : "") + number + extension);
+        caustics->AddFrame(static_cast<int>(m_data.textures.size()));
 
-        const auto index = m_scene.Add(std::make_unique<Texture>(
-            frameName, path + frameName, Texture::FROM_FILE, Texture::LINEAR));
-        
-        caustics.AddFrame(index);
-        
-        if (!m_scene.GetTexture(index).Initialise())
+        if (!InitialiseTexture(frameName, path + frameName, Texture::FROM_FILE))
         {
             return false;
         }
@@ -270,8 +281,8 @@ bool SceneBuilder::InitialiseShader(int index,
                                     const std::string& name, 
                                     unsigned int components)
 {
-    m_scene.Add(index, std::make_unique<Shader>(name, SHADER_PATH + name, components));
-    return m_scene.GetShader(index).Initialise();
+    m_data.shaders[index] = std::make_unique<Shader>(name, SHADER_PATH + name, components);
+    return m_data.shaders[index]->Initialise();
 }
 
 bool SceneBuilder::InitialiseTexture(const std::string& name, 
@@ -279,8 +290,9 @@ bool SceneBuilder::InitialiseTexture(const std::string& name,
                                      Texture::Type type,
                                      Texture::Filter filter)
 {
-    const auto index = m_scene.Add(std::make_unique<Texture>(name, TEXTURE_PATH + path, type, filter));
-    return m_scene.GetTexture(index).Initialise();
+    const auto index = m_data.textures.size();
+    m_data.textures.push_back(std::make_unique<Texture>(name, TEXTURE_PATH + path, type, filter));
+    return m_data.textures[index]->Initialise();
 }
 
 ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name, 
@@ -288,8 +300,11 @@ ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name,
                                                    ProceduralTexture::Type type,
                                                    int size)
 {
-    return m_scene.Add(std::make_unique<ProceduralTexture>(
+    const auto index = m_data.textures.size();
+    m_data.textures.push_back(std::make_unique<ProceduralTexture>(
             name, GENERATED_TEXTURES + name + ".bmp", size, filter, type));
+
+    return static_cast<ProceduralTexture&>(*m_data.textures[index]);
 }
 
 Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
@@ -297,10 +312,11 @@ Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
                                    int shaderID,
                                    int instances)
 {
-    auto& mesh = m_scene.Add(std::make_unique<Mesh>(name, shaderID, instances));
+    m_data.meshes.push_back(std::make_unique<Mesh>(name, shaderID, instances));
+    auto& mesh = *m_data.meshes[m_data.meshes.size()-1];
 
     if (!mesh.InitialiseFromFile(MESHES_PATH + filename, 
-        true, true, m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
+        true, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
     {
         LogError("Mesh: " + name + " failed initialisation");
     }
@@ -314,7 +330,8 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
                                      const std::vector<int>& textures,
                                      const EmitterData& data)
 {
-    Emitter& emitter = m_scene.Add(std::make_unique<Emitter>(name, shaderID, amount));
+    m_data.emitters.push_back(std::make_unique<Emitter>(name, shaderID, amount));
+    Emitter& emitter = *m_data.emitters[m_data.emitters.size()-1];
 
     for (int texture : textures)
     {
@@ -327,24 +344,25 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
 Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
                                          const std::string& heightmap,
                                          int shaderID,
-                                         const glm::vec3& position,
                                          const glm::vec2& uvStretch,
+                                         float height,
                                          float minHeight,
                                          float maxHeight,
                                          float spacing,
                                          int size)
 {
-    const int ID = m_scene.GetTexture(heightmap);
+    const int ID = GetTexture(m_data, heightmap);
     if (ID == NO_INDEX)
     {
         LogError("Terrain: " + name + " could not find texture " + heightmap);
     }
 
-    Terrain& terrain = m_scene.Add(std::make_unique<Terrain>(name, shaderID, 
-        m_scene.GetTexture(ID).GetPixels()));
+    const auto& texture = *m_data.textures[ID];
+    m_data.terrain.push_back(std::make_unique<Terrain>(name, shaderID, texture.GetPixels()));
+    Terrain& terrain = *m_data.terrain[m_data.terrain.size()-1];
 
-    if (!terrain.Initialise(position, uvStretch, minHeight, maxHeight, 
-        spacing, size, true, m_scene.GetShader(shaderID).HasComponent(Shader::BUMP)))
+    if (!terrain.Initialise(uvStretch, minHeight, maxHeight, height,
+        spacing, size, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
     {
         LogError("Terrain: " + name + " failed initialisation");
     }

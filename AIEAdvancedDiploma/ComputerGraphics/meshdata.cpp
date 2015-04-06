@@ -128,3 +128,71 @@ void MeshData::BackfaceCull(bool value)
 {
     m_backfacecull = value;
 }
+
+
+void MeshData::Render(RenderInstance renderInstance) const
+{
+    for (const Instance& instance : Instances())
+    {
+        glm::mat4 scale;
+        scale[0][0] = instance.scale.x;
+        scale[1][1] = instance.scale.y;
+        scale[2][2] = instance.scale.z;
+
+        glm::mat4 translate;
+        translate[3][0] = instance.position.x;
+        translate[3][1] = instance.position.y;
+        translate[3][2] = instance.position.z;
+            
+        glm::mat4 rotate;
+        if (instance.rotation.x == 0 &&
+            instance.rotation.y == 0 &&
+            instance.rotation.z == 0)
+        {
+            glm::mat4 rotateX, rotateY, rotateZ;
+            glm::rotate(rotateX, instance.rotation.x, glm::vec3(1,0,0));
+            glm::rotate(rotateY, instance.rotation.y, glm::vec3(0,1,0));
+            glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0,0,1));
+            rotate = rotateZ * rotateX * rotateY;
+        }
+
+        renderInstance(translate * rotate * scale);
+        Render();
+    }
+}
+
+const std::vector<MeshData::Instance>& MeshData::Instances() const
+{
+    return m_instances;
+}
+
+ std::vector<MeshData::Instance>& MeshData::Instances()
+{
+    return m_instances;
+}
+
+void MeshData::SetInstance(int index,
+                           const glm::vec3& position,
+                           const glm::vec3& rotation,
+                           float scale)
+{
+    m_instances[index].position = position;
+    m_instances[index].rotation = rotation;
+    m_instances[index].scale.x = scale;
+    m_instances[index].scale.y = scale;
+    m_instances[index].scale.z = scale;
+}
+
+void MeshData::AddInstance()
+{
+    m_instances.emplace_back();
+}
+
+void MeshData::AddInstance(const glm::vec3& position,
+                           const glm::vec3& rotation,
+                           float scale)
+{
+    m_instances.emplace_back();
+    SetInstance(static_cast<int>(m_instances.size()-1), 
+        position, rotation, scale);
+}

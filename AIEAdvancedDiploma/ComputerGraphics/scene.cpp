@@ -3,98 +3,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "scene.h"
+#include "sceneData.h"
 #include "sceneBuilder.h"
-#include "common.h"
-#include "shader.h"
-#include "mesh.h"
-#include "water.h"
-#include "emitter.h"
-#include "terrain.h"
-#include "light.h"
-#include "texture.h"
-#include "animation.h"
-#include "textureProcedural.h"
-
-/**
-* Internal data for the scene
-*/
-struct SceneData
-{
-    std::vector<std::unique_ptr<Shader>> shaders;      ///< All shaders in the scene
-    std::vector<std::unique_ptr<Mesh>> meshes;         ///< All meshes in the scene
-    std::vector<std::unique_ptr<Light>> lights;        ///< All lights in the scene
-    std::vector<std::unique_ptr<Texture>> textures;    ///< All textures in the scene
-    std::vector<std::unique_ptr<Terrain>> terrain;     ///< All terrain in the scene
-    std::vector<std::unique_ptr<Water>> water;         ///< All terrain in the scene
-    std::vector<std::unique_ptr<Emitter>> emitters;    ///< All terrain in the scene
-    std::vector<std::unique_ptr<Animation>> animation; ///< Managers for animated textures
-    std::unique_ptr<PostProcessing> post;              ///< Data for post processing
-};
+#include "sceneUpdater.h"
 
 Scene::Scene() :
     m_data(std::make_unique<SceneData>())
 {
-    m_data->lights.resize(Light::MAX_LIGHTS);
-    m_data->shaders.resize(Shader::MAX_SHADERS);
-    m_data->animation.resize(Animation::MAX_ANIMATION);
-    m_data->post = std::make_unique<PostProcessing>();
 }
 
 Scene::~Scene() = default;
-
-void Scene::Add(int index, std::unique_ptr<Shader> element)
-{
-    m_data->shaders[index] = std::move(element);
-}
-
-Light& Scene::Add(int index, std::unique_ptr<Light> element)
-{
-    m_data->lights[index] = std::move(element);
-    return *m_data->lights[index];
-}
-
-Animation& Scene::Add(int index, std::unique_ptr<Animation> element)
-{
-    m_data->animation[index] = std::move(element);
-    return *m_data->animation[index];
-}
-
-Terrain& Scene::Add(std::unique_ptr<Terrain> element)
-{
-    m_data->terrain.push_back(std::move(element));
-    return *m_data->terrain[m_data->terrain.size()-1];
-}
-
-Water& Scene::Add(std::unique_ptr<Water> element)
-{
-    m_data->water.push_back(std::move(element));
-    return *m_data->water[m_data->water.size()-1];
-}
-
-Emitter& Scene::Add(std::unique_ptr<Emitter> element)
-{
-    m_data->emitters.push_back(std::move(element));
-    return *m_data->emitters[m_data->emitters.size()-1];
-}
-
-Mesh& Scene::Add(std::unique_ptr<Mesh> element)
-{
-    m_data->meshes.push_back(std::move(element));
-    return *m_data->meshes[m_data->meshes.size()-1];
-}
-
-ProceduralTexture& Scene::Add(std::unique_ptr<ProceduralTexture> element)
-{
-    const int index = m_data->textures.size();
-    m_data->textures.push_back(std::move(element));
-    return static_cast<ProceduralTexture&>(*m_data->textures[index]);
-}
-
-unsigned int Scene::Add(std::unique_ptr<Texture> element)
-{
-    m_data->textures.push_back(std::move(element));
-    return m_data->textures.size()-1;
-}
 
 const std::vector<std::unique_ptr<Mesh>>& Scene::Meshes() const
 {
@@ -141,30 +59,6 @@ Shader& Scene::GetShader(int index) const
     return *m_data->shaders[index];
 }
 
-const Texture& Scene::GetTexture(int index) const
-{
-    return *m_data->textures[index];
-}
-
-Texture& Scene::GetTexture(int index)
-{
-    return *m_data->textures[index];
-}
-
-int Scene::GetTexture(const std::string& name) const
-{
-    for (unsigned int i = 0; i < m_data->textures.size(); ++i)
-    {
-        if (IsStrEqual(name, m_data->textures[i]->Name()))
-        {
-            return i;
-        }
-    }
-
-    LogError("Could not find texture " + name);
-    return NO_INDEX;
-}
-
 void Scene::Tick(float deltatime)
 {
     for (auto& emitter : m_data->emitters)
@@ -201,12 +95,15 @@ void Scene::Tick(float deltatime)
     m_data->meshes[0]->Instances()[0].position.y += cos(timePassed) * 0.05f;
 }
 
-bool Scene::Initialise()
+bool Scene::Initialise(const glm::vec3& camera)
 {
-    m_builder = std::make_unique<SceneBuilder>(*this);
+    m_builder = std::make_unique<SceneBuilder>(*m_data);
+    m_updater = std::make_unique<SceneUpdater>(*m_data);
 
     if (m_builder->Initialise())
     {
+        m_updater->Initialise(camera);
+
         // To prevent unnecessary shader switching, sort by shader used
         std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
             [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool

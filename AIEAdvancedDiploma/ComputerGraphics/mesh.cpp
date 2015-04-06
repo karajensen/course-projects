@@ -39,61 +39,6 @@ bool Mesh::InitialiseFromFile(const std::string& path,
     return success && MeshData::Initialise();
 }
 
-
-void Mesh::Render(RenderInstance renderInstance) const
-{
-    for (const Instance& instance : Instances())
-    {
-        if (instance.shouldRender)
-        {
-            glm::mat4 scale;
-            scale[0][0] = instance.scale;
-            scale[1][1] = instance.scale;
-            scale[2][2] = instance.scale;
-
-            glm::mat4 translate;
-            translate[3][0] = instance.position.x;
-            translate[3][1] = instance.position.y;
-            translate[3][2] = instance.position.z;
-            
-            glm::mat4 rotate;
-            if (instance.rotation.x == 0 &&
-                instance.rotation.y == 0 &&
-                instance.rotation.z == 0)
-            {
-                glm::mat4 rotateX, rotateY, rotateZ;
-                glm::rotate(rotateX, instance.rotation.x, glm::vec3(1,0,0));
-                glm::rotate(rotateY, instance.rotation.y, glm::vec3(0,1,0));
-                glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0,0,1));
-                rotate = rotateZ * rotateX * rotateY;
-            }
-
-            renderInstance(translate * rotate * scale);
-            MeshData::Render();
-        }
-    }
-}
-
-const std::vector<Mesh::Instance>& Mesh::Instances() const
-{
-    return m_instances;
-}
-
- std::vector<Mesh::Instance>& Mesh::Instances()
-{
-    return m_instances;
-}
-
-void Mesh::SetInstance(int index,
-                       const glm::vec3& position,
-                       const glm::vec3& rotation,
-                       float scale)
-{
-    m_instances[index].position = position;
-    m_instances[index].rotation = rotation;
-    m_instances[index].scale = scale;
-}
-
 float Mesh::Bump() const
 {
     return m_bump;
@@ -109,9 +54,14 @@ float Mesh::Ambience() const
     return m_ambience;
 }
 
-float Mesh::Caustics() const
+float Mesh::CausticsAmount() const
 {
-    return m_caustics;
+    return m_causticsAmount;
+}
+
+float Mesh::CausticsScale() const
+{
+    return m_causticsScale;
 }
 
 void Mesh::Specularity(float value)
@@ -129,26 +79,14 @@ void Mesh::Ambience(float value)
     m_ambience = value;
 }
 
-void Mesh::Caustics(float value)
+void Mesh::CausticsAmount(float value)
 {
-    m_caustics = value;
+    m_causticsAmount = value;
 }
 
-void Mesh::AddInstance()
+void Mesh::CausticsScale(float value)
 {
-    m_instances.emplace_back();
-}
-
-void Mesh::AddInstance(const glm::vec3& position,
-                       const glm::vec3& rotation,
-                       float scale)
-
-{
-    const int index = m_instances.size();
-    m_instances.emplace_back();
-    m_instances[index].position = position;
-    m_instances[index].rotation = rotation;
-    m_instances[index].scale = scale;
+    m_causticsScale = value;
 }
 
 bool Mesh::InitialiseFromOBJ(const std::string& path,

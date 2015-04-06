@@ -22,7 +22,6 @@ protected:
 
     /**
     * Loads a grid into the buffers
-    * @param position The center of the grid
     * @param uvStretch Texture stretch multiplier
     * @param spacing The spacing between vertices
     * @param rows How many rows for the grid
@@ -30,8 +29,7 @@ protected:
     * @param normals Whether to generate normals
     * @param tangents Whether to generate the tangent/bitangent
     */
-    bool CreateGrid(const glm::vec3& position, 
-                    const glm::vec2& uvStretch,
+    bool CreateGrid(const glm::vec2& uvStretch,
                     float spacing,
                     int rows, 
                     int columns, 
@@ -59,14 +57,17 @@ protected:
     int Columns() const;
 
     /**
-    * @return the initial position of the center of the grid
-    */
-    const glm::vec3& Position() const;
-
-    /**
     * Determines the normals for the grid
     */
     void RecalculateNormals();
+
+public:
+
+    /**
+    * @return the size of the grid
+    * @note only valid for grids with the same rows/column size
+    */
+    float Size() const;
 
 private:
 
@@ -117,6 +118,5 @@ private:
     int m_rows = 0;                             ///< The number of rows of this mesh
     bool m_hasNormals = false;                  ///< Whether to generate normals
     bool m_hasTangents = false;                 ///< Whether to generate tangent/bitangents
-    glm::vec3 m_position;                       ///< The initial position of the grid
     std::vector<std::vector<float*>> m_heights; ///< Row x columns of the vertices
 };

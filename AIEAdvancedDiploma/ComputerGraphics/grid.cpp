@@ -47,8 +47,7 @@ Grid::Grid(const std::string& name, int shader) :
 {
 }
 
-bool Grid::CreateGrid(const glm::vec3& position, 
-                      const glm::vec2& uvStretch,
+bool Grid::CreateGrid(const glm::vec2& uvStretch,
                       float spacing, 
                       int rows, 
                       int columns, 
@@ -63,7 +62,6 @@ bool Grid::CreateGrid(const glm::vec3& position,
 
     m_columns = columns;
     m_rows = rows;
-    m_position = position;
     m_spacing = spacing;
     m_vertexComponentCount = tangents ? 14 : (normals ? 8 : 5);
     m_hasNormals = normals;
@@ -87,7 +85,7 @@ void Grid::ResetGrid()
     m_indices.resize(triangleNumber * pointsInFace);
     m_vertices.resize(m_vertexComponentCount * vertices);
 
-    glm::vec3 initialPosition = m_position;
+    glm::vec3 initialPosition;
     initialPosition.x -= m_spacing * (m_rows * 0.5f);
     initialPosition.z -= m_spacing * (m_columns * 0.5f);
 
@@ -156,7 +154,7 @@ unsigned int Grid::GetIndex(int row, int column) const
 
 void Grid::SetHeight(int row, int column, float height)
 {
-    m_vertices[GetIndex(row, column) + POS_Y] = m_position.y + height;
+    m_vertices[GetIndex(row, column) + POS_Y] = height;
 }
 
 int Grid::Rows() const
@@ -167,11 +165,6 @@ int Grid::Rows() const
 int Grid::Columns() const
 {
     return m_columns;
-}
-
-const glm::vec3& Grid::Position() const
-{
-    return m_position;
 }
 
 glm::vec3 Grid::GetPosition(int index) const
@@ -196,6 +189,12 @@ glm::vec2 Grid::GetUVs(int index) const
 {
     return glm::vec2(m_vertices[index + TEXTURE_U],
         m_vertices[index + TEXTURE_V]);
+}
+
+float Grid::Size() const
+{
+    assert(Rows() == Columns());
+    return m_spacing * (Rows() - 1);
 }
 
 void Grid::RecalculateNormals()

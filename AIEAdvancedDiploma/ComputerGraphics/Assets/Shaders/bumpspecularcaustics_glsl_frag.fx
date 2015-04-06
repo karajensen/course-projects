@@ -18,10 +18,11 @@ uniform vec3 lightAttenuation[MAX_LIGHTS];
 uniform vec3 lightSpecular[MAX_LIGHTS];
 uniform float lightSpecularity[MAX_LIGHTS];
 
-uniform float meshSpecularity;
 uniform float meshAmbience;
 uniform float meshBump;
-uniform float meshCaustics;
+uniform float meshCausticAmount;
+uniform float meshCausticScale;
+uniform float meshSpecularity;
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D NormalSampler;
@@ -64,11 +65,12 @@ void main(void)
         diffuse.rgb += lightColour * attenuation * lightActive[i];
     }
 
-    vec3 caustics = texture(CausticsSampler, ex_UVs).rgb * max(normal.y, 0.0);
+    vec3 caustics = texture(CausticsSampler, 
+        ex_UVs * meshCausticScale).rgb * max(normal.y, 0.0);
 
     out_Color[ID_COLOUR].rgb = diffuseTex.rgb * diffuse;
     out_Color[ID_COLOUR].rgb += specularTex.rgb * specular;
-    out_Color[ID_COLOUR].rgb += caustics * meshCaustics;
+    out_Color[ID_COLOUR].rgb += caustics * meshCausticAmount;
     out_Color[ID_COLOUR].rgb *= meshAmbience;
     out_Color[ID_COLOUR].a = 1.0;
 

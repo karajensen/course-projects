@@ -28,24 +28,30 @@ void Terrain::Ambience(float value)
     m_ambience = value;
 }
 
-void Terrain::Caustics(float value)
+void Terrain::CausticsAmount(float value)
 {
-    m_caustics = value;
+    m_causticsAmount = value;
 }
 
-bool Terrain::Initialise(const glm::vec3& position,
-                         const glm::vec2& uvStretch,
+void Terrain::CausticsScale(float value)
+{
+    m_causticsScale = value;
+}
+
+bool Terrain::Initialise(const glm::vec2& uvStretch,
                          float minHeight,
                          float maxHeight,
+                         float height,
                          float spacing,
                          int size,
                          bool hasNormals,
                          bool hasTangents)
 {
+    m_height = height;
     m_minHeight = minHeight;
     m_maxHeight = maxHeight;
 
-    if (CreateGrid(position, uvStretch, spacing, size, size, hasNormals, hasTangents))
+    if (CreateGrid(uvStretch, spacing, size, size, hasNormals, hasTangents))
     {
         GenerateTerrain();
         RecalculateNormals();
@@ -80,9 +86,14 @@ float Terrain::Bump() const
     return m_bump;
 }
 
-float Terrain::Caustics() const
+float Terrain::CausticsAmount() const
 {
-    return m_caustics;
+    return m_causticsAmount;
+}
+
+float Terrain::CausticsScale() const
+{
+    return m_causticsScale;
 }
 
 void Terrain::GenerateTerrain()
@@ -105,4 +116,17 @@ void Terrain::GenerateTerrain()
             step += stepIncrease;
         }
     }
+}
+
+void Terrain::SetInstance(int index, const glm::vec2& position)
+{
+    m_instances[index].position.x = position.x;
+    m_instances[index].position.y = m_height;
+    m_instances[index].position.z = position.y;
+}
+
+void Terrain::AddInstance(const glm::vec2& position)
+{
+    m_instances.emplace_back();
+    SetInstance(static_cast<int>(m_instances.size()-1), position);
 }

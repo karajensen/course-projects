@@ -32,11 +32,12 @@ Water::Water(const std::string& name, int shaderID) :
     m_waves[1].directionZ = 0.7f;
 }
 
-bool Water::Initialise(const glm::vec3& position, float spacing, int rows, int columns)
+bool Water::Initialise(float height, float spacing, int size)
 {
-    const glm::vec2 uvs(1.0f, 1.0f);
-    return CreateGrid(position, uvs, spacing, rows, columns, false, false) && 
-        MeshData::Initialise();
+    m_height = height;
+
+    return CreateGrid(glm::vec2(1.0f, 1.0f), spacing, 
+        size, size, false, false) && MeshData::Initialise();
 }
 
 const std::vector<Water::Wave>& Water::Waves() const
@@ -87,4 +88,19 @@ float Water::Bump() const
 float Water::ReflectionIntensity() const
 {
     return m_reflection;
+}
+
+void Water::SetInstance(int index, const glm::vec2& position, bool flippedX, bool flippedZ)
+{
+    m_instances[index].position.x = position.x;
+    m_instances[index].position.y = m_height;
+    m_instances[index].position.z = position.y;
+    m_instances[index].scale.x = flippedX ? -1.0f : 1.0f;
+    m_instances[index].scale.z = flippedZ ? -1.0f : 1.0f;
+}
+
+void Water::AddInstance(const glm::vec2& position, bool flippedX, bool flippedZ)
+{
+    m_instances.emplace_back();
+    SetInstance(static_cast<int>(m_instances.size()-1), position, flippedX, flippedZ);
 }

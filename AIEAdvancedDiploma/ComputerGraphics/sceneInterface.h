@@ -72,10 +72,4 @@ public:
     */
     virtual Shader& GetShader(int index) const = 0;
 
-    /**
-    * Retrieves a texture at the given index
-    * @param index The index of the texture to get
-    * @return the texture 
-    */
-    virtual const Texture& GetTexture(int index) const = 0;
 };                     

@@ -159,18 +159,16 @@ void OpenGL::RenderSceneMap(float timer)
 
 void OpenGL::RenderMeshes()
 {
-    auto updateInstance = [this](const glm::mat4& world)
-    { 
-        UpdateShader(world); 
-    };
-
     for (const auto& mesh : m_scene.Meshes())
     {
         if (UpdateShader(*mesh))
         {
             mesh->PreRender();
             EnableSelectedShader();
-            mesh->Render(updateInstance);
+            mesh->Render([this](const glm::mat4& world)
+            { 
+                UpdateShader(world); 
+            });
         }
     }
 }
@@ -183,7 +181,10 @@ void OpenGL::RenderTerrain()
         {
             terrain->PreRender();
             EnableSelectedShader();
-            terrain->Render();
+            terrain->Render([this](const glm::mat4& world)
+            { 
+                UpdateShader(world); 
+            });
         }
     }
 }
@@ -196,7 +197,10 @@ void OpenGL::RenderWater(float timer)
         {
             water->PreRender();
             EnableSelectedShader();
-            water->Render();
+            water->Render([this](const glm::mat4& world)
+            { 
+                UpdateShader(world); 
+            });
         }
     }
 }
@@ -344,7 +348,7 @@ bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timer)
             shader.SendUniform("depthNear", m_scene.Post().DepthNear());
             shader.SendUniform("depthFar", m_scene.Post().DepthFar());
 
-            if (timer >= 0.0f)
+            if (index == Shader::ID_WATER)
             {
                 shader.SendUniform("timer", timer);
             }
@@ -363,7 +367,8 @@ bool OpenGL::UpdateShader(const Mesh& mesh)
     if (UpdateShader(mesh, false))
     {
         auto& shader = m_scene.GetShader(mesh.ShaderID());
-        shader.SendUniform("meshCaustics", mesh.Caustics());
+        shader.SendUniform("meshCausticAmount", mesh.CausticsAmount());
+        shader.SendUniform("meshCausticScale", mesh.CausticsScale());
         shader.SendUniform("meshAmbience", mesh.Ambience());
         shader.SendUniform("meshBump", mesh.Bump());
         shader.SendUniform("meshSpecularity", mesh.Specularity());
@@ -377,11 +382,11 @@ bool OpenGL::UpdateShader(const Terrain& terrain)
     if (UpdateShader(terrain, false))
     {
         auto& shader = m_scene.GetShader(terrain.ShaderID());
-        shader.SendUniform("meshCaustics", terrain.Caustics());
+        shader.SendUniform("meshCausticAmount", terrain.CausticsAmount());
+        shader.SendUniform("meshCausticScale", terrain.CausticsScale());
         shader.SendUniform("meshAmbience", terrain.Ambience());
         shader.SendUniform("meshBump", terrain.Bump());
         shader.SendUniform("meshSpecularity", terrain.Specularity());
-        shader.SendUniform("world", glm::mat4());
         return true;
     }
     return false;

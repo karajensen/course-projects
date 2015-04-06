@@ -17,22 +17,6 @@ class Mesh : public MeshData
 public:
 
     /**
-    * Callbacks for rendering a mesh instance
-    */
-    typedef std::function<void(const glm::mat4&)> RenderInstance;
-
-    /**
-    * Holds information for a single instance of a mesh
-    */
-    struct Instance
-    {
-        glm::vec3 position;       ///< Position offset
-        glm::vec3 rotation;       ///< Degress rotated around each axis
-        float scale = 1.0f;       ///< Scaling of the mesh
-        bool shouldRender = true; ///< Whether to render this instance
-    };
-
-    /**
     * Constructor
     * @param name The name of the mesh
     * @param shader The ID of the shader to use
@@ -54,22 +38,6 @@ public:
                             bool requiresTangents);
 
     /**
-    * Renders the mesh
-    * @param renderInstance Callback to render a single mesh instance
-    */
-    void Render(RenderInstance renderInstance) const;
-
-    /**
-    * @return The instances of this mesh
-    */
-    const std::vector<Instance>& Instances() const;
-
-    /**
-    * @return The instances of this mesh
-    */
-    std::vector<Instance>& Instances();
-
-    /**
     * @return Brightness of the specular highlights
     */
     float Specularity() const;
@@ -87,7 +55,12 @@ public:
     /**
     * @return Caustics multiplier
     */
-    float Caustics() const;
+    float CausticsAmount() const;
+
+    /**
+    * @return Caustics scale
+    */
+    float CausticsScale() const;
 
     /**
     * Sets the Brightness of the specular highlights
@@ -107,34 +80,12 @@ public:
     /**
     * Sets the Caustics multiplier
     */
-    void Caustics(float value);
+    void CausticsAmount(float value);
 
     /**
-    * Adds an instance for this mesh
-    * @param position The position offset 
-    * @param rotation How much to rotate 
-    * @param scale The size of the mesh
+    * Sets the Caustics scale
     */
-    void AddInstance(const glm::vec3& position,
-                     const glm::vec3& rotation,
-                     float scale);
-
-    /**
-    * Adds an instance at the world center with default values
-    */
-    void AddInstance();
-
-    /**
-    * Sets an instance for this mesh
-    * @param index The ID of this instance
-    * @param position The position offset 
-    * @param rotation How much to rotate 
-    * @param scale The size of the mesh
-    */
-    void SetInstance(int index,
-                     const glm::vec3& position,
-                     const glm::vec3& rotation,
-                     float scale);
+    void CausticsScale(float value);
 
 private:
 
@@ -171,9 +122,8 @@ private:
                            bool requiresTangents);
 
     float m_bump = 1.0f;                 ///< Saturation of bump
-    float m_caustics = 1.0f;             ///< How much of the caustics are visible
+    float m_causticsAmount = 1.0f;       ///< How much of the caustics are visible
+    float m_causticsScale = 1.0f;        ///< The scale of the caustic texture
     float m_specularity = 1.0f;          ///< Brightness of the specular highlights
     float m_ambience = 1.0f;             ///< Ambient light multiplier
-    int m_initialInstances = 0;          ///< The number of instances on load
-    std::vector<Instance> m_instances;   ///< Instances of this mesh
 };
