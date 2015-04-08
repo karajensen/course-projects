@@ -86,8 +86,8 @@ void Grid::ResetGrid()
     m_vertices.resize(m_vertexComponentCount * vertices);
 
     glm::vec3 initialPosition;
-    initialPosition.x -= m_spacing * (m_rows * 0.5f);
-    initialPosition.z -= m_spacing * (m_columns * 0.5f);
+    initialPosition.x -= m_spacing * ((m_rows-1) * 0.5f);
+    initialPosition.z -= m_spacing * ((m_columns-1) * 0.5f);
 
     float u = 0;
     float v = 0;
@@ -152,6 +152,11 @@ unsigned int Grid::GetIndex(int row, int column) const
         + (column * m_vertexComponentCount);
 }
 
+float Grid::GetHeight(int row, int column) const
+{
+    return m_vertices[GetIndex(row, column) + POS_Y];
+}
+
 void Grid::SetHeight(int row, int column, float height)
 {
     m_vertices[GetIndex(row, column) + POS_Y] = height;
@@ -194,7 +199,7 @@ glm::vec2 Grid::GetUVs(int index) const
 float Grid::Size() const
 {
     assert(Rows() == Columns());
-    return m_spacing * (Rows() - 1);
+    return m_spacing * (Rows()-1);
 }
 
 void Grid::RecalculateNormals()

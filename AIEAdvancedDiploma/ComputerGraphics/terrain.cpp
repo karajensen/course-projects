@@ -104,17 +104,28 @@ void Terrain::GenerateTerrain()
     const int mapSize = static_cast<int>(sqrt(static_cast<double>(m_pixels.size())));
     const double stepIncrease = static_cast<double>(mapSize / gridSize);
     double step = 0.0;
+    int index = 0;
 
     for (int r = 0; r < gridSize; ++r)
     {
         for (int c = 0; c < gridSize; ++c)
         {
-            const int index = static_cast<int>(std::round(step));
+            int index = static_cast<int>(std::round(step));
             const float colour = Clamp((m_pixels[index] & 0xFF) / 255.0f, 0.0f, 1.0f);
             const float height = ConvertRange(colour, 0.0f, 1.0f, m_minHeight, m_maxHeight);
             SetHeight(r, c, height);
             step += stepIncrease;
         }
+    }
+
+    // Ensure sides are matching for tiling
+    for (int c = 0; c < gridSize; ++c)
+    {
+        SetHeight(0, c, GetHeight(gridSize-1, c));
+    }
+    for (int r = 0; r < gridSize; ++r)
+    {
+        SetHeight(r, 0, GetHeight(r, gridSize-1));
     }
 }
 

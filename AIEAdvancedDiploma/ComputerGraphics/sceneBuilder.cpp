@@ -162,7 +162,7 @@ bool SceneBuilder::InitialiseTerrain()
     {
         m_data.sandIndex = m_data.terrain.size();
         Terrain& terrain = InitialiseTerrain("sand", "heightmap",
-            Shader::ID_BUMP, glm::vec2(0.25f, 0.25f), -15.0f, 0.0f, 0.5f, 5.0f, 20);
+            Shader::ID_BUMP, glm::vec2(0.25f, 0.25f), -15.0f, 0.0f, 0.5f, 5.0f, 21);
         terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
         terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
         terrain.Bump(20.0f);
@@ -180,7 +180,7 @@ bool SceneBuilder::InitialiseWater()
     water->SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
     water->SetTexture(MeshData::NORMAL, GetTexture(m_data, "water_normal"));
     water->SetTexture(MeshData::ENVIRONMENT, GetTexture(m_data, "water_cube"));
-    return water->Initialise(15.0f, 10.0f, 10);
+    return water->Initialise(15.0f, 10.0f, 11);
 }
 
 bool SceneBuilder::InitialiseMeshes()

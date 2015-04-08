@@ -40,7 +40,7 @@ public:
     struct Instance
     {
         glm::vec3 position = glm::vec3(0,0,0); ///< Position offset
-        glm::vec3 rotation = glm::vec3(0,0,0); ///< Degress rotated around each axis
+        glm::vec3 rotation = glm::vec3(0,0,0); ///< Degrees rotated around each axis
         glm::vec3 scale = glm::vec3(1,1,1);    ///< Scaling of the mesh
     };
 
@@ -177,6 +177,14 @@ public:
                      const glm::vec3& position,
                      const glm::vec3& rotation,
                      float scale);
+
+    /**
+    * Gets the instance at the index
+    * @param index The index of the instance to get
+    * @return the instance
+    */
+    const Instance& GetInstance(int index) const;
+
 protected:
 
     /**

@@ -43,14 +43,6 @@ public:
     bool Initialise(float height, float spacing, int size);
 
     /**
-    * Sets the position of the water
-    * @param position The world position of the center
-    * @param flippedX Whether to flip the water in the x axis for tiling
-    * @param flippedZ Whether to flip the water in the z axis for tiling
-    */
-    void Set(const glm::vec2& position, bool flippedX, bool flippedZ);
-
-    /**
     * @return The Wave information for the water
     */
     const std::vector<Wave>& Waves() const;

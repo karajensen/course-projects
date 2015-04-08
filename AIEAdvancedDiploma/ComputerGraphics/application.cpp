@@ -35,7 +35,7 @@ void Application::Run()
 
         m_input->Update();
         m_camera->Update();
-        m_scene->Tick(m_deltaTime);
+        m_scene->Tick(m_deltaTime, m_camera->Position());
         m_engine->RenderScene(m_timePassed);
     }
 }

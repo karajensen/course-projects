@@ -10,8 +10,8 @@ Camera::Camera() :
     m_position(m_initialPos),
     m_target(0.0f, 0.0f, 0.0f),
     m_rotationSpeed(5.0f),
-    m_translateSpeed(5.0f),
-    m_forwardSpeed(5.0f),
+    m_translateSpeed(20.0f),
+    m_forwardSpeed(20.0f),
     m_pitch(0.0f),
     m_yaw(75.0f),
     m_roll(0.0f)

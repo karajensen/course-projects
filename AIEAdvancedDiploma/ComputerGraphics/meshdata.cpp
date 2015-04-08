@@ -129,7 +129,6 @@ void MeshData::BackfaceCull(bool value)
     m_backfacecull = value;
 }
 
-
 void MeshData::Render(RenderInstance renderInstance) const
 {
     for (const Instance& instance : Instances())
@@ -195,4 +194,9 @@ void MeshData::AddInstance(const glm::vec3& position,
     m_instances.emplace_back();
     SetInstance(static_cast<int>(m_instances.size()-1), 
         position, rotation, scale);
+}
+
+const MeshData::Instance& MeshData::GetInstance(int index) const
+{
+    return m_instances.at(index);
 }

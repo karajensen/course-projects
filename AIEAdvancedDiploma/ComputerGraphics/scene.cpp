@@ -59,7 +59,7 @@ Shader& Scene::GetShader(int index) const
     return *m_data->shaders[index];
 }
 
-void Scene::Tick(float deltatime)
+void Scene::Tick(float deltatime, const glm::vec3& camera)
 {
     for (auto& emitter : m_data->emitters)
     {
@@ -89,6 +89,8 @@ void Scene::Tick(float deltatime)
         }
     }
 
+    m_updater->Update(camera);
+
     // Temporary to test scene
     static float timePassed = 0.0f;
     timePassed += deltatime;
@@ -102,8 +104,6 @@ bool Scene::Initialise(const glm::vec3& camera)
 
     if (m_builder->Initialise())
     {
-        m_updater->Initialise(camera);
-
         // To prevent unnecessary shader switching, sort by shader used
         std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
             [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool
@@ -111,8 +111,7 @@ bool Scene::Initialise(const glm::vec3& camera)
                 return m1->ShaderID() < m2->ShaderID();
             });
 
-        LogInfo("Scene: Successfully created");
-        return true;
+        return m_updater->Initialise(camera);
     }
     return false;
 }
