@@ -51,6 +51,21 @@ private:
     SceneUpdater& operator=(const SceneUpdater&) = delete;
 
     /**
+    * Updates the patch to a new position
+    * @param row/column The row and column of the patch
+    * @param direction The direction the patch is moving
+    * @note assumes direction is either [0,1] or [1,0]
+    */
+    void UpdatePatch(int row,
+                     int column,
+                     const glm::ivec2& direction);
+
+    /**
+    * @return whether the index is a valid patch
+    */
+    bool IsValid(int index) const;
+
+    /**
     * Determines which patch the positin is inside
     * @param position the position the use
     * @note y component of position is unused
@@ -72,10 +87,17 @@ private:
     */
     bool IsInsidePatch(const glm::vec3& position, int row, int column) const;
 
+    /**
+    * Shifts the patches so the camera is always in the center of the scene
+    * @param direction The direction the camera is moving in the patch grid
+    * @note assumes direction is either [0,1] or [1,0]
+    */
+    void ShiftPatches(const glm::ivec2& direction);
+
     SceneData& m_data;           ///< Data for manipulating the scene
     int m_patchPerRow = 0;       ///< The number of patches per row of the area
     std::vector<int> m_patches;  ///< The indices of the sand/water for each area patch
-    std::vector<int> m_scratch;  ///< Buffer for reorganising the patches
+    std::vector<int> m_previous; ///< Buffer for reorganising the patches
     glm::ivec2 m_patchInside;    ///< The patch the camera is currently inside
     float m_patchSize = 0.0f;    ///< The offset between sand/water patches
 };                     

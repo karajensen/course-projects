@@ -8,20 +8,23 @@
 namespace
 {
     const int WATER_ID = 0;
+    const bool USE_DIAGNOSTICS = true;
 }
 
 SceneUpdater::SceneUpdater(SceneData& data) :
     m_data(data)
 {
     const int patchAmount = 9;
+    const int minPatchAmount = 9;
     double unused = 0.0;
-    if (std::modf(std::sqrt(static_cast<double>(patchAmount)), &unused) != 0.0)
+    if (std::modf(std::sqrt(static_cast<double>(patchAmount)), &unused) != 0.0 ||
+        patchAmount < minPatchAmount)
     {
         LogError("Area patch size unusable");
     }
 
     m_patches.resize(patchAmount);
-    m_scratch.resize(patchAmount);
+    m_previous.resize(patchAmount);
     m_patchPerRow = static_cast<int>(
         std::sqrt(static_cast<double>(patchAmount)));
 }
@@ -62,30 +65,39 @@ glm::ivec2 SceneUpdater::GetPatchInside(const glm::vec3& position) const
 
 void SceneUpdater::Update(const glm::vec3& camera)
 {
-    if (m_patchInside.x == NO_INDEX ||
-        m_patchInside.y == NO_INDEX ||
-        IsInsidePatch(camera, m_patchInside.x, m_patchInside.y))
+    if (m_patchInside.x == NO_INDEX || m_patchInside.y == NO_INDEX)
     {
-        return;
+        m_patchInside = GetPatchInside(camera);
     }
+    else if(!IsInsidePatch(camera, m_patchInside.x, m_patchInside.y))
+    {
+        const glm::ivec2 direction(m_patchInside - GetPatchInside(camera));
 
-    const glm::ivec2 previousPatch = m_patchInside;
-    m_patchInside = GetPatchInside(camera);
-    const glm::ivec2 direction = previousPatch - m_patchInside;
+        // Split the direction as calculations will assume 0,1 or 1,0 
+        if (abs(direction.x) > 0)
+        {
+            ShiftPatches(glm::ivec2(direction.x, 0));
+        }
+        if (abs(direction.y) > 0)
+        {
+            ShiftPatches(glm::ivec2(0, direction.y));
+        }
 
-    auto& sand = *m_data.terrain[m_data.sandIndex];
-    auto& water = *m_data.water[WATER_ID];
+        m_patchInside = GetPatchInside(camera);
+    }
+}
 
-    // Shift the patches so the camera is always in the center
+void SceneUpdater::ShiftPatches(const glm::ivec2& direction)
+{
     const int maxIndex = m_patchPerRow - 1;
-    m_scratch = m_patches;
+    m_previous = m_patches;
 
     if (direction.x > 0)
     {
         // Shift the bottom row to the top
         for (int c = 0; c < m_patchPerRow; ++c)
         {
-            m_patches[Index(0, c)] = m_scratch[Index(maxIndex, c)];
+            m_patches[Index(0, c)] = m_previous[Index(maxIndex, c)];
         }
 
         // Move all other rows down
@@ -93,20 +105,14 @@ void SceneUpdater::Update(const glm::vec3& camera)
         {
             for (int c = 0; c < m_patchPerRow; ++c)
             {
-                m_patches[Index(r+1, c)] = m_scratch[Index(r, c)];
+                m_patches[Index(r+1, c)] = m_previous[Index(r, c)];
             }
         }
 
         // Update the new position of the new top row
         for (int c = 0; c < m_patchPerRow; ++c)
         {
-            const int patchID = m_patches[Index(0, c)];
-            const int nextID = m_patches[Index(1, c)];
-            const auto& instance = water.GetInstance(nextID);
-            const glm::vec2 position(instance.position.x - m_patchSize, instance.position.z);
-            water.SetInstance(patchID, position, false, false);
-            sand.SetInstance(patchID, position);
-            //sand.Instances()[patchID].position.y = 0.0f;
+            UpdatePatch(0, c, glm::ivec2(-1.0, 0.0));
         }
     }
     else if (direction.x < 0)
@@ -114,7 +120,7 @@ void SceneUpdater::Update(const glm::vec3& camera)
         // Shift the top row to the bottom
         for (int c = 0; c < m_patchPerRow; ++c)
         {
-            m_patches[Index(maxIndex, c)] = m_scratch[Index(0, c)];
+            m_patches[Index(maxIndex, c)] = m_previous[Index(0, c)];
         }
 
         // Move all other rows up
@@ -122,38 +128,117 @@ void SceneUpdater::Update(const glm::vec3& camera)
         {
             for (int c = 0; c < m_patchPerRow; ++c)
             {
-                m_patches[Index(r-1, c)] = m_scratch[Index(r, c)];
+                m_patches[Index(r-1, c)] = m_previous[Index(r, c)];
             }
         }
 
         // Update the new position of the new top row
         for (int c = 0; c < m_patchPerRow; ++c)
         {
-            const int patchID = m_patches[Index(maxIndex, c)];
-            const int nextID = m_patches[Index(maxIndex-1, c)];
-            const auto& instance = water.GetInstance(nextID);
-            const glm::vec2 position(instance.position.x + m_patchSize, instance.position.z);
-            water.SetInstance(patchID, position, false, false);
-            sand.SetInstance(patchID, position);
-            //sand.Instances()[patchID].position.y = 0.0f;
+            UpdatePatch(maxIndex, c, glm::ivec2(1.0, 0.0));
         }
     }
-
-    if (direction.x > 0)
+    else if (direction.y > 0)
     {
-        // Shift the left row to the right and shuffle left
+        // Shift the right row to the left
+        for (int r = 0; r < m_patchPerRow; ++r)
+        {
+            m_patches[Index(r, 0)] = m_previous[Index(r, maxIndex)];
+        }
 
+        // Move all other rows right
+        for (int r = 0; r < m_patchPerRow; ++r)
+        {
+            for (int c = 0; c < m_patchPerRow-1; ++c)
+            {
+                m_patches[Index(r, c+1)] = m_previous[Index(r, c)];
+            }
+        }
+
+        // Update the new position of the new left row
+        for (int r = 0; r < m_patchPerRow; ++r)
+        {
+            UpdatePatch(r, 0, glm::ivec2(0.0, -1.0));
+        }
     }
-    else if (direction.x < 0) 
+    else if (direction.y < 0) 
     {
-        // Shift the right row to the left and shuffle right
+        // Shift the left row to the right
+        for (int r = 0; r < m_patchPerRow; ++r)
+        {
+            m_patches[Index(r, maxIndex)] = m_previous[Index(r, 0)];
+        }
 
+        // Move all other rows left
+        for (int r = 0; r < m_patchPerRow; ++r)
+        {
+            for (int c = maxIndex; c > 0; --c)
+            {
+                m_patches[Index(r, c-1)] = m_previous[Index(r, c)];
+            }
+        }
+
+        // Update the new position of the new top row
+        for (int r = 0; r < m_patchPerRow; ++r)
+        {
+            UpdatePatch(r, maxIndex, glm::ivec2(0.0, 1.0));
+        }
     }
-
-    // Patches have changed, re-find the correct value
-    m_patchInside = GetPatchInside(camera);
 }
 
+bool SceneUpdater::IsValid(int index) const
+{
+    return index >= 0 && index < static_cast<int>(m_patches.size());
+}
+
+void SceneUpdater::UpdatePatch(int row,
+                               int column,
+                               const glm::ivec2& direction)
+{
+    auto& sand = *m_data.terrain[m_data.sandIndex];
+    auto& water = *m_data.water[WATER_ID];
+
+    // Look at one pace in opposite direction
+    const int backIndex = Index(row-direction.x, column-direction.y);
+    const auto& backInstance = water.GetInstance(m_patches[backIndex]);
+    
+    const glm::vec2 position(
+        backInstance.position.x + (direction.x * m_patchSize), 
+        backInstance.position.z + (direction.y * m_patchSize));
+
+    // Determine the tiling of the water so there are no seams
+    const bool backFlippedX = backInstance.scale.x < 0;
+    const bool backFlippedZ = backInstance.scale.z < 0;
+    const bool directionRow = abs(direction.x) > 0;
+
+    bool xFlipped = false;
+    bool zFlipped = false;
+
+    if ((directionRow && !backFlippedX && !backFlippedZ) ||
+        (!directionRow && backFlippedX && backFlippedZ))
+    {
+        xFlipped = true;
+        zFlipped = false;
+    }
+    else if ((directionRow && backFlippedX && backFlippedZ) ||
+             (!directionRow && !backFlippedX && !backFlippedZ))
+    {
+        xFlipped = false;
+        zFlipped = true;
+    }
+    else if ((directionRow && !backFlippedX && backFlippedZ) ||
+             (!directionRow && backFlippedX && !backFlippedZ))
+    {
+        xFlipped = true;
+        zFlipped = true;
+    }
+
+    // Update the patch instance with the new values
+    const int index = Index(row, column);
+    water.SetInstance(m_patches[index], position, xFlipped, zFlipped);
+    sand.SetInstance(m_patches[index], position);
+}
+                               
 bool SceneUpdater::Initialise(const glm::vec3& camera)
 {
     const float halfPatch = m_patchPerRow / 2.0f;
@@ -184,10 +269,14 @@ bool SceneUpdater::Initialise(const glm::vec3& camera)
             position.x = start.x + (r * m_patchSize);
             position.y = start.y + (c * m_patchSize);
 
-            water.AddInstance(position, false, false);
+            water.AddInstance(position, xFlipped, zFlipped);
             sand.AddInstance(position);
 
-            sand.Instances()[(Index(r,c))].scale *= 0.98f;
+            if (USE_DIAGNOSTICS)
+            {
+                const int index = Index(r,c);
+                sand.Instances()[index].scale *= 0.98f;
+            }
 
             m_patches[instance] = instance;
             ++instance;
