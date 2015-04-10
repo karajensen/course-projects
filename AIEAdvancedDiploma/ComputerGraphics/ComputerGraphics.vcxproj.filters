@@ -73,6 +73,9 @@
     <ClCompile Include="sceneUpdater.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="gui.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -154,6 +157,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="sceneData.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

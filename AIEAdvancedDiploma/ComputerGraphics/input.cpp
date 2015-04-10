@@ -12,8 +12,24 @@ Input::Input(GLFWwindow& window) :
 
 void Input::UpdateMouse()
 {
-    m_mousePressed = glfwGetMouseButton(
+    m_mouseState = NO_STATE;
+
+    m_rightMousePressed = glfwGetMouseButton(
+        &m_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+
+    const bool leftPressed = glfwGetMouseButton(
         &m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+    if (leftPressed && !m_leftMousePressed)
+    {
+        m_mouseState |= PRESSED;
+    }
+    else if (!leftPressed & m_leftMousePressed)
+    {
+        m_mouseState |= RELEASED;
+    }
+
+    m_leftMousePressed = leftPressed;
 
     double xPosition = 0.0, yPosition = 0.0;
     glfwGetCursorPos(&m_window, &xPosition, &yPosition);
@@ -28,6 +44,7 @@ void Input::UpdateMouse()
     if (length != 0.0f)
     {
         m_mouseDirection /= length;
+        m_mouseState |= MOVED;
     }
 
     m_mouseX = x;
@@ -37,11 +54,6 @@ void Input::UpdateMouse()
 void Input::Update()
 {
     UpdateMouse();
-
-    if (m_mousePressed && m_mouseCallback)
-    {
-        m_mouseCallback();
-    }
 
     for(auto& key : m_keys)
     {
@@ -102,17 +114,37 @@ void Input::AddCallback(unsigned int key, bool onContinous, KeyFn onKeyFn)
     m_keys[key].onKeyFn = onKeyFn;
 }
 
-void Input::AddMouseCallback(KeyFn onKeyFn)
-{
-    m_mouseCallback = onKeyFn;
-}
-
 const glm::vec2& Input::GetMouseDirection() const
 {
     return m_mouseDirection;
 }
 
-bool Input::IsMousePressed() const
+bool Input::IsRightMouseDown() const
 {
-    return m_mousePressed;
+    return m_rightMousePressed;
+}
+
+bool Input::IsLeftMousePressedThisTick() const
+{
+    return (m_mouseState & PRESSED) == PRESSED;
+}
+
+bool Input::IsLeftMouseReleasedThisTick() const
+{
+    return (m_mouseState & RELEASED) == RELEASED;
+}
+
+bool Input::IsMouseMovedThisTick() const
+{
+    return (m_mouseState & MOVED) == MOVED;
+}
+
+int Input::GetMouseX() const
+{
+    return m_mouseX;
+}
+
+int Input::GetMouseY() const
+{
+    return m_mouseY;
 }

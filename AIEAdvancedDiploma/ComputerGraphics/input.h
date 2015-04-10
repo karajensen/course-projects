@@ -39,12 +39,6 @@ public:
     void AddCallback(unsigned int key, bool onContinous, KeyFn onKeyFn);
 
     /**
-    * Adds a callback for when the mouse is down
-    * @param onKeyFn The function to call when the conditions are true
-    */
-    void AddMouseCallback(KeyFn onKeyFn);
-
-    /**
     * @return the normalized direction the mouse is moving
     */
     const glm::vec2& GetMouseDirection() const;
@@ -52,7 +46,32 @@ public:
     /**
     * @return whether the mouse is currently being held down
     */
-    bool IsMousePressed() const;
+    bool IsRightMouseDown() const;
+
+    /**
+    * @return whether the mouse was pressed during this tick
+    */
+    bool IsLeftMousePressedThisTick() const;
+
+    /**
+    * @return whether the mouse was pressed during this tick
+    */
+    bool IsLeftMouseReleasedThisTick() const;
+
+    /**
+    * @return whether the mouse moved during this tick
+    */
+    bool IsMouseMovedThisTick() const;
+
+    /**
+    * @return the mouse X position
+    */
+    int GetMouseX() const;
+
+    /**
+    * @return the mouse Y position
+    */
+    int GetMouseY() const;
 
 private:
 
@@ -109,13 +128,25 @@ private:
         bool continuous = false;  ///< Whether key should look at continous or not
     };
 
+    /**
+    * State of the mouse for this tick
+    */
+    enum MouseState
+    {
+        NO_STATE = 0,
+        PRESSED = 1,
+        RELEASED = 2,
+        MOVED = 4
+    };
+
     typedef std::unordered_map<unsigned int, Key> KeyMap;
 
-    KeyMap m_keys;                   ///< Key states and callbacks
-    KeyFn m_mouseCallback = nullptr; ///< Mouse down callback
-    GLFWwindow& m_window;            ///< The window to get input from
-    glm::vec2 m_mouseDirection;      ///< Direction mouse has moved (normalized) between ticks
-    int m_mouseX = 0;                ///< X screen coordinate of the mouse
-    int m_mouseY = 0;                ///< Y screen coordinate of the mouse
-    bool m_mousePressed = false;     ///< Whether the mouse is currently being pressed
+    KeyMap m_keys;                        ///< Key states and callbacks
+    GLFWwindow& m_window;                 ///< The window to get input from
+    glm::vec2 m_mouseDirection;           ///< Direction mouse has moved (normalized) between ticks
+    int m_mouseX = 0;                     ///< X screen coordinate of the mouse
+    int m_mouseY = 0;                     ///< Y screen coordinate of the mouse
+    bool m_leftMousePressed = false;      ///< Whether the mouse is currently being pressed
+    bool m_rightMousePressed = false;     ///< Whether the mouse is currently being pressed
+    unsigned int m_mouseState = NO_STATE; ///< State of the mouse for this tick
 };

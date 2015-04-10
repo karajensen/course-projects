@@ -8,6 +8,7 @@
 #include "input.h"
 #include "camera.h"
 #include "scene.h"
+#include "gui.h"
 
 namespace
 {
@@ -35,14 +36,24 @@ void Application::Run()
 
         m_input->Update();
         m_camera->Update();
+        if (m_input->IsRightMouseDown())
+        {
+            m_camera->Rotate(m_input->GetMouseDirection(), m_deltaTime);
+        }
+       
+        m_gui->Update(*m_input);
         m_scene->Tick(m_deltaTime, m_camera->Position());
+
         m_engine->RenderScene(m_timePassed);
+        m_gui->Render();
+        m_engine->EndRender();
     }
 }
 
 void Application::Release()
 {
     // Release all openGL resources before terminating engine
+    m_gui.reset();
     m_scene.reset();
     m_engine.reset();
 }
@@ -60,6 +71,9 @@ bool Application::Initialise()
         LogError("Could not initialise scene");
         return false;
     }
+
+    // Requires engine to be initialised
+    m_gui = std::make_unique<Gui>(*m_scene);
 
     InitialiseInput();
 
@@ -94,15 +108,6 @@ void Application::InitialiseInput()
     m_input->AddCallback(GLFW_KEY_8, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::DOF_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_0, false, 
-        [this](){ m_engine->ToggleWireframe(); });
-
-    m_input->AddCallback(GLFW_KEY_P, false, 
-        [this](){ m_scene->SaveTextures(); });
-
-    m_input->AddCallback(GLFW_KEY_O, false, 
-        [this](){ m_scene->Reload(); });
-
     m_input->AddCallback(GLFW_KEY_W, true, 
         [this](){ m_camera->Forward(-m_deltaTime); });
 
@@ -120,9 +125,5 @@ void Application::InitialiseInput()
 
     m_input->AddCallback(GLFW_KEY_E, true, 
         [this](){ m_camera->Up(-m_deltaTime); });
-    
-    m_input->AddMouseCallback([this]()
-    {
-        m_camera->Rotate(m_input->GetMouseDirection(), m_deltaTime);
-    });
+   
 }

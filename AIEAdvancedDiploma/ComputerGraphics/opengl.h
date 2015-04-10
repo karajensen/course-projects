@@ -57,6 +57,11 @@ public:
     void RenderScene(float timer);
 
     /**
+    * Ends the rendering pipeline
+    */
+    void EndRender();
+
+    /**
     * Toggles whether wireframe is active
     */
     void ToggleWireframe();

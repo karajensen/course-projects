@@ -32,6 +32,11 @@ public:
     void Tick(float deltatime, const glm::vec3& camera);
 
     /**
+    * Renders the GUI manipulator
+    */
+    void RenderGUI();
+
+    /**
     * @return the meshes in the scene
     */
     virtual const std::vector<std::unique_ptr<Mesh>>& Meshes() const override;
@@ -99,6 +104,11 @@ public:
     * Reloads the scene
     */
     void Reload();
+
+    /**
+    * @return the data for the scene
+    */
+    SceneData& GetData();
 
 private:
 

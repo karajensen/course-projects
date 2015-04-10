@@ -104,13 +104,12 @@ void Terrain::GenerateTerrain()
     const int mapSize = static_cast<int>(sqrt(static_cast<double>(m_pixels.size())));
     const double stepIncrease = static_cast<double>(mapSize / gridSize);
     double step = 0.0;
-    int index = 0;
 
     for (int r = 0; r < gridSize; ++r)
     {
         for (int c = 0; c < gridSize; ++c)
         {
-            int index = static_cast<int>(std::round(step));
+            const int index = static_cast<int>(std::round(step));
             const float colour = Clamp((m_pixels[index] & 0xFF) / 255.0f, 0.0f, 1.0f);
             const float height = ConvertRange(colour, 0.0f, 1.0f, m_minHeight, m_maxHeight);
             SetHeight(r, c, height);

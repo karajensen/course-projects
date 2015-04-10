@@ -148,3 +148,8 @@ void Scene::Reload()
         terrain->Reload();
     }
 }
+
+SceneData& Scene::GetData()
+{
+    return *m_data;
+}

@@ -10,6 +10,7 @@ class OpenGL;
 class Camera;
 class Input;
 class Scene;
+class Gui;
 
 /**
 * Main application class
@@ -57,4 +58,5 @@ private:
     std::unique_ptr<Input> m_input;   ///< Manages input from the window
     std::unique_ptr<Scene> m_scene;   ///< Manages all objects
     std::unique_ptr<OpenGL> m_engine; ///< Render engine to use for application
+    std::unique_ptr<Gui> m_gui;       ///< Manipulates the scene
 };

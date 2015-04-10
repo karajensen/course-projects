@@ -132,7 +132,10 @@ void OpenGL::RenderScene(float timer)
     RenderPreEffects();
     RenderBlur();
     RenderPostProcessing();
+}
 
+void OpenGL::EndRender()
+{
     glfwSwapBuffers(m_window);
     glfwPollEvents();
 }
