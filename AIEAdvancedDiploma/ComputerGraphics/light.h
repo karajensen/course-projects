@@ -7,6 +7,8 @@
 #include <string>
 #include "glm\glm.hpp"
 
+class Tweaker;
+
 /**
 * Single light to provide illumination in the scene
 */
@@ -29,6 +31,12 @@ public:
     * @param name The name of the light
     */
     Light(const std::string& name); 
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * @return The name of the light

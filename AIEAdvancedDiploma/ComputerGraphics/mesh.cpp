@@ -7,11 +7,38 @@
 #include "assimp/include/scene.h"
 #include "assimp/include/Importer.hpp"
 #include "assimp/include/postprocess.h"
+#include "tweaker.h"
 
-Mesh::Mesh(const std::string& name, int shader, int instances) :
-    MeshData(name, shader)
+Mesh::Mesh(const std::string& name, 
+           const std::string& shaderName,
+           int shaderID, 
+           int instances) :
+    MeshData(name, shaderName, shaderID)
 {
     m_instances.resize(instances);
+}
+
+void Mesh::AddToTweaker(Tweaker& tweaker)
+{
+    MeshData::AddToTweaker(tweaker);
+
+    tweaker.AddEntry("Ambience", &m_ambience, TW_TYPE_FLOAT, 0.1f);
+
+    if (SupportsBumpMapping())
+    {
+        tweaker.AddEntry("Bump Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
+    }
+
+    if (SupportsCaustics())
+    {
+        tweaker.AddEntry("Caustics Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddEntry("Caustics Scale", &m_bump, TW_TYPE_FLOAT, 0.1f);
+    }
+
+    if (SupportsSpecular())
+    {
+        tweaker.AddEntry("Specularity", &m_specularity, TW_TYPE_FLOAT, 0.1f);
+    }    
 }
 
 bool Mesh::InitialiseFromFile(const std::string& path, 

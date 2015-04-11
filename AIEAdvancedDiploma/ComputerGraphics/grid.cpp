@@ -4,6 +4,7 @@
 
 #include "grid.h"
 #include "common.h"
+#include "tweaker.h"
 
 namespace
 {
@@ -42,9 +43,14 @@ namespace
     }
 }
 
-Grid::Grid(const std::string& name, int shader) :
-    MeshData(name, shader)
+Grid::Grid(const std::string& name, const std::string& shaderName, int shaderID) :
+    MeshData(name, shaderName, shaderID)
 {
+}
+
+void Grid::AddToTweaker(Tweaker& tweaker)
+{
+    MeshData::AddToTweaker(tweaker);
 }
 
 bool Grid::CreateGrid(const glm::vec2& uvStretch,

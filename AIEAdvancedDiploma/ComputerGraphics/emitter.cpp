@@ -5,6 +5,7 @@
 #include "emitter.h"
 #include "common.h"
 #include "quad.h"
+#include "tweaker.h"
 
 Emitter::Emitter(const std::string& name, int shaderID, int amount) :
     m_shaderIndex(shaderID),
@@ -15,6 +16,31 @@ Emitter::Emitter(const std::string& name, int shaderID, int amount) :
 }
 
 Emitter::~Emitter() = default;
+
+void Emitter::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddEntry("Name", [this](){ return m_name; });
+    tweaker.AddEntry("Amount", m_particles.size());
+    tweaker.AddEntry("Colour", &m_data.tint, TW_TYPE_COLOR4F);
+    tweaker.AddEntry("Length", &m_data.length, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Width", &m_data.width, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Position X", &m_data.position.x, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Position Y", &m_data.position.y, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Position Z", &m_data.position.z, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Direction", &m_data.direction.y, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Life Time", &m_data.lifeTime, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Life Fade", &m_data.lifeFade, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Min Amplitude", &m_data.minAmplitude, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Max Amplitude", &m_data.maxAmplitude, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Min Frequency", &m_data.minFrequency, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Max Frequency", &m_data.maxFrequency, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Min Size", &m_data.minSize, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Max Size", &m_data.maxSize, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Min Speed", &m_data.minSpeed, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Max Speed", &m_data.maxSpeed, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Min Wave Speed", &m_data.minWaveSpeed, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Max Wave Speed", &m_data.maxWaveSpeed, TW_TYPE_FLOAT, 0.1f);
+}
 
 bool Emitter::Initialise(const EmitterData& data)
 {

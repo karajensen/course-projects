@@ -10,6 +10,7 @@
 #include "particle.h"
 
 class Quad;
+class Tweaker;
 
 /**
 * Data for a particle emitter
@@ -60,6 +61,12 @@ public:
     * Destructor
     */
     ~Emitter();
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Initialises the emitter

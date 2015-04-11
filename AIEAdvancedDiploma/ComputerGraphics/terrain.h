@@ -17,10 +17,19 @@ public:
     * Constructor
     * @param name The name of the terrain
     * @param shaderID The id of the shader to use
+    * @param shaderName The name of the shader to use
     * @param pixels The pixels of the height map
     */
-    Terrain(const std::string& name, int shaderID,
-        const std::vector<unsigned int>& pixels);
+    Terrain(const std::string& name,
+            const std::string& shaderName,    
+            int shaderID,
+            const std::vector<unsigned int>& pixels);
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Initialises the terrain

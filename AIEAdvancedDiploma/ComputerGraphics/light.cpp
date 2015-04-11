@@ -3,10 +3,25 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "light.h"
+#include "tweaker.h"
 
 Light::Light(const std::string& name) :
     m_name(name)
 {
+}
+
+void Light::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddEntry("Name", [this](){ return m_name; });
+    tweaker.AddEntry("Position X", &m_position.x, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Position Y", &m_position.y, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Position Z", &m_position.z, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Attenuation X", &m_attenuation.x, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Attenuation Y", &m_attenuation.y, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Attenuation Z", &m_attenuation.z, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Specularity", &m_specularity, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Specular", &m_specular.x, TW_TYPE_COLOR3F);
+    tweaker.AddEntry("Diffuse", &m_diffuse.x, TW_TYPE_COLOR3F);
 }
 
 const std::string& Light::Name() const

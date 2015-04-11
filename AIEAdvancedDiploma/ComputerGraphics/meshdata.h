@@ -8,6 +8,8 @@
 #include <vector>
 #include "renderdata.h"
 
+class Tweaker;
+
 /**
 * Base Mesh Information
 */
@@ -48,8 +50,17 @@ public:
     * Constructor
     * @param name The name of the data
     * @param shader The ID of the shader to use
+    * @param shaderName The name of the shader to use
     */
-    MeshData(const std::string& name, int shader);
+    MeshData(const std::string& name, 
+             const std::string& shaderName,
+             int shaderID);
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Destructor
@@ -193,6 +204,21 @@ protected:
     MeshData(const MeshData&) = delete;
     MeshData& operator=(const MeshData&) = delete;
 
+    /**
+    * @return whether this mesh renders with caustics
+    */
+    bool SupportsCaustics() const;
+
+    /**
+    * @return whether this mesh renders with bump mapping
+    */
+    bool SupportsBumpMapping() const;
+
+    /**
+    * @return whether this mesh renders with specular highlights
+    */
+    bool SupportsSpecular() const;
+
     bool m_backfacecull = true;         ///< Whether backface culling is enabled
     int m_vertexComponentCount = 0;     ///< Number of components that make up a vertex
     std::vector<float> m_vertices;      ///< Mesh Vertex information
@@ -205,4 +231,5 @@ protected:
     bool m_initialised = false;         ///< Whether the vertex buffer object is initialised or not
     std::vector<int> m_textureIDs;      ///< IDs for each texture used
     std::vector<Instance> m_instances;  ///< Instances of this mesh
+    const std::string m_shaderName;     ///< Name of the shader to use
 };

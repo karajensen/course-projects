@@ -566,3 +566,8 @@ void Shader::LogShader(const std::string& text)
 {
     LogError("Shader " + m_name + ": " + text);
 }
+
+const std::string& Shader::Name() const
+{
+    return m_name;
+}

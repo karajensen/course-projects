@@ -4,10 +4,14 @@
 
 #include "meshdata.h"
 #include "common.h"
+#include "tweaker.h"
 
-MeshData::MeshData(const std::string& name, int shader) :
+MeshData::MeshData(const std::string& name, 
+                   const std::string& shaderName,
+                   int shaderID) :
     m_name(name),
-    m_shaderIndex(shader)
+    m_shaderName(shaderName),
+    m_shaderIndex(shaderID)
 {
     m_textureIDs.resize(MAX_TYPES);
     m_textureIDs.assign(MAX_TYPES, NO_INDEX);
@@ -22,6 +26,14 @@ MeshData::~MeshData()
         glDeleteBuffers(1, &m_vaoID);
         m_initialised = false;
     }
+}
+
+void MeshData::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddEntry("Name", [this](){ return m_name; });
+    tweaker.AddEntry("Shader", [this](){ return m_shaderName; });
+    tweaker.AddEntry("Instances", m_instances.size());
+    tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);
 }
 
 bool MeshData::Initialise()
@@ -199,4 +211,19 @@ void MeshData::AddInstance(const glm::vec3& position,
 const MeshData::Instance& MeshData::GetInstance(int index) const
 {
     return m_instances.at(index);
+}
+
+bool MeshData::SupportsCaustics() const
+{
+    return m_shaderName.find("caustic") != NO_INDEX;
+}
+
+bool MeshData::SupportsBumpMapping() const
+{
+    return m_shaderName.find("bump") != NO_INDEX;
+}
+
+bool MeshData::SupportsSpecular() const
+{
+    return m_shaderName.find("specular") != NO_INDEX;
 }

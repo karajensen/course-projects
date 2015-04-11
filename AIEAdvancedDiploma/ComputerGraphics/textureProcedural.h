@@ -43,6 +43,12 @@ public:
     ~ProceduralTexture();
 
     /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
+
+    /**
     * Reloads the texture
     */
     virtual void Reload() override;

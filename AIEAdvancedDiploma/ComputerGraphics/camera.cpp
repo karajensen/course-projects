@@ -2,8 +2,9 @@
 // Kara Jensen - mail@karajensen.com - camera.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "Camera.h"
+#include "camera.h"
 #include "renderdata.h"
+#include "tweaker.h"
 
 Camera::Camera() :
     m_initialPos(15.0f, 1.0f, 3.0f),
@@ -23,6 +24,19 @@ Camera::Camera() :
     m_projection = glm::perspective(fieldOfView, 
         WINDOW_WIDTH / static_cast<float>(WINDOW_HEIGHT),
         frustrumNear, frustrumFar);
+}
+
+void Camera::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddEntry("Rotation Speed", &m_rotationSpeed, TW_TYPE_FLOAT, 1.0f);
+    tweaker.AddEntry("Translate Speed", &m_translateSpeed, TW_TYPE_FLOAT, 1.0f);
+    tweaker.AddEntry("Forward Speed", &m_forwardSpeed, TW_TYPE_FLOAT, 1.0f);
+    tweaker.AddEntry("Position X", &m_position.x, TW_TYPE_FLOAT, true);
+    tweaker.AddEntry("Position Y", &m_position.y, TW_TYPE_FLOAT, true);
+    tweaker.AddEntry("Position Z", &m_position.z, TW_TYPE_FLOAT, true);
+    tweaker.AddEntry("Pitch", &m_pitch, TW_TYPE_FLOAT, true);
+    tweaker.AddEntry("Yaw", &m_yaw, TW_TYPE_FLOAT, true);
+    tweaker.AddEntry("Roll", &m_roll, TW_TYPE_FLOAT, true);
 }
 
 void Camera::Forward(float value)

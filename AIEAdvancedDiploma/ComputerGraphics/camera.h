@@ -6,6 +6,8 @@
 
 #include "glm\glm.hpp"
 
+class Tweaker;
+
 /**
 * Camera class to view the world with
 */
@@ -17,6 +19,12 @@ public:
     * Constructor
     */
     Camera();
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Updates the view matrix

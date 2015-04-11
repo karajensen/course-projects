@@ -5,7 +5,7 @@
 #include "quad.h"
 
 Quad::Quad(const std::string& name, int shader) :
-    MeshData(name, shader)
+    MeshData(name, "unnamed", shader)
 {
     // Top left corner
     m_vertices.emplace_back(-1.0f); // x

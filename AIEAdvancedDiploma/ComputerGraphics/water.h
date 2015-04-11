@@ -31,8 +31,17 @@ public:
     * Constructor
     * @param name The name of the water
     * @param shaderID The ID of the shader to use
+    * @param shaderName The name of the shader to use
     */
-    Water(const std::string& name, int shaderID);
+    Water(const std::string& name, 
+          const std::string& shaderName,
+          int shaderID);
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Initialises the water

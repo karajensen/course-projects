@@ -7,6 +7,8 @@
 #include "renderdata.h"
 #include <array>
 
+class Tweaker;
+
 /**
 * Holds data for post processing the final image
 */
@@ -34,6 +36,12 @@ public:
     * Constructor
     */
     PostProcessing();
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Sets which post map should be rendered
@@ -128,6 +136,11 @@ public:
     float BloomFade() const;
 
     /**
+    * @return the currently rendered map
+    */
+    std::string GetPostMap() const;
+
+    /**
     * @param map the map type to convert
     * @return The string name of the map type
     */
@@ -157,6 +170,7 @@ private:
     glm::vec3 m_minimumColour;            ///< Minimum Colour ranges for RGB
     glm::vec3 m_maximumColour;            ///< Maximum Colour ranges for RGB
     std::array<float, MAX_MAPS> m_masks;  ///< Visibility of post maps
+    Map m_selectedMap;                    ///< The currently rendered post map
 
     static const int BLUR_PIXELS = 5;          ///< Amount of pixels per-pixel involved in blurring
     std::array<float, BLUR_PIXELS> m_weights;  ///< Normalised pixel weights for blurring

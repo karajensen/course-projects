@@ -5,6 +5,7 @@
 #include "textureProcedural.h"
 #include "renderdata.h"
 #include "soil/SOIL.h"
+#include "tweaker.h"
 
 ProceduralTexture::ProceduralTexture(const std::string& name, 
                                      const std::string& path, 
@@ -23,6 +24,11 @@ ProceduralTexture::ProceduralTexture(const std::string& name,
 
 ProceduralTexture::~ProceduralTexture()
 {
+}
+
+void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
+{
+    Texture::AddToTweaker(tweaker);
 }
 
 void ProceduralTexture::Generate()

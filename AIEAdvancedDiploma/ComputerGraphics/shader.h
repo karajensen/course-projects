@@ -159,6 +159,11 @@ public:
     void ClearTexture(int slot, const RenderTarget& target);
 
     /**
+    * @return the name of the shader
+    */
+    const std::string& Name() const;
+
+    /**
     * Initialises the defined constants in the shaders
     * @param constants The constants to set
     */

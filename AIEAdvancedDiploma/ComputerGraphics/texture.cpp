@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "renderdata.h"
 #include "soil/SOIL.h"
+#include "tweaker.h"
 
 Texture::Texture(const std::string& name, 
                  const std::string& path, 
@@ -25,6 +26,11 @@ Texture::~Texture()
         glDeleteTextures(1, &m_id);
         m_initialised = false;
     }
+}
+
+void Texture::AddToTweaker(Tweaker& tweaker)
+{
+
 }
 
 const std::string& Texture::Name() const

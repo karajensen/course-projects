@@ -19,10 +19,20 @@ public:
     /**
     * Constructor
     * @param name The name of the mesh
-    * @param shader The ID of the shader to use
+    * @param shaderName The name of the shader to use
+    * @param shaderID The ID of the shader to use
     * @param instances The number of default instances to create
     */
-    Mesh(const std::string& name, int shader, int instances);
+    Mesh(const std::string& name, 
+         const std::string& shaderName, 
+         int shaderID, 
+         int instances);
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
     /**
     * Initialises the mesh data buffer containers from file

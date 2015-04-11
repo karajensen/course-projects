@@ -116,6 +116,7 @@
     <ClInclude Include="terrain.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="textureProcedural.h" />
+    <ClInclude Include="tweaker.h" />
     <ClInclude Include="water.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClCompile Include="terrain.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="textureProcedural.cpp" />
+    <ClCompile Include="tweaker.cpp" />
     <ClCompile Include="water.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -36,5 +36,6 @@ struct SceneData
     std::vector<std::unique_ptr<Emitter>> emitters;    ///< All emitters in the scene
     std::vector<std::unique_ptr<Animation>> animation; ///< Managers for animated textures
     std::unique_ptr<PostProcessing> post;              ///< Data for post processing
+    std::vector<unsigned int> proceduralTextures;      ///< Indexes for procedural textures
     unsigned int sandIndex = 0;                        ///< Index for the sand terrain
 };

@@ -174,7 +174,8 @@ bool SceneBuilder::InitialiseTerrain()
 bool SceneBuilder::InitialiseWater()
 {
     const auto index = m_data.water.size();
-    m_data.water.push_back(std::make_unique<Water>("water", Shader::ID_WATER));
+    m_data.water.push_back(std::make_unique<Water>(
+        "water", m_data.shaders[Shader::ID_WATER]->Name(), Shader::ID_WATER));
     auto& water = m_data.water[index];
 
     water->SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
@@ -301,6 +302,8 @@ ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name,
                                                    int size)
 {
     const auto index = m_data.textures.size();
+    m_data.proceduralTextures.push_back(index);
+
     m_data.textures.push_back(std::make_unique<ProceduralTexture>(
             name, GENERATED_TEXTURES + name + ".bmp", size, filter, type));
 
@@ -312,7 +315,8 @@ Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
                                    int shaderID,
                                    int instances)
 {
-    m_data.meshes.push_back(std::make_unique<Mesh>(name, shaderID, instances));
+    m_data.meshes.push_back(std::make_unique<Mesh>(
+        name, m_data.shaders[shaderID]->Name(), shaderID, instances));
     auto& mesh = *m_data.meshes[m_data.meshes.size()-1];
 
     if (!mesh.InitialiseFromFile(MESHES_PATH + filename, 
@@ -358,7 +362,8 @@ Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
     }
 
     const auto& texture = *m_data.textures[ID];
-    m_data.terrain.push_back(std::make_unique<Terrain>(name, shaderID, texture.GetPixels()));
+    m_data.terrain.push_back(std::make_unique<Terrain>(
+        name, m_data.shaders[shaderID]->Name(), shaderID, texture.GetPixels()));
     Terrain& terrain = *m_data.terrain[m_data.terrain.size()-1];
 
     if (!terrain.Initialise(uvStretch, minHeight, maxHeight, height,

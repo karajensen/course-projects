@@ -3,9 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "water.h"
+#include "tweaker.h"
 
-Water::Water(const std::string& name, int shaderID) :
-    Grid(name, shaderID),
+Water::Water(const std::string& name, 
+             const std::string& shaderName, 
+             int shaderID) :
+
+    Grid(name, shaderName, shaderID),
     m_speed(1.0f),
     m_bump(1.0f),
     m_bumpVelocity(0.0f, 0.0f),
@@ -30,6 +34,11 @@ Water::Water(const std::string& name, int shaderID) :
     m_waves[1].phase = 1.0f;
     m_waves[1].directionX = -0.7f;
     m_waves[1].directionZ = 0.7f;
+}
+
+void Water::AddToTweaker(Tweaker& tweaker)
+{
+    Grid::AddToTweaker(tweaker);
 }
 
 bool Water::Initialise(float height, float spacing, int size)

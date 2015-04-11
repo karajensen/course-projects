@@ -73,7 +73,8 @@ bool Application::Initialise()
     }
 
     // Requires engine to be initialised
-    m_gui = std::make_unique<Gui>(*m_scene);
+    m_gui = std::make_unique<Gui>(*m_scene, *m_camera,
+        std::bind(&OpenGL::ToggleWireframe, m_engine.get()));
 
     InitialiseInput();
 

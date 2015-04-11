@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "postprocessing.h"
+#include "tweaker.h"
 
 PostProcessing::PostProcessing()
 {
@@ -47,13 +48,38 @@ PostProcessing::PostProcessing()
     m_weights[4] /= overallWeight;
 }
 
+void PostProcessing::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddEntry("Saturation", &m_saturation, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Contrast", &m_contrast, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Blur Step", &m_blurStep, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Depth Far", &m_depthFar, TW_TYPE_FLOAT, 10.0f);
+    tweaker.AddEntry("Depth Near", &m_depthNear, TW_TYPE_FLOAT, 1.0f);
+    tweaker.AddEntry("DOF Start", &m_dofStart, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("DOF Fade", &m_dofFade, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Bloom Start", &m_bloomStart, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Bloom Fade", &m_bloomFade, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Bloom Intensity", &m_bloomIntensity, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Fog Start", &m_fogStart, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Fog Fade", &m_fogFade, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddEntry("Fog Colour", &m_fogColour.x, TW_TYPE_COLOR3F);
+    tweaker.AddEntry("Min Colour", &m_minimumColour.x, TW_TYPE_COLOR3F);
+    tweaker.AddEntry("Max Colour", &m_maximumColour.x, TW_TYPE_COLOR3F);
+}
+
 float PostProcessing::BlurWeight(int index) const
 {
     return m_weights.at(index);
 }
 
+std::string PostProcessing::GetPostMap() const
+{
+    return GetMapName(m_selectedMap);
+}
+
 void PostProcessing::SetPostMap(PostProcessing::Map map)
 {
+    m_selectedMap = map;
     m_masks.assign(0.0f);
     m_masks[map] = 1.0f;
 }

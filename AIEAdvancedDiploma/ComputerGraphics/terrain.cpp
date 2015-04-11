@@ -3,14 +3,21 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "terrain.h"
+#include "tweaker.h"
 
 Terrain::Terrain(const std::string& name, 
+                 const std::string& shaderName,
                  int shaderID,
                  const std::vector<unsigned int>& pixels) :
 
-    Grid(name, shaderID),
+    Grid(name, shaderName, shaderID),
     m_pixels(pixels)
 {
+}
+
+void Terrain::AddToTweaker(Tweaker& tweaker)
+{
+    Grid::AddToTweaker(tweaker);
 }
 
 void Terrain::Specularity(float value)
