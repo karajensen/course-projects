@@ -31,8 +31,8 @@ void Mesh::AddToTweaker(Tweaker& tweaker)
 
     if (SupportsCaustics())
     {
-        tweaker.AddEntry("Caustics Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
-        tweaker.AddEntry("Caustics Scale", &m_bump, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddEntry("Caustics Amount", &m_causticsAmount, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddEntry("Caustics Scale", &m_causticsScale, TW_TYPE_FLOAT, 0.1f);
     }
 
     if (SupportsSpecular())

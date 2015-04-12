@@ -29,15 +29,27 @@ ProceduralTexture::~ProceduralTexture()
 void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
 {
     Texture::AddToTweaker(tweaker);
+
+    tweaker.AddEntry("Size", [this](){ return std::to_string(m_size); });
+
+    tweaker.AddEntry("Type", [this]()
+    { 
+        switch (m_type)
+        {
+        case DIAMOND_SQUARE:
+            return "Diamond Square";
+        default:
+            return "None";
+        }
+    });
+
+    tweaker.AddButton("Reload", [this](){ Reload(); });
 }
 
 void ProceduralTexture::Generate()
 {
     switch (m_type)
     {
-    case RANDOM:
-        MakeRandomNormals();
-        break;
     case DIAMOND_SQUARE:
         MakeDiamondSquareFractal();
         break;
@@ -76,9 +88,10 @@ bool ProceduralTexture::ReloadPixels()
 void ProceduralTexture::Reload()
 {
     Generate();
-    ReloadPixels() ?
-        LogInfo("Texture: Reload succeeded for " + Name()) :
+    if (!ReloadPixels())
+    {
         LogError("Texture: Reload failed for " + Name());
+    }
 }
 
 void ProceduralTexture::Save()
@@ -248,22 +261,6 @@ unsigned int ProceduralTexture::Get(int row, int column) const
 unsigned int ProceduralTexture::Index(int row, int column) const
 {
     return row * m_size + column;
-}
-
-void ProceduralTexture::MakeRandomNormals()
-{
-    for (unsigned int i = 0; i < m_pixels.size(); ++i)
-    {
-        glm::vec3 colour(Random::Generate(0.0f, 1.0f),
-                         Random::Generate(0.0f, 1.0f),
-                         Random::Generate(0.0f, 1.0f));
-
-        colour = glm::normalize(colour);
-        SetRed(i, colour.x);
-        SetGreen(i, colour.y);
-        SetBlue(i, colour.z);
-    }
-    LogInfo("Texture: " + Name() + " generated");
 }
 
 void ProceduralTexture::MakeDiamondSquareFractal()

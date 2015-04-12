@@ -39,6 +39,40 @@ Water::Water(const std::string& name,
 void Water::AddToTweaker(Tweaker& tweaker)
 {
     Grid::AddToTweaker(tweaker);
+
+    tweaker.AddEntry("Height", [this](){ return m_height; }, [this](const float value)
+    { 
+        m_height = value;
+        for (auto& instance : Instances())
+        {
+            instance.position.y = m_height;
+        }
+    });
+
+    tweaker.AddEntry("Speed", &m_speed, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Bump Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Bump Velocity X", &m_bumpVelocity.x, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Bump Velocity Z", &m_bumpVelocity.y, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Texture Scale U", &m_uvScale.x, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Texture Scale V", &m_uvScale.y, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Fresnal Scale", &m_fresnal.x, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Fresnal Biase", &m_fresnal.y, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Fresnal Power", &m_fresnal.z, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Reflection Amount", &m_reflection, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Reflection Tint", &m_reflectionTint, TW_TYPE_COLOR3F);
+    tweaker.AddEntry("Shallow Colour", &m_shallowColour, TW_TYPE_COLOR4F);
+    tweaker.AddEntry("Deep Colour", &m_deepColour, TW_TYPE_COLOR4F);
+
+    for (unsigned int i = 0; i < m_waves.size(); ++i)
+    {
+        std::vector<std::pair<std::string, float*>> wave;
+        wave.push_back(std::make_pair("Amplitude", &m_waves[i].amplitude));
+        wave.push_back(std::make_pair("Frequency", &m_waves[i].frequency));
+        wave.push_back(std::make_pair("Phase", &m_waves[i].phase));
+        wave.push_back(std::make_pair("Direction X", &m_waves[i].directionX));
+        wave.push_back(std::make_pair("Direction Z", &m_waves[i].directionZ));
+        tweaker.AddSubGroup("Wave " + std::to_string(i), wave, 0.1f);
+    }
 }
 
 bool Water::Initialise(float height, float spacing, int size)

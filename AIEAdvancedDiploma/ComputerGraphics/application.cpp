@@ -72,11 +72,11 @@ bool Application::Initialise()
         return false;
     }
 
-    // Requires engine to be initialised
-    m_gui = std::make_unique<Gui>(*m_scene, *m_camera,
-        std::bind(&OpenGL::ToggleWireframe, m_engine.get()));
-
     InitialiseInput();
+
+    // Requires application to be fully initialiseds
+    m_gui = std::make_unique<Gui>(*m_scene, *m_camera, *m_input,
+        std::bind(&OpenGL::ToggleWireframe, m_engine.get()));
 
     return true;
 }
@@ -85,28 +85,28 @@ void Application::InitialiseInput()
 {
     m_input = std::make_unique<Input>(m_engine->GetWindow());
 
-    m_input->AddCallback(GLFW_KEY_1, false, 
+    m_input->AddCallback(GLFW_KEY_F1, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::FINAL_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_2, false, 
+    m_input->AddCallback(GLFW_KEY_F2, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::SCENE_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_3, false, 
+    m_input->AddCallback(GLFW_KEY_F3, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::NORMAL_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_4, false, 
+    m_input->AddCallback(GLFW_KEY_F4, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::DEPTH_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_5, false, 
+    m_input->AddCallback(GLFW_KEY_F5, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::BLUR_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_6, false, 
+    m_input->AddCallback(GLFW_KEY_F6, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::BLOOM_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_7, false, 
+    m_input->AddCallback(GLFW_KEY_F7, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::FOG_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_8, false, 
+    m_input->AddCallback(GLFW_KEY_F8, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::DOF_MAP); });
 
     m_input->AddCallback(GLFW_KEY_W, true, 

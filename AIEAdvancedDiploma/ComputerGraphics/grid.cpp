@@ -332,3 +332,13 @@ void Grid::RecalculateNormals()
         }
     }
 }
+
+const glm::vec2& Grid::GetUVStretch() const
+{
+    return m_uvStretch;
+}
+
+void Grid::SetUVStretch(const glm::vec2& value)
+{
+    m_uvStretch = value;
+}

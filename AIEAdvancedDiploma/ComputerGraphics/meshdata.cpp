@@ -32,7 +32,7 @@ void MeshData::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddEntry("Name", [this](){ return m_name; });
     tweaker.AddEntry("Shader", [this](){ return m_shaderName; });
-    tweaker.AddEntry("Instances", m_instances.size());
+    tweaker.AddEntry("Instances", [this](){ return std::to_string(m_instances.size()); });
     tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);
 }
 

@@ -25,10 +25,12 @@ public:
     * Constructor
     * @param scene The scene to manipulate
     * @param camera Allows modifying the camera
+    * @param input Allows adding key callbacks
     * @param wireframe Callback to toggle the wireframe
     */
     Gui(Scene& scene, 
         Camera& camera, 
+        Input& input,
         std::function<void(void)> wireframe);
 
     /**

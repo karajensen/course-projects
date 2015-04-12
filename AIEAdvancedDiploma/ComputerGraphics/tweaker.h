@@ -46,13 +46,6 @@ public:
                   std::function<const std::string(void)> getter);
 
     /**
-    * Creates a new readonly entry for displaying the size of a vector
-    * @param label What to display the entry as
-    * @param size The size of the vector
-    */
-    void AddEntry(std::string label, unsigned int size);
-
-    /**
     * Creates a new tweakable entry for an index
     * @param label What to display the entry as
     * @param getter Callback to get the index
@@ -65,16 +58,28 @@ public:
                   unsigned int max);
 
     /**
+    * Creates a new tweakable entry for an value
+    * @param label What to display the entry as
+    * @param getter Callback to get the value
+    * @param setter Callback for set the value
+    */
+    void AddEntry(std::string label, 
+                  std::function<const float(void)> getter,
+                  std::function<void(const float)> setter);
+
+    /**
     * Creates a new tweakable entry
     * @param label What to display the entry as
     * @param entry The address of the entry to add
     * @param type The type of entry it is
     * @param step The differece between values
+    * @param precision The amount of decimal points to display
     */
     void AddEntry(std::string label,
                   void* entry, 
                   TwType type, 
-                  float step);
+                  float step,
+                  int precision = 0);
 
     /**
     * Creates a new tweakable entry
@@ -89,17 +94,37 @@ public:
                   bool readonly = false);
 
     /**
+    * Creates a custom group of tweakables within the current group
+    * @param label What to display the subgroup as
+    * @param entries All values and their label
+    * @param step The differece between values
+    */
+    void AddSubGroup(std::string label,
+                     std::vector<std::pair<std::string, float*>>& entries,
+                     float step);
+
+    /**
     * Clears all current entries
     */
     void ClearEntries();
 
     /**
-    * Base for a callback entry
+    * Base for a callback entry for allowing templating in cpp
     */
     struct Entry
     {
         virtual void Getter(void* value) const = 0;
         virtual void Setter(const void* value) = 0;
+    };
+
+    /**
+    * Base for a subgroup callback entry for allowing templating in cpp
+    */
+    struct SubGroup
+    {
+        virtual void Getter(void* value) const = 0;
+        virtual void Setter(const void* value) = 0;
+        std::vector<void*> values;
     };
 
 private:
@@ -108,6 +133,20 @@ private:
     * Helper function to get a new name for an entry
     */
     const char* GetName();
+
+    /**
+    * Helper function for creating a subgroup entry
+    * @param subgroups Container for holding all subgroups
+    * @param entries the Entries for the subgroup
+    * @param definition Callback to retrieve a definition
+    * @param type The type of value for each entry
+    * @param step Optional step between values
+    * @return the new sub group type created
+    */
+    template <typename T> 
+    TwType MakeSubGroup(std::vector<std::pair<std::string, T*>>& entries,
+                        TwType type,
+                        float step = 0.0f);
 
     /**
     * Helper function to get a definition for a tweakable entry
@@ -126,8 +165,11 @@ private:
     * Helper function to get a definition for a tweakable entry
     * @param label What to display the entry as
     * @param step The differece between values
+    * @param precision The amount of decimal points to display
     */
-    std::string Definition(std::string label, float step) const;
+    std::string Definition(std::string label, 
+                           float step, 
+                           int precision = 0) const;
 
     /**
     * Allows adding lambda callbacks to the tweak 
@@ -160,9 +202,10 @@ private:
         std::function<void(void)> callback = nullptr;
     };
 
-    int m_count = 0;                                     ///< Number of entries added
-    std::string m_group;                                 ///< Global group currently set
-    CTwBar* m_tweakBar = nullptr;                        ///< Tweak bar to fill in, not owned by this class
-    std::vector<std::unique_ptr<Button>> m_buttons;      ///< Data for the tweak bar buttons
-    std::vector<std::unique_ptr<Entry>> m_entries;       ///< Data for the tweak bar string getters
+    int m_count = 0;                                    ///< Number of entries added
+    std::string m_group;                                ///< Global group currently set
+    CTwBar* m_tweakBar = nullptr;                       ///< Tweak bar to fill in, not owned by this class
+    std::vector<std::unique_ptr<Button>> m_buttons;     ///< Data for the tweak bar buttons
+    std::vector<std::unique_ptr<Entry>> m_entries;      ///< Data for the tweak bar getter/setters
+    std::vector<std::unique_ptr<SubGroup>> m_subGroups; ///< Data for the tweak bar subgroups
 };

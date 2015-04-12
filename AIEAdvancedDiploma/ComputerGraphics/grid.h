@@ -75,6 +75,16 @@ protected:
     */
     void RecalculateNormals();
 
+    /**
+    * Gets the UV texture stretch
+    */
+    const glm::vec2& GetUVStretch() const;
+
+    /**
+    * Sets the UV texture stretch
+    */
+    void SetUVStretch(const glm::vec2& value);
+
 public:
 
     /**

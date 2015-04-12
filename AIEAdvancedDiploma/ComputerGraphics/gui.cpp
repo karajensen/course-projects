@@ -13,6 +13,7 @@
 
 Gui::Gui(Scene& scene, 
          Camera& camera,
+         Input& input,
          std::function<void(void)> wireframe) :
 
     m_scene(scene),
@@ -32,12 +33,35 @@ Gui::Gui(Scene& scene,
     stream << barname << " label='Graphics Tweaker' " 
         << "position='" << border << " " << border << "' "
         << "size='250 " << WINDOW_HEIGHT-border*2 << "' "
-        << "alpha=180 text=light valueswidth=70 color='0 0 0' "
+        << "alpha=180 text=light valueswidth=80 color='0 0 0' "
         << "refresh=0.05 iconified=false resizable=true "
         << "fontsize=2 fontresizable=false ";
     TwDefine(stream.str().c_str());
 
     FillTweakBar();
+
+    auto AddKeyCallback = [&input](unsigned int key, unsigned int code)
+    {
+        input.AddCallback(key, false, [code]()
+        { 
+            TwKeyPressed(code, 0);
+        });
+    };
+
+    // Keys required for modifying entries in the tweak bar
+    AddKeyCallback(GLFW_KEY_0, '0');
+    AddKeyCallback(GLFW_KEY_1, '1');
+    AddKeyCallback(GLFW_KEY_2, '2');
+    AddKeyCallback(GLFW_KEY_3, '3');
+    AddKeyCallback(GLFW_KEY_4, '4');
+    AddKeyCallback(GLFW_KEY_5, '5');
+    AddKeyCallback(GLFW_KEY_6, '6');
+    AddKeyCallback(GLFW_KEY_7, '7');
+    AddKeyCallback(GLFW_KEY_8, '8');
+    AddKeyCallback(GLFW_KEY_9, '9');
+    AddKeyCallback(GLFW_KEY_PERIOD, '.');
+    AddKeyCallback(GLFW_KEY_ENTER, TW_KEY_RETURN);
+    AddKeyCallback(GLFW_KEY_BACKSPACE, TW_KEY_BACKSPACE);
 }
 
 Gui::~Gui()
@@ -77,8 +101,8 @@ void Gui::FillTweakBar()
     m_tweaker->SetGroup("Scene");
     m_tweaker->AddEntry("Render Pass", [this](){ return m_data.post->GetPostMap(); });
     m_tweaker->AddButton("Toggle Wireframe", m_wireframe);
-    m_tweaker->AddButton("Reload Procedural Scene", [this](){ m_scene.Reload(); });
-    m_tweaker->AddButton("Save Procedural Textures", [this](){ m_scene.SaveTextures(); });
+    m_tweaker->AddButton("Reload Scene", [this](){ m_scene.Reload(); });
+    m_tweaker->AddButton("Save Textures", [this](){ m_scene.SaveTextures(); });
 
     m_tweaker->SetGroup("Post Processing");
     m_data.post->AddToTweaker(*m_tweaker);
@@ -89,34 +113,6 @@ void Gui::FillTweakBar()
         [this](const int value){ m_selectedMesh = value; FillTweakBar(); }, 
         m_data.meshes.size()-1);
     m_data.meshes[m_selectedMesh]->AddToTweaker(*m_tweaker);
-
-    m_tweaker->SetGroup("Emitters");
-    m_tweaker->AddEntry("Selected Emitter", 
-        [this](){ return m_selectedEmitter; },
-        [this](const int value){ m_selectedEmitter = value; FillTweakBar(); }, 
-        m_data.emitters.size()-1);
-    m_data.emitters[m_selectedEmitter]->AddToTweaker(*m_tweaker);
-
-    m_tweaker->SetGroup("Terrain");
-    m_tweaker->AddEntry("Selected Terrain", 
-        [this](){ return m_selectedTerrain; },
-        [this](const int value){ m_selectedTerrain = value; FillTweakBar(); }, 
-        m_data.terrain.size()-1);
-    m_data.terrain[m_selectedTerrain]->AddToTweaker(*m_tweaker);
-    
-    m_tweaker->SetGroup("Textures");
-    m_tweaker->AddEntry("Selected Texture", 
-        [this](){ return m_selectedTexture; },
-        [this](const int value){ m_selectedTexture = value; FillTweakBar(); }, 
-        m_data.proceduralTextures.size()-1);
-    m_data.textures[m_data.proceduralTextures[m_selectedTexture]]->AddToTweaker(*m_tweaker);
-    
-    m_tweaker->SetGroup("Water");
-    m_tweaker->AddEntry("Selected Water", 
-        [this](){ return m_selectedWater; },
-        [this](const int value){ m_selectedWater = value; FillTweakBar(); }, 
-        m_data.water.size()-1);
-    m_data.water[m_selectedWater]->AddToTweaker(*m_tweaker);
     
     m_tweaker->SetGroup("Lights");
     m_tweaker->AddEntry("Selected Light", 
@@ -124,6 +120,34 @@ void Gui::FillTweakBar()
         [this](const int value){ m_selectedLight = value; FillTweakBar(); }, 
         m_data.lights.size()-1);
     m_data.lights[m_selectedLight]->AddToTweaker(*m_tweaker);
+
+    m_tweaker->SetGroup("Terrain");
+    m_tweaker->AddEntry("Selected Terrain", 
+        [this](){ return m_selectedTerrain; },
+        [this](const int value){ m_selectedTerrain = value; FillTweakBar(); }, 
+        m_data.terrain.size()-1);
+    m_data.terrain[m_selectedTerrain]->AddToTweaker(*m_tweaker);
+
+    m_tweaker->SetGroup("Water");
+    m_tweaker->AddEntry("Selected Water", 
+        [this](){ return m_selectedWater; },
+        [this](const int value){ m_selectedWater = value; FillTweakBar(); }, 
+        m_data.water.size()-1);
+    m_data.water[m_selectedWater]->AddToTweaker(*m_tweaker);
+
+    m_tweaker->SetGroup("Emitters");
+    m_tweaker->AddEntry("Selected Emitter", 
+        [this](){ return m_selectedEmitter; },
+        [this](const int value){ m_selectedEmitter = value; FillTweakBar(); }, 
+        m_data.emitters.size()-1);
+    m_data.emitters[m_selectedEmitter]->AddToTweaker(*m_tweaker);
+    
+    m_tweaker->SetGroup("Textures");
+    m_tweaker->AddEntry("Selected Texture", 
+        [this](){ return m_selectedTexture; },
+        [this](const int value){ m_selectedTexture = value; FillTweakBar(); }, 
+        m_data.proceduralTextures.size()-1);
+    m_data.textures[m_data.proceduralTextures[m_selectedTexture]]->AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Camera");
     m_camera.AddToTweaker(*m_tweaker);

@@ -52,8 +52,8 @@ void PostProcessing::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddEntry("Saturation", &m_saturation, TW_TYPE_FLOAT, 0.01f);
     tweaker.AddEntry("Contrast", &m_contrast, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Blur Step", &m_blurStep, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Depth Far", &m_depthFar, TW_TYPE_FLOAT, 10.0f);
+    tweaker.AddEntry("Blur Step", &m_blurStep, TW_TYPE_FLOAT, 0.01f, 4);
+    tweaker.AddEntry("Depth Far", &m_depthFar, TW_TYPE_FLOAT, 10.0f, 1);
     tweaker.AddEntry("Depth Near", &m_depthNear, TW_TYPE_FLOAT, 1.0f);
     tweaker.AddEntry("DOF Start", &m_dofStart, TW_TYPE_FLOAT, 0.01f);
     tweaker.AddEntry("DOF Fade", &m_dofFade, TW_TYPE_FLOAT, 0.01f);

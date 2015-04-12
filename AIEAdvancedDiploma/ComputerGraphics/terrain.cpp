@@ -18,6 +18,59 @@ Terrain::Terrain(const std::string& name,
 void Terrain::AddToTweaker(Tweaker& tweaker)
 {
     Grid::AddToTweaker(tweaker);
+
+    tweaker.AddEntry("Height", [this](){ return m_height; }, [this](const float value)
+    { 
+        m_height = value;
+        for (auto& instance : Instances())
+        {
+            instance.position.y = m_height;
+        }
+    });
+
+    tweaker.AddEntry("Min Height Offset", 
+        [this](){ return m_minHeight; },
+        [this](const float value){ m_minHeight = value; Reload(); });
+
+    tweaker.AddEntry("Max Height Offset", 
+        [this](){ return m_maxHeight; },
+        [this](const float value){ m_maxHeight = value; Reload(); });
+
+    tweaker.AddEntry("Texture Scale U", 
+        [this](){ return GetUVStretch().x; }, 
+        [this](const float value)
+    { 
+        SetUVStretch(glm::vec2(value, GetUVStretch().y));
+        Reload(); 
+    });
+
+    tweaker.AddEntry("Texture Scale V", 
+        [this](){ return GetUVStretch().y; }, 
+        [this](const float value)
+    { 
+        SetUVStretch(glm::vec2(GetUVStretch().x, value));
+        Reload(); 
+    });
+
+    tweaker.AddEntry("Ambience", &m_ambience, TW_TYPE_FLOAT, 0.1f);
+
+    if (SupportsBumpMapping())
+    {
+        tweaker.AddEntry("Bump Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
+    }
+
+    if (SupportsCaustics())
+    {
+        tweaker.AddEntry("Caustics Amount", &m_causticsAmount, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddEntry("Caustics Scale", &m_causticsScale, TW_TYPE_FLOAT, 0.1f);
+    }
+
+    if (SupportsSpecular())
+    {
+        tweaker.AddEntry("Specularity", &m_specularity, TW_TYPE_FLOAT, 0.1f);
+    }
+
+    tweaker.AddButton("Reload", [this](){ Reload(); });
 }
 
 void Terrain::Specularity(float value)
@@ -73,9 +126,10 @@ void Terrain::Reload()
     ResetGrid();
     GenerateTerrain();
     RecalculateNormals();
-    MeshData::Reload() ?
-        LogInfo("Terrain: Reload succeeded for " + Name()) :
+    if (!MeshData::Reload())
+    {
         LogError("Terrain: Reload failed for " + Name());
+    }
 }
 
 float Terrain::Specularity() const

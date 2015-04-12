@@ -14,7 +14,7 @@ NOTES: The fbx loader libary requires unzipping before building
 =================================================================
 
 INPUT:
-1 -> 9     Render a specific layer
+F1 -> F8   Render a specific layer
 WASDQE     Move the camera
 RMC        Rotate the camera
 

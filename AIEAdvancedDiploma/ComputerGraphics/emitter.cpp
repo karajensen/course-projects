@@ -20,8 +20,7 @@ Emitter::~Emitter() = default;
 void Emitter::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddEntry("Name", [this](){ return m_name; });
-    tweaker.AddEntry("Amount", m_particles.size());
-    tweaker.AddEntry("Colour", &m_data.tint, TW_TYPE_COLOR4F);
+    tweaker.AddEntry("Particles", [this](){ return std::to_string(m_particles.size()); });
     tweaker.AddEntry("Length", &m_data.length, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Width", &m_data.width, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Position X", &m_data.position.x, TW_TYPE_FLOAT, 0.1f);
@@ -40,6 +39,7 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
     tweaker.AddEntry("Max Speed", &m_data.maxSpeed, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Min Wave Speed", &m_data.minWaveSpeed, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Max Wave Speed", &m_data.maxWaveSpeed, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddEntry("Tint Colour", &m_data.tint, TW_TYPE_COLOR4F);
 }
 
 bool Emitter::Initialise(const EmitterData& data)

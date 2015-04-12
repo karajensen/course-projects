@@ -18,7 +18,6 @@ public:
     */
     enum Type
     {
-        RANDOM,
         DIAMOND_SQUARE
     };
 
@@ -75,11 +74,6 @@ private:
     * Generates the texture
     */
     void Generate();
-
-    /**
-    * Creates a texture of random normals used for ambient occlusion
-    */
-    void MakeRandomNormals();
 
     /**
     * Creates a fractal texture using the diamond square algorithm
