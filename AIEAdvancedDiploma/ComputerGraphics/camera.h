@@ -28,8 +28,9 @@ public:
 
     /**
     * Updates the view matrix
+    * @param deltatime Time passed between frames
     */
-    void Update();
+    void Update(float deltatime);
 
     /**
     * Resets the camera to the initial state
@@ -117,11 +118,6 @@ private:
     Camera(const Camera&) = delete;
     Camera& operator=(const Camera&) = delete;
 
-    /**
-    * Logs the camera to the console window
-    */
-    void LogCamera();
-
     glm::mat4 m_projection;        ///< Projection Matrix for the camera
     glm::mat4 m_view;              ///< View Matrix for the camera
     glm::mat4 m_viewProjection;    ///< Combined view projection matrix
@@ -133,6 +129,7 @@ private:
     glm::vec3 m_right;             ///< Camera right vector
     glm::vec3 m_target;            ///< Camera Look at target
     bool m_requiresUpdate = true;  ///< Whether the camera requires updating or not
+    bool m_autoMove = false;       ///< Auto move the camera forward
     float m_yaw = 0.0f;            ///< Degrees amount of yaw
     float m_pitch = 0.0f;          ///< Degrees amount of pitch
     float m_roll = 0.0f;           ///< Degrees amount of roll

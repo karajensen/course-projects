@@ -28,6 +28,7 @@ Camera::Camera() :
 
 void Camera::AddToTweaker(Tweaker& tweaker)
 {
+    tweaker.AddEntry("Auto Move", &m_autoMove, TW_TYPE_BOOLCPP);
     tweaker.AddEntry("Rotation Speed", &m_rotationSpeed, TW_TYPE_FLOAT, 1.0f);
     tweaker.AddEntry("Translate Speed", &m_translateSpeed, TW_TYPE_FLOAT, 1.0f);
     tweaker.AddEntry("Forward Speed", &m_forwardSpeed, TW_TYPE_FLOAT, 1.0f);
@@ -84,12 +85,16 @@ void Camera::Reset()
     m_pitch = 0;
 }
 
-void Camera::Update()
+void Camera::Update(float deltatime)
 {
+    if (m_autoMove)
+    {
+        Forward(-deltatime);
+    }
+
     if (m_requiresUpdate)
     {
         m_requiresUpdate = false;
-        //LogCamera();
         
         glm::mat4 translate;
         translate[3][0] = m_position.x;
@@ -118,16 +123,6 @@ void Camera::Update()
         m_forward.y = m_world[2][1];
         m_forward.z = m_world[2][2];
     }
-}
-
-void Camera::LogCamera()
-{
-    LogInfo("[" + std::to_string(m_position.x) + " " +
-        std::to_string(m_position.y) + " " +
-        std::to_string(m_position.z) + "] [" +
-        std::to_string(m_pitch) + " " +
-        std::to_string(m_yaw) + " " + 
-        std::to_string(m_roll) + "]");
 }
 
 void Camera::Rotate(const glm::vec2& direction, float value)

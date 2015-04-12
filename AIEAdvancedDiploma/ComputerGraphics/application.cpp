@@ -35,7 +35,7 @@ void Application::Run()
         m_timePassed += m_deltaTime;
 
         m_input->Update();
-        m_camera->Update();
+        m_camera->Update(m_deltaTime);
         if (m_input->IsRightMouseDown())
         {
             m_camera->Rotate(m_input->GetMouseDirection(), m_deltaTime);
