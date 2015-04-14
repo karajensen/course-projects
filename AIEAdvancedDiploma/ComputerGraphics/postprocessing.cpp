@@ -7,7 +7,7 @@
 
 PostProcessing::PostProcessing()
 {
-    SetPostMap(SCENE_MAP);
+    SetPostMap(FINAL_MAP);
 
     m_blurStep = 0.004f;
     m_depthFar = 1000.0f;
@@ -15,13 +15,13 @@ PostProcessing::PostProcessing()
     m_dofStart = 1.0f;
     m_dofFade = 0.01f;
     m_fogColour.r = 0.0f;
-    m_fogColour.g = 0.0f;
+    m_fogColour.g = 69.0f/255.0f;
     m_fogColour.b = 1.0f;
-    m_fogStart = -1.46f;
-    m_fogFade = 2.4f;
-    m_bloomIntensity = 1.0f;
-    m_bloomStart = 0.9f;
-    m_bloomFade = 0.1f;
+    m_fogStart = 0.39f;
+    m_fogFade = 0.61f;
+    m_bloomIntensity = 0.5f;
+    m_bloomStart = 0.95f;
+    m_bloomFade = 0.35f;
     m_contrast = 0.0f;
     m_saturation = 1.0f;
     m_maximumColour.r = 1.0f;

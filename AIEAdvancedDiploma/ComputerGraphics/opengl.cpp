@@ -77,7 +77,7 @@ bool OpenGL::Initialise()
 
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
     glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.22f, 0.49f, 0.85f, 0.0f);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glClearDepth(1.0f);
     glDepthFunc(GL_LEQUAL);

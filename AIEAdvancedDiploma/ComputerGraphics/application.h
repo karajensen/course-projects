@@ -10,6 +10,7 @@ class OpenGL;
 class Camera;
 class Input;
 class Scene;
+class Timer;
 class Gui;
 
 /**
@@ -51,12 +52,10 @@ private:
     */
     void InitialiseInput();
 
-    float m_previousTime = 0.0f;      ///< Time previously saved last tick
-    float m_deltaTime = 0.0f;         ///< Time passed between ticks
-    float m_timePassed = 0.0f;        ///< The total time passed since start
     std::unique_ptr<Camera> m_camera; ///< The camera viewing the scene
     std::unique_ptr<Input> m_input;   ///< Manages input from the window
     std::unique_ptr<Scene> m_scene;   ///< Manages all objects
     std::unique_ptr<OpenGL> m_engine; ///< Render engine to use for application
     std::unique_ptr<Gui> m_gui;       ///< Manipulates the scene
+    std::unique_ptr<Timer> m_timer;   ///< Keeps track of time between ticks and simulation
 };

@@ -24,13 +24,13 @@ public:
     */
     enum Index
     {
+        ID_FLAT,
         ID_DIFFUSE,
         ID_WATER,
         ID_PARTICLE,
         ID_BUMP,
         ID_BUMP_SPEC_CAUSTICS,
         ID_DIFFUSE_CAUSTICS,
-        ID_FLAT,
         ID_POST_PROCESSING,
         ID_PRE_PROCESSING,
         ID_BLUR_HORIZONTAL,

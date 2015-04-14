@@ -6,6 +6,8 @@
 
 #include <vector>
 
+class Tweaker;
+
 /**
 * Manages cycling through multiple textures
 */
@@ -26,6 +28,12 @@ public:
     * Constructor
     */
     Animation() = default;
+
+    /**
+    * Adds data for this element to be tweaked by the gui
+    * @param tweaker The helper for adding tweakable entries
+    */
+    void AddToTweaker(Tweaker& tweaker);
             
     /**
     * Adds a texture frame 
@@ -54,5 +62,5 @@ private:
     std::vector<int> m_frames;        ///< All frames to animate
     int m_selectedFrame = 0;          ///< The currently selected frame
     float m_timePassed = 0.0f;        ///< The time passed since last frame switch
-
+    float m_speed = 0.03f;            ///< Frame animation speed
 };

@@ -7,6 +7,8 @@
 Quad::Quad(const std::string& name, int shader) :
     MeshData(name, "unnamed", shader)
 {
+    m_vertexComponentCount = 5;
+
     // Top left corner
     m_vertices.emplace_back(-1.0f); // x
     m_vertices.emplace_back(-1.0f);  // y

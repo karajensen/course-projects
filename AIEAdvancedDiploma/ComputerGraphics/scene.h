@@ -10,6 +10,7 @@
 #include <string>
 #include <memory>
 
+class Camera;
 class SceneBuilder;
 class SceneUpdater;
 struct SceneData;
@@ -27,9 +28,9 @@ public:
     /**
     * Ticks the scene
     * @param deltatime The time passed between ticks
-    * @param camera The world position of the camera
+    * @param camera For obtaining view information
     */
-    void Tick(float deltatime, const glm::vec3& camera);
+    void Tick(float deltatime, const Camera& camera);
 
     /**
     * Renders the GUI manipulator

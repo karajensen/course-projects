@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////////
 // Kara Jensen - mail@karajensen.com - meshdata.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -14,7 +14,7 @@ MeshData::MeshData(const std::string& name,
     m_shaderIndex(shaderID)
 {
     m_textureIDs.resize(MAX_TYPES);
-    m_textureIDs.assign(MAX_TYPES, NO_INDEX);
+    m_textureIDs.assign(MAX_TYPES, NO_INDEX);    
 }
 
 MeshData::~MeshData()
@@ -33,7 +33,9 @@ void MeshData::AddToTweaker(Tweaker& tweaker)
     tweaker.AddEntry("Name", [this](){ return m_name; });
     tweaker.AddEntry("Shader", [this](){ return m_shaderName; });
     tweaker.AddEntry("Instances", [this](){ return std::to_string(m_instances.size()); });
+    tweaker.AddEntry("Visible", [this](){ return std::to_string(m_instancesRendered); });
     tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);
+    tweaker.AddEntry("Radius", &m_radius, TW_TYPE_FLOAT);
 }
 
 bool MeshData::Initialise()
@@ -69,7 +71,22 @@ bool MeshData::Reload()
         return false;
     }
 
+    GenerateRadius();
+
     return true;
+}
+
+void MeshData::GenerateRadius()
+{
+    m_radius = 0.0f;
+
+    // Assumes position is always first in a vertex
+    for (unsigned int vertex = 0; vertex < m_vertices.size(); vertex += m_vertexComponentCount)
+    {
+        const glm::vec3 position(m_vertices[vertex], 
+            m_vertices[vertex + 1], m_vertices[vertex + 2]);
+        m_radius = std::max(m_radius, glm::length(position));
+    }
 }
 
 void MeshData::PreRender() const
@@ -110,18 +127,6 @@ const std::vector<int>& MeshData::TextureIDs() const
     return m_textureIDs;
 }
 
-int MeshData::VertexComponentCount() const
-{
-    return m_vertexComponentCount;
-}
-
-void MeshData::SetTextures(int diffuse, int normal, int specular)
-{
-    m_textureIDs[COLOUR] = diffuse;
-    m_textureIDs[NORMAL] = normal;
-    m_textureIDs[SPECULAR] = specular;
-}
-
 void MeshData::SetTexture(Slot type, int ID)
 {
     if (ID == NO_INDEX)
@@ -145,30 +150,33 @@ void MeshData::Render(RenderInstance renderInstance) const
 {
     for (const Instance& instance : Instances())
     {
-        glm::mat4 scale;
-        scale[0][0] = instance.scale.x;
-        scale[1][1] = instance.scale.y;
-        scale[2][2] = instance.scale.z;
-
-        glm::mat4 translate;
-        translate[3][0] = instance.position.x;
-        translate[3][1] = instance.position.y;
-        translate[3][2] = instance.position.z;
-            
-        glm::mat4 rotate;
-        if (instance.rotation.x == 0 &&
-            instance.rotation.y == 0 &&
-            instance.rotation.z == 0)
+        if (instance.render)
         {
-            glm::mat4 rotateX, rotateY, rotateZ;
-            glm::rotate(rotateX, instance.rotation.x, glm::vec3(1,0,0));
-            glm::rotate(rotateY, instance.rotation.y, glm::vec3(0,1,0));
-            glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0,0,1));
-            rotate = rotateZ * rotateX * rotateY;
-        }
+            glm::mat4 scale;
+            scale[0][0] = instance.scale.x;
+            scale[1][1] = instance.scale.y;
+            scale[2][2] = instance.scale.z;
 
-        renderInstance(translate * rotate * scale);
-        Render();
+            glm::mat4 translate;
+            translate[3][0] = instance.position.x;
+            translate[3][1] = instance.position.y;
+            translate[3][2] = instance.position.z;
+            
+            glm::mat4 rotate;
+            if (instance.rotation.x == 0 &&
+                instance.rotation.y == 0 &&
+                instance.rotation.z == 0)
+            {
+                glm::mat4 rotateX, rotateY, rotateZ;
+                glm::rotate(rotateX, instance.rotation.x, glm::vec3(1,0,0));
+                glm::rotate(rotateY, instance.rotation.y, glm::vec3(0,1,0));
+                glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0,0,1));
+                rotate = rotateZ * rotateX * rotateY;
+            }
+
+            renderInstance(translate * rotate * scale);
+            Render();
+        }
     }
 }
 
@@ -180,6 +188,11 @@ const std::vector<MeshData::Instance>& MeshData::Instances() const
  std::vector<MeshData::Instance>& MeshData::Instances()
 {
     return m_instances;
+}
+
+void MeshData::SetInstance(int index, const glm::vec3& position)
+{
+    m_instances[index].position = position;
 }
 
 void MeshData::SetInstance(int index,
@@ -213,17 +226,57 @@ const MeshData::Instance& MeshData::GetInstance(int index) const
     return m_instances.at(index);
 }
 
-bool MeshData::SupportsCaustics() const
+bool MeshData::UsesCaustics() const
 {
-    return m_shaderName.find("caustic") != NO_INDEX;
+    return m_textureIDs[CAUSTICS] != NO_INDEX;   
 }
 
-bool MeshData::SupportsBumpMapping() const
+bool MeshData::UsesBumpMapping() const
 {
-    return m_shaderName.find("bump") != NO_INDEX;
+    return m_textureIDs[NORMAL] != NO_INDEX;   
 }
 
-bool MeshData::SupportsSpecular() const
+bool MeshData::UsesSpecular() const
 {
-    return m_shaderName.find("specular") != NO_INDEX;
+    return m_textureIDs[SPECULAR] != NO_INDEX;   
+}
+
+bool MeshData::ShouldRender(const Instance& instance,
+                            const glm::vec3& position, 
+                            const BoundingArea& bounds)
+{
+    const glm::vec3 centerToMesh = instance.position - bounds.center;
+    return glm::length(centerToMesh) <= m_radius + bounds.radius;
+}
+
+void MeshData::SetSkyBox()
+{
+    m_skybox = true;
+}
+
+void MeshData::Tick(const glm::vec3& cameraPosition, 
+                    const BoundingArea& cameraBounds,
+                    int causticsTexture)
+{
+    if (UsesCaustics())
+    {
+        SetTexture(CAUSTICS, causticsTexture);
+    }
+   
+    m_instancesRendered = 0;
+    for (auto& instance : m_instances)
+    {
+        if (m_skybox)
+        {
+            instance.position = cameraPosition;
+        }
+
+        instance.render = ShouldRender(
+            instance, cameraPosition, cameraBounds);
+
+        if (instance.render)
+        {
+            ++m_instancesRendered;
+        }
+    }
 }

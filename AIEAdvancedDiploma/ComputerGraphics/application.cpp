@@ -9,17 +9,13 @@
 #include "camera.h"
 #include "scene.h"
 #include "gui.h"
-
-namespace
-{
-    const float DT_MAXIMUM = 0.03f;   ///< Maximum allowed deltatime
-    const float DT_MINIMUM = 0.01f;   ///< Minimum allowed deltatime
-}
+#include "timer.h"
 
 Application::Application() :
     m_camera(std::make_unique<Camera>()),
     m_scene(std::make_unique<Scene>()),
-    m_engine(std::make_unique<OpenGL>(*m_scene, *m_camera))
+    m_engine(std::make_unique<OpenGL>(*m_scene, *m_camera)),
+    m_timer(std::make_unique<Timer>())
 {
 }
 
@@ -29,22 +25,21 @@ void Application::Run()
 {
     while(m_engine->IsRunning())
     {
-        const float currentTime = static_cast<float>(glfwGetTime());
-        m_deltaTime = Clamp(currentTime - m_previousTime, DT_MINIMUM, DT_MAXIMUM);
-        m_previousTime = currentTime;
-        m_timePassed += m_deltaTime;
+        m_timer->UpdateTimer();
+        const float deltaTime = m_timer->GetDeltaTime();
+        const float timePassed = m_timer->GetTotalTime();
 
         m_input->Update();
-        m_camera->Update(m_deltaTime);
+        m_camera->Update(deltaTime);
         if (m_input->IsRightMouseDown())
         {
-            m_camera->Rotate(m_input->GetMouseDirection(), m_deltaTime);
+            m_camera->Rotate(m_input->GetMouseDirection(), deltaTime);
         }
        
         m_gui->Update(*m_input);
-        m_scene->Tick(m_deltaTime, m_camera->Position());
+        m_scene->Tick(deltaTime, *m_camera);
 
-        m_engine->RenderScene(m_timePassed);
+        m_engine->RenderScene(timePassed);
         m_gui->Render();
         m_engine->EndRender();
     }
@@ -75,7 +70,7 @@ bool Application::Initialise()
     InitialiseInput();
 
     // Requires application to be fully initialiseds
-    m_gui = std::make_unique<Gui>(*m_scene, *m_camera, *m_input,
+    m_gui = std::make_unique<Gui>(*m_scene, *m_camera, *m_input, *m_timer,
         std::bind(&OpenGL::ToggleWireframe, m_engine.get()));
 
     return true;
@@ -110,21 +105,21 @@ void Application::InitialiseInput()
         [this](){ m_scene->SetPostMap(PostProcessing::DOF_MAP); });
 
     m_input->AddCallback(GLFW_KEY_W, true, 
-        [this](){ m_camera->Forward(-m_deltaTime); });
+        [this](){ m_camera->Forward(m_timer->GetDeltaTime()); });
 
     m_input->AddCallback(GLFW_KEY_S, true, 
-        [this](){ m_camera->Forward(m_deltaTime); });
+        [this](){ m_camera->Forward(-m_timer->GetDeltaTime()); });
 
     m_input->AddCallback(GLFW_KEY_D, true, 
-        [this](){ m_camera->Right(m_deltaTime); });
+        [this](){ m_camera->Right(m_timer->GetDeltaTime()); });
 
     m_input->AddCallback(GLFW_KEY_A, true, 
-        [this](){ m_camera->Right(-m_deltaTime); });
+        [this](){ m_camera->Right(-m_timer->GetDeltaTime()); });
 
     m_input->AddCallback(GLFW_KEY_Q, true,
-        [this](){ m_camera->Up(m_deltaTime); });
+        [this](){ m_camera->Up(m_timer->GetDeltaTime()); });
 
     m_input->AddCallback(GLFW_KEY_E, true, 
-        [this](){ m_camera->Up(-m_deltaTime); });
+        [this](){ m_camera->Up(-m_timer->GetDeltaTime()); });
    
 }

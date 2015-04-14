@@ -104,6 +104,15 @@ public:
                      float step);
 
     /**
+    * Creates a custom group of tweakables within the current group
+    * @param label What to display the subgroup as
+    * @param entries All values and their label
+    * @param step The differece between values
+    */
+    void AddSubGroup(std::string label,
+                     std::vector<std::pair<std::string, bool*>>& entries);
+
+    /**
     * Clears all current entries
     */
     void ClearEntries();

@@ -9,17 +9,20 @@
 #include "tweaker.h"
 #include "input.h"
 #include "camera.h"
+#include "timer.h"
 #include <sstream>
 
 Gui::Gui(Scene& scene, 
          Camera& camera,
          Input& input,
+         const Timer& timer,
          std::function<void(void)> wireframe) :
 
     m_scene(scene),
     m_camera(camera),
     m_data(scene.GetData()),
-    m_wireframe(wireframe)
+    m_wireframe(wireframe),
+    m_timer(timer)
 {
     TwInit(TW_OPENGL_CORE, nullptr);
     TwWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -100,6 +103,7 @@ void Gui::FillTweakBar()
 
     m_tweaker->SetGroup("Scene");
     m_tweaker->AddEntry("Render Pass", [this](){ return m_data.post->GetPostMap(); });
+    m_tweaker->AddEntry("Frames Per Second", [this](){ return std::to_string(m_timer.GetFPS()); });
     m_tweaker->AddButton("Toggle Wireframe", m_wireframe);
     m_tweaker->AddButton("Reload Scene", [this](){ m_scene.Reload(); });
     m_tweaker->AddButton("Save Textures", [this](){ m_scene.SaveTextures(); });
@@ -148,6 +152,9 @@ void Gui::FillTweakBar()
         [this](const int value){ m_selectedTexture = value; FillTweakBar(); }, 
         m_data.proceduralTextures.size()-1);
     m_data.textures[m_data.proceduralTextures[m_selectedTexture]]->AddToTweaker(*m_tweaker);
+
+    m_tweaker->SetGroup("Caustics");
+    m_data.animation[Animation::ID_CAUSTICS]->AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Camera");
     m_camera.AddToTweaker(*m_tweaker);

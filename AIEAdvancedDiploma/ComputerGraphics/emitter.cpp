@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////////
 // Kara Jensen - mail@karajensen.com - emitter.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -21,6 +21,9 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddEntry("Name", [this](){ return m_name; });
     tweaker.AddEntry("Particles", [this](){ return std::to_string(m_particles.size()); });
+    tweaker.AddEntry("Visible", &m_render, TW_TYPE_BOOLCPP);
+    tweaker.AddEntry("Paused", &m_paused, TW_TYPE_BOOLCPP);
+    tweaker.AddEntry("Radius", &m_data.radius, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Length", &m_data.length, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Width", &m_data.width, TW_TYPE_FLOAT, 0.1f);
     tweaker.AddEntry("Position X", &m_data.position.x, TW_TYPE_FLOAT, 0.1f);
@@ -45,6 +48,10 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
 bool Emitter::Initialise(const EmitterData& data)
 {
     m_data = data;
+
+    // Radius requires a buffer as particles can move outside bounds
+    m_data.radius = std::max(m_data.width, m_data.length) * m_data.maxAmplitude * 2.0f;
+    
     return m_particle->Initialise();
 }
 
@@ -57,6 +64,11 @@ void Emitter::Render(RenderParticle renderParticle,
                      const glm::vec3& cameraPosition,
                      const glm::vec3& cameraUp)
 {
+    if (!m_render)
+    {
+        return;
+    }
+
     for (const Particle& particle : Particles())
     {
         if (particle.Alive())
@@ -138,34 +150,49 @@ void Emitter::AddTexture(int ID)
     m_textures.push_back(ID);
 }
 
-void Emitter::Tick(float deltatime)
+bool Emitter::ShouldRender(const glm::vec3& position, 
+                           const BoundingArea& bounds)
+{
+    const glm::vec3 centerToMesh = m_data.position - bounds.center;
+    return glm::length(centerToMesh) <= m_data.radius + bounds.radius;
+}
+
+void Emitter::Tick(float deltatime,
+                   const glm::vec3& cameraPosition,
+                   const BoundingArea& cameraBounds)
 {
     if (m_paused)
     {
         return;
     }
 
-   for (Particle& particle : m_particles)
-   {
-       if (!particle.Tick(deltatime, m_data.direction))
-       {
-            glm::vec3 particlePosition(m_data.position);
-            particlePosition.x += Random::Generate(-m_data.width, m_data.width) * 0.5f;
-            particlePosition.z += Random::Generate(-m_data.length, m_data.length) * 0.5f;
-
-            const int textureID = m_textures[Random::Generate(
-                0, static_cast<int>(m_textures.size()-1))];
-
-            particle.Reset(m_data.lifeTime, 
-                           m_data.lifeFade,
-                           Random::Generate(m_data.minSpeed, m_data.maxSpeed),
-                           Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
-                           Random::Generate(m_data.minSize, m_data.maxSize),
-                           Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
-                           Random::Generate(m_data.minFrequency, m_data.maxFrequency),
-                           textureID,
-                           particlePosition);
-
-       }
-   }
+    m_render = ShouldRender(cameraPosition, cameraBounds);
+    if (!m_render)
+    {
+        return;
+    }
+    
+    for (Particle& particle : m_particles)
+    {
+        if (!particle.Tick(deltatime, m_data.direction))
+        {
+             glm::vec3 particlePosition(m_data.position);
+             particlePosition.x += Random::Generate(-m_data.width, m_data.width) * 0.5f;
+             particlePosition.z += Random::Generate(-m_data.length, m_data.length) * 0.5f;
+    
+             const int textureID = m_textures[Random::Generate(
+                 0, static_cast<int>(m_textures.size()-1))];
+    
+             particle.Reset(m_data.lifeTime, 
+                            m_data.lifeFade,
+                            Random::Generate(m_data.minSpeed, m_data.maxSpeed),
+                            Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
+                            Random::Generate(m_data.minSize, m_data.maxSize),
+                            Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
+                            Random::Generate(m_data.minFrequency, m_data.maxFrequency),
+                            textureID,
+                            particlePosition);
+    
+        }
+    }
 }

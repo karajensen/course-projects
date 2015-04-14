@@ -6,6 +6,14 @@
 #include "renderdata.h"
 #include "tweaker.h"
 
+namespace
+{
+    const float FRUSTRUM_NEAR = 1.0f;
+    const float FRUSTRUM_FAR = 1000.0f;
+    const float FIELD_OF_VIEW = 60.0f;
+    const float RATIO = WINDOW_WIDTH / static_cast<float>(WINDOW_HEIGHT);
+}
+
 Camera::Camera() :
     m_initialPos(15.0f, 1.0f, 3.0f),
     m_position(m_initialPos),
@@ -15,15 +23,11 @@ Camera::Camera() :
     m_forwardSpeed(20.0f),
     m_pitch(0.0f),
     m_yaw(75.0f),
-    m_roll(0.0f)
+    m_roll(0.0f),
+    m_bounds(std::make_unique<BoundingArea>())
 {
-    const float frustrumNear = 1.0f;
-    const float frustrumFar = 2000.0f;
-    const float fieldOfView = 60.0f;
-
-    m_projection = glm::perspective(fieldOfView, 
-        WINDOW_WIDTH / static_cast<float>(WINDOW_HEIGHT),
-        frustrumNear, frustrumFar);
+    m_projection = glm::perspective(FIELD_OF_VIEW, 
+        RATIO, FRUSTRUM_NEAR, FRUSTRUM_FAR);
 }
 
 void Camera::AddToTweaker(Tweaker& tweaker)
@@ -119,10 +123,34 @@ void Camera::Update(float deltatime)
         m_right.y = m_world[0][1];
         m_right.z = m_world[0][2];
 
-        m_forward.x = m_world[2][0];
-        m_forward.y = m_world[2][1];
-        m_forward.z = m_world[2][2];
+        m_forward.x = -m_world[2][0];
+        m_forward.y = -m_world[2][1];
+        m_forward.z = -m_world[2][2];
+
+        GenerateBounds();
     }
+}
+
+void Camera::GenerateBounds()
+{
+    // Determine the largest forward bounding area based on the far plane
+    // http://www.lighthouse3d.com/tutorials/view-frustum-culling/view-frustums-shape/
+
+    const float height = 2.0f * std::tan(DegToRad(FIELD_OF_VIEW) * 0.5f) * FRUSTRUM_FAR;
+	const float width = height * RATIO;
+    const float halfHeight = height * 0.5f;
+    const float halfWidth = width * 0.5f;
+
+    const glm::vec3 nearPoint = m_position + (m_forward * FRUSTRUM_NEAR);
+    const glm::vec3 farPoint = m_position + (m_forward * FRUSTRUM_FAR);
+
+    m_bounds->radius = std::max(halfWidth, halfHeight);
+    m_bounds->center = (farPoint + nearPoint) * 0.5f;
+}
+
+const BoundingArea& Camera::GetBounds() const
+{
+    return *m_bounds;
 }
 
 void Camera::Rotate(const glm::vec2& direction, float value)

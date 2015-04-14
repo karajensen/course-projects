@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 #include "renderdata.h"
+#include "glm\glm.hpp"
 
 class Tweaker;
+struct BoundingArea;
 
 /**
 * Base Mesh Information
@@ -44,6 +46,7 @@ public:
         glm::vec3 position = glm::vec3(0,0,0); ///< Position offset
         glm::vec3 rotation = glm::vec3(0,0,0); ///< Degrees rotated around each axis
         glm::vec3 scale = glm::vec3(1,1,1);    ///< Scaling of the mesh
+        bool render = true;                    ///< Whether to draw the mesh
     };
 
     /**
@@ -57,15 +60,25 @@ public:
              int shaderID);
 
     /**
+    * Destructor
+    */
+    virtual ~MeshData();
+
+    /**
     * Adds data for this element to be tweaked by the gui
     * @param tweaker The helper for adding tweakable entries
     */
     void AddToTweaker(Tweaker& tweaker);
 
     /**
-    * Destructor
+    * Ticks the mesh
+    * @param cameraPosition The world position of the camera
+    * @param cameraBounds Bounding area in front of the camera
+    * @param causticsTexture The ID of the current texture for caustics
     */
-    virtual ~MeshData();
+    void Tick(const glm::vec3& cameraPosition, 
+              const BoundingArea& cameraBounds,
+              int causticsTexture);
 
     /**
     * Initialises the buffers for the mesh
@@ -131,11 +144,6 @@ public:
     const std::vector<int>& TextureIDs() const;
 
     /**
-    * @return Number of components that make up a vertex
-    */
-    int VertexComponentCount() const;
-
-    /**
     * @return Whether back facing polygons are culled
     */
     bool BackfaceCull() const;
@@ -151,16 +159,6 @@ public:
     * @param ID The ID of the texture to use
     */
     void SetTexture(Slot type, int ID);
-
-    /**
-    * Sets the ID of the textures to use
-    * @param diffuse the ID for the diffuse texture
-    * @param normal the ID for the normal texture
-    * @param specular the ID for the specular texture
-    */
-    void SetTextures(int diffuse, 
-                     int normal = NO_INDEX,
-                     int specular = NO_INDEX);
 
     /**
     * Adds an instance for this mesh
@@ -190,11 +188,23 @@ public:
                      float scale);
 
     /**
+    * Sets an instance for this mesh
+    * @param index The ID of this instance
+    * @param position The position offset 
+    */
+    void SetInstance(int index, const glm::vec3& position);
+
+    /**
     * Gets the instance at the index
     * @param index The index of the instance to get
     * @return the instance
     */
     const Instance& GetInstance(int index) const;
+
+    /**
+    * Sets whether this mesh is a sky box
+    */
+    void SetSkyBox();
 
 protected:
 
@@ -205,21 +215,38 @@ protected:
     MeshData& operator=(const MeshData&) = delete;
 
     /**
+    * Determines whether the instance should be rendered
+    * @param instance The instance to check
+    * @param position The position of the camera
+    * @param cameraBounds Bounding area in front of the camera
+    */
+    bool ShouldRender(const Instance& instance,
+                      const glm::vec3& position, 
+                      const BoundingArea& bounds);
+
+    /**
     * @return whether this mesh renders with caustics
     */
-    bool SupportsCaustics() const;
+    bool UsesCaustics() const;
 
     /**
     * @return whether this mesh renders with bump mapping
     */
-    bool SupportsBumpMapping() const;
+    bool UsesBumpMapping() const;
 
     /**
     * @return whether this mesh renders with specular highlights
     */
-    bool SupportsSpecular() const;
+    bool UsesSpecular() const;
+
+    /**
+    * Determines the radius surrounding this mesh
+    * This is the based on the furthest vertex from the mesh center
+    */
+    void GenerateRadius();
 
     bool m_backfacecull = true;         ///< Whether backface culling is enabled
+    int m_instancesRendered = 0;        ///< Number of instances currently rendered
     int m_vertexComponentCount = 0;     ///< Number of components that make up a vertex
     std::vector<float> m_vertices;      ///< Mesh Vertex information
     std::vector<DWORD> m_indices;       ///< Mesh Index information
@@ -232,4 +259,6 @@ protected:
     std::vector<int> m_textureIDs;      ///< IDs for each texture used
     std::vector<Instance> m_instances;  ///< Instances of this mesh
     const std::string m_shaderName;     ///< Name of the shader to use
+    bool m_skybox = false;              ///< Whether this mesh is a skybox
+    float m_radius = 0.0f;              ///< The radius of the sphere surrounding the mesh
 };

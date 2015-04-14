@@ -272,3 +272,13 @@ void Tweaker::AddSubGroup(std::string label,
     TwAddVarCB(m_tweakBar, GetName(), subgroupType, 
         SetCallback, GetCallback, entry.get(), Definition(label).c_str());
 }
+
+void Tweaker::AddSubGroup(std::string label,
+                          std::vector<std::pair<std::string, bool*>>& entries)
+{
+    const TwType subgroupType = MakeSubGroup(entries, TW_TYPE_BOOLCPP);
+    auto& entry = m_subGroups[m_subGroups.size()-1];
+
+    TwAddVarCB(m_tweakBar, GetName(), subgroupType, 
+        SetCallback, GetCallback, entry.get(), Definition(label).c_str());
+}

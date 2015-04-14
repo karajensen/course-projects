@@ -47,3 +47,12 @@ template<typename T> bool IsZero(const T& vector)
         vector.y == 0.0 &&
         vector.z == 0.0;
 }
+
+/**
+* Bounding area data
+*/
+struct BoundingArea
+{
+    glm::vec3 center;
+    float radius = 0.0f;
+};

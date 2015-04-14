@@ -3,9 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "scene.h"
+#include "renderdata.h"
 #include "sceneData.h"
 #include "sceneBuilder.h"
 #include "sceneUpdater.h"
+#include "camera.h"
 
 Scene::Scene() :
     m_data(std::make_unique<SceneData>())
@@ -59,11 +61,17 @@ Shader& Scene::GetShader(int index) const
     return *m_data->shaders[index];
 }
 
-void Scene::Tick(float deltatime, const glm::vec3& camera)
+void Scene::Tick(float deltatime, const Camera& camera)
 {
+    const int causticsTexture = 
+        m_data->animation[Animation::ID_CAUSTICS]->GetFrame();
+
+    const auto& position = camera.Position();
+    const auto& bounds = camera.GetBounds();
+
     for (auto& emitter : m_data->emitters)
     {
-        emitter->Tick(deltatime);
+        emitter->Tick(deltatime, position, bounds);
     }
 
     for (auto& animation : m_data->animation)
@@ -71,30 +79,22 @@ void Scene::Tick(float deltatime, const glm::vec3& camera)
         animation->Tick(deltatime);
     }
 
-    const auto caustics = m_data->animation[Animation::ID_CAUSTICS]->GetFrame();
-
     for (auto& mesh : m_data->meshes)
     {
-        if (GetShader(mesh->ShaderID()).HasComponent(Shader::CAUSTICS))
-        {
-            mesh->SetTexture(Mesh::CAUSTICS, caustics);
-        }
+        mesh->Tick(position, bounds, causticsTexture);
     }
 
     for (auto& terrain : m_data->terrain)
     {
-        if (GetShader(terrain->ShaderID()).HasComponent(Shader::CAUSTICS))
-        {
-            terrain->SetTexture(Mesh::CAUSTICS, caustics);
-        }
+        terrain->Tick(position, bounds, causticsTexture);
     }
 
-    m_updater->Update(camera);
+    for (auto& water : m_data->water)
+    {
+        water->Tick(position, bounds, causticsTexture);
+    }
 
-    // Temporary to test scene
-    static float timePassed = 0.0f;
-    timePassed += deltatime;
-    m_data->meshes[0]->Instances()[0].position.y += cos(timePassed) * 0.05f;
+    m_updater->Update(position);
 }
 
 bool Scene::Initialise(const glm::vec3& camera)
@@ -105,6 +105,7 @@ bool Scene::Initialise(const glm::vec3& camera)
     if (m_builder->Initialise())
     {
         // To prevent unnecessary shader switching, sort by shader used
+        // Sky box should always be rendered first as furthest away
         std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
             [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool
             {

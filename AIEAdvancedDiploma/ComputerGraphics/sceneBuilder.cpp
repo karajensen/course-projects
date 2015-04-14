@@ -162,7 +162,7 @@ bool SceneBuilder::InitialiseTerrain()
     {
         m_data.sandIndex = m_data.terrain.size();
         Terrain& terrain = InitialiseTerrain("sand", "heightmap",
-            Shader::ID_BUMP, glm::vec2(0.25f, 0.25f), -15.0f, 0.0f, 0.5f, 5.0f, 21);
+            Shader::ID_BUMP, glm::vec2(0.25f, 0.25f), -25.0f, 0.0f, 0.5f, 10.0f, 51);
         terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
         terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
         terrain.Bump(20.0f);
@@ -181,32 +181,40 @@ bool SceneBuilder::InitialiseWater()
     water->SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
     water->SetTexture(MeshData::NORMAL, GetTexture(m_data, "water_normal"));
     water->SetTexture(MeshData::ENVIRONMENT, GetTexture(m_data, "water_cube"));
-    return water->Initialise(15.0f, 10.0f, 11);
+    return water->Initialise(25.0f, 10.0f, 51);
 }
 
 bool SceneBuilder::InitialiseMeshes()
-{	
+{
+    const int causticsTexture = 
+        m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
+
+    {
+        auto& mesh = InitialiseMesh("skybox", "mock_skybox.obj", Shader::ID_FLAT);
+        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "sky"));
+        mesh.SetSkyBox();
+    }
     {
         auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
-        mesh.SetTextures(GetTexture(m_data, "ground"), GetTexture(m_data, "bump"), GetTexture(m_data, "specular"));
+        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "ground"));
+        mesh.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
+        mesh.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "specular"));
+        mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
+        mesh.SetInstance(0, glm::vec3(0, 5, 0));
         mesh.Bump(20.0f);
         mesh.Specularity(5.0f);
     }
     {
         auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
-        mesh.SetTextures(GetTexture(m_data, "blank"));
+        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
+        mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
     }
     {
         auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE_CAUSTICS);
-        mesh.SetTextures(GetTexture(m_data, "water_colour"));
+        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
+        mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
         mesh.SetInstance(0, glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), 2.0f);
     }
-    {
-        auto& mesh = InitialiseMesh("sky", "mock_skybox.obj", Shader::ID_FLAT);
-        mesh.SetTextures(GetTexture(m_data, "sky"));
-        mesh.BackfaceCull(false);
-    }
-
     return true;
 }
 

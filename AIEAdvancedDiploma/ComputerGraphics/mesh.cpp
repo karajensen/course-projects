@@ -24,18 +24,18 @@ void Mesh::AddToTweaker(Tweaker& tweaker)
 
     tweaker.AddEntry("Ambience", &m_ambience, TW_TYPE_FLOAT, 0.1f);
 
-    if (SupportsBumpMapping())
+    if (UsesBumpMapping())
     {
         tweaker.AddEntry("Bump Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
     }
 
-    if (SupportsCaustics())
+    if (UsesCaustics())
     {
         tweaker.AddEntry("Caustics Amount", &m_causticsAmount, TW_TYPE_FLOAT, 0.1f);
         tweaker.AddEntry("Caustics Scale", &m_causticsScale, TW_TYPE_FLOAT, 0.1f);
     }
 
-    if (SupportsSpecular())
+    if (UsesSpecular())
     {
         tweaker.AddEntry("Specularity", &m_specularity, TW_TYPE_FLOAT, 0.1f);
     }    

@@ -12,6 +12,7 @@ struct SceneData;
 class Scene;
 class Input;
 class Tweaker;
+class Timer;
 class Camera;
 
 /**
@@ -26,11 +27,13 @@ public:
     * @param scene The scene to manipulate
     * @param camera Allows modifying the camera
     * @param input Allows adding key callbacks
+    * @param timer Allows viewing the application times
     * @param wireframe Callback to toggle the wireframe
     */
     Gui(Scene& scene, 
         Camera& camera, 
         Input& input,
+        const Timer& timer,
         std::function<void(void)> wireframe);
 
     /**
@@ -65,6 +68,7 @@ private:
     Scene& m_scene;                        ///< The scene to manipulates
     SceneData& m_data;                     ///< Data for manipulating the scene
     CTwBar* m_tweakbar = nullptr;          ///< Tweak bar for manipulating the scene
+    const Timer& m_timer;                  ///< Allows viewing the application times
     std::unique_ptr<Tweaker> m_tweaker;    ///< Helper for modifying the tweak bar
     std::function<void(void)> m_wireframe; ///< Callback for toggle wireframe
     int m_selectedMesh = 0;                ///< Currently selected mesh to tweak
