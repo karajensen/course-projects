@@ -105,7 +105,6 @@ bool Scene::Initialise(const glm::vec3& camera)
     if (m_builder->Initialise())
     {
         // To prevent unnecessary shader switching, sort by shader used
-        // Sky box should always be rendered first as furthest away
         std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
             [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool
             {

@@ -245,8 +245,9 @@ bool MeshData::ShouldRender(const Instance& instance,
                             const glm::vec3& position, 
                             const BoundingArea& bounds)
 {
+    const float scale = std::max(std::max(instance.scale.x, instance.scale.y), instance.scale.z);
     const glm::vec3 centerToMesh = instance.position - bounds.center;
-    return glm::length(centerToMesh) <= m_radius + bounds.radius;
+    return glm::length(centerToMesh) <= (m_radius * scale) + bounds.radius;
 }
 
 void MeshData::SetSkyBox()

@@ -48,10 +48,6 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
 bool Emitter::Initialise(const EmitterData& data)
 {
     m_data = data;
-
-    // Radius requires a buffer as particles can move outside bounds
-    m_data.radius = std::max(m_data.width, m_data.length) * m_data.maxAmplitude * 2.0f;
-    
     return m_particle->Initialise();
 }
 
@@ -64,11 +60,6 @@ void Emitter::Render(RenderParticle renderParticle,
                      const glm::vec3& cameraPosition,
                      const glm::vec3& cameraUp)
 {
-    if (!m_render)
-    {
-        return;
-    }
-
     for (const Particle& particle : Particles())
     {
         if (particle.Alive())
@@ -153,21 +144,24 @@ void Emitter::AddTexture(int ID)
 bool Emitter::ShouldRender(const glm::vec3& position, 
                            const BoundingArea& bounds)
 {
+    // Radius requires a buffer as particles can move outside bounds
+    m_data.radius = std::max(m_data.width, m_data.length) * m_data.maxAmplitude * 2.0f;
     const glm::vec3 centerToMesh = m_data.position - bounds.center;
     return glm::length(centerToMesh) <= m_data.radius + bounds.radius;
+}
+
+bool Emitter::ShouldRender() const
+{
+    return m_render;
 }
 
 void Emitter::Tick(float deltatime,
                    const glm::vec3& cameraPosition,
                    const BoundingArea& cameraBounds)
 {
-    if (m_paused)
-    {
-        return;
-    }
-
     m_render = ShouldRender(cameraPosition, cameraBounds);
-    if (!m_render)
+
+    if (!m_render || m_paused)
     {
         return;
     }

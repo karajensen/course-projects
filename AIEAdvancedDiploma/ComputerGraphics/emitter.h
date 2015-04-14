@@ -138,6 +138,11 @@ public:
     */
     void AddTexture(int ID);
 
+    /**
+    * @return whether this emitter should be rendered
+    */
+    bool ShouldRender() const;        
+
 private:
 
     /**

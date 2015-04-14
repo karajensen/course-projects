@@ -219,7 +219,7 @@ void OpenGL::RenderEmitters()
 
     for (auto& emitter : m_scene.Emitters())
     {
-        if (UpdateShader(*emitter))
+        if (emitter->ShouldRender() && UpdateShader(*emitter))
         {
             emitter->PreRender();
             EnableSelectedShader();
