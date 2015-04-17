@@ -30,7 +30,7 @@ Texture::~Texture()
 
 void Texture::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Name", [this](){ return m_name; });
+    tweaker.AddStrEntry("Name", [this](){ return m_name; });
 }
 
 const std::string& Texture::Name() const

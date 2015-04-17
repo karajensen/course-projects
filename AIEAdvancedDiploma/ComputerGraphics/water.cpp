@@ -40,7 +40,7 @@ void Water::AddToTweaker(Tweaker& tweaker)
 {
     Grid::AddToTweaker(tweaker);
 
-    tweaker.AddEntry("Height", [this](){ return m_height; }, [this](const float value)
+    tweaker.AddFltEntry("Height", [this](){ return m_height; }, [this](const float value)
     { 
         m_height = value;
         for (auto& instance : Instances())

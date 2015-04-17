@@ -30,9 +30,9 @@ void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
 {
     Texture::AddToTweaker(tweaker);
 
-    tweaker.AddEntry("Size", [this](){ return std::to_string(m_size); });
+    tweaker.AddEntry("Size", &m_size, TW_TYPE_INT32, true);
 
-    tweaker.AddEntry("Type", [this]()
+    tweaker.AddStrEntry("Type", [this]()
     { 
         switch (m_type)
         {

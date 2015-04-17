@@ -36,9 +36,7 @@ template<typename T> T RadToDeg(T radians)
 */
 inline void LogInfo(const std::string& info)
 {
-    #ifdef _DEBUG
-        std::cout << "INFO: \t" << info << std::endl;
-    #endif
+    std::cout << "INFO: \t" << info << std::endl;
 }
 
 /**
@@ -47,9 +45,7 @@ inline void LogInfo(const std::string& info)
 */
 inline void LogError(const std::string& error)
 {
-    #ifdef _DEBUG
-        std::cout << "ERROR: \t" << error << std::endl;
-    #endif
+    std::cout << "ERROR: \t" << error << std::endl;
 }
 
 /**

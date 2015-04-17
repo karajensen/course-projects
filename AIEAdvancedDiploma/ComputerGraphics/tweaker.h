@@ -42,8 +42,8 @@ public:
     * @param label What to display the entry as
     * @param getter function to retrieve the string value
     */
-    void AddEntry(std::string label, 
-                  std::function<const std::string(void)> getter);
+    void AddStrEntry(std::string label, 
+                     std::function<const std::string(void)> getter);
 
     /**
     * Creates a new tweakable entry for an index
@@ -52,10 +52,18 @@ public:
     * @param setter Callback for set the index
     * @param max The maximum value the entry can obtain
     */
-    void AddEntry(std::string label, 
-                  std::function<const int(void)> getter,
-                  std::function<void(const int)> setter,
-                  unsigned int max);
+    void AddIntEntry(std::string label, 
+                     std::function<const int(void)> getter,
+                     std::function<void(const int)> setter,
+                     unsigned int max);
+
+    /**
+    * Creates a new tweakable entry for an int
+    * @param label What to display the entry as
+    * @param getter Callback to get the int
+    */
+    void AddIntEntry(std::string label, 
+                     std::function<const int(void)> getter);
 
     /**
     * Creates a new tweakable entry for an value
@@ -63,9 +71,9 @@ public:
     * @param getter Callback to get the value
     * @param setter Callback for set the value
     */
-    void AddEntry(std::string label, 
-                  std::function<const float(void)> getter,
-                  std::function<void(const float)> setter);
+    void AddFltEntry(std::string label, 
+                     std::function<const float(void)> getter,
+                     std::function<void(const float)> setter);
 
     /**
     * Creates a new tweakable entry
@@ -141,7 +149,7 @@ private:
     /**
     * Helper function to get a new name for an entry
     */
-    const char* GetName();
+    std::string GetName();
 
     /**
     * Helper function for creating a subgroup entry

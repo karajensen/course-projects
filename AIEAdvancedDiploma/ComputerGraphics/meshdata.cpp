@@ -30,10 +30,10 @@ MeshData::~MeshData()
 
 void MeshData::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Name", [this](){ return m_name; });
-    tweaker.AddEntry("Shader", [this](){ return m_shaderName; });
-    tweaker.AddEntry("Instances", [this](){ return std::to_string(m_instances.size()); });
-    tweaker.AddEntry("Visible", [this](){ return std::to_string(m_instancesRendered); });
+    tweaker.AddStrEntry("Name", [this](){ return m_name; });
+    tweaker.AddStrEntry("Shader", [this](){ return m_shaderName; });
+    tweaker.AddIntEntry("Instances", [this](){ return m_instances.size(); });
+    tweaker.AddEntry("Visible", &m_instancesRendered, TW_TYPE_INT32, true);
     tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);
     tweaker.AddEntry("Radius", &m_radius, TW_TYPE_FLOAT);
 }
@@ -152,29 +152,39 @@ void MeshData::Render(RenderInstance renderInstance) const
     {
         if (instance.render)
         {
-            glm::mat4 scale;
-            scale[0][0] = instance.scale.x;
-            scale[1][1] = instance.scale.y;
-            scale[2][2] = instance.scale.z;
-
-            glm::mat4 translate;
-            translate[3][0] = instance.position.x;
-            translate[3][1] = instance.position.y;
-            translate[3][2] = instance.position.z;
-            
-            glm::mat4 rotate;
             if (instance.rotation.x == 0 &&
                 instance.rotation.y == 0 &&
                 instance.rotation.z == 0)
             {
+                glm::mat4 scale;
+                scale[0][0] = instance.scale.x;
+                scale[1][1] = instance.scale.y;
+                scale[2][2] = instance.scale.z;
+
+                glm::mat4 translate;
+                translate[3][0] = instance.position.x;
+                translate[3][1] = instance.position.y;
+                translate[3][2] = instance.position.z;
+
                 glm::mat4 rotateX, rotateY, rotateZ;
                 glm::rotate(rotateX, instance.rotation.x, glm::vec3(1,0,0));
                 glm::rotate(rotateY, instance.rotation.y, glm::vec3(0,1,0));
                 glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0,0,1));
-                rotate = rotateZ * rotateX * rotateY;
+
+                renderInstance(translate * (rotateZ * rotateX * rotateY) * scale);
+            }
+            else
+            {
+                glm::mat4 world;
+                world[0][0] = instance.scale.x;
+                world[1][1] = instance.scale.y;
+                world[2][2] = instance.scale.z;
+                world[3][0] = instance.position.x;
+                world[3][1] = instance.position.y;
+                world[3][2] = instance.position.z;
+                renderInstance(world);
             }
 
-            renderInstance(translate * rotate * scale);
             Render();
         }
     }

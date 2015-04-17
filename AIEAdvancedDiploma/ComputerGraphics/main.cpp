@@ -6,11 +6,6 @@
 #include "renderdata.h"
 #include "application.h"
 
-// Disables console window in release
-#ifndef _DEBUG
-    #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-#endif
-
 /**
 * Main entry point
 */
@@ -29,9 +24,7 @@ int main()
 
     if (pauseConsole)
     {
-        #ifdef _DEBUG
-            std::cin.get();
-        #endif
+        std::cin.get();
     }
 
     return 0;

@@ -12,7 +12,7 @@ Light::Light(const std::string& name) :
 
 void Light::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Name", [this](){ return m_name; });
+    tweaker.AddStrEntry("Name", [this](){ return m_name; });
     tweaker.AddEntry("Position X", &m_position.x, TW_TYPE_FLOAT, 0.01f);
     tweaker.AddEntry("Position Y", &m_position.y, TW_TYPE_FLOAT, 0.01f);
     tweaker.AddEntry("Position Z", &m_position.z, TW_TYPE_FLOAT, 0.01f);

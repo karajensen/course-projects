@@ -19,7 +19,7 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
 {
     Grid::AddToTweaker(tweaker);
 
-    tweaker.AddEntry("Height", [this](){ return m_height; }, [this](const float value)
+    tweaker.AddFltEntry("Height", [this](){ return m_height; }, [this](const float value)
     { 
         m_height = value;
         for (auto& instance : Instances())
@@ -28,15 +28,15 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
         }
     });
 
-    tweaker.AddEntry("Min Height Offset", 
+    tweaker.AddFltEntry("Min Height Offset", 
         [this](){ return m_minHeight; },
         [this](const float value){ m_minHeight = value; Reload(); });
 
-    tweaker.AddEntry("Max Height Offset", 
+    tweaker.AddFltEntry("Max Height Offset", 
         [this](){ return m_maxHeight; },
         [this](const float value){ m_maxHeight = value; Reload(); });
 
-    tweaker.AddEntry("Texture Scale U", 
+    tweaker.AddFltEntry("Texture Scale U", 
         [this](){ return GetUVStretch().x; }, 
         [this](const float value)
     { 
@@ -44,7 +44,7 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
         Reload(); 
     });
 
-    tweaker.AddEntry("Texture Scale V", 
+    tweaker.AddFltEntry("Texture Scale V", 
         [this](){ return GetUVStretch().y; }, 
         [this](const float value)
     { 

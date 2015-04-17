@@ -19,8 +19,8 @@ Emitter::~Emitter() = default;
 
 void Emitter::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Name", [this](){ return m_name; });
-    tweaker.AddEntry("Particles", [this](){ return std::to_string(m_particles.size()); });
+    tweaker.AddStrEntry("Name", [this](){ return m_name; });
+    tweaker.AddIntEntry("Particles", [this](){ return m_particles.size(); });
     tweaker.AddEntry("Visible", &m_render, TW_TYPE_BOOLCPP);
     tweaker.AddEntry("Paused", &m_paused, TW_TYPE_BOOLCPP);
     tweaker.AddEntry("Radius", &m_data.radius, TW_TYPE_FLOAT, 0.1f);

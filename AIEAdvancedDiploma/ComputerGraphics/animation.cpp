@@ -17,7 +17,7 @@ int Animation::GetFrame() const
 
 void Animation::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Frames", [this](){ return std::to_string(m_frames.size()); });
+    tweaker.AddIntEntry("Frames", [this](){ return m_frames.size(); });
     tweaker.AddEntry("Speed", &m_speed, TW_TYPE_FLOAT, 0.001f);
 }
 

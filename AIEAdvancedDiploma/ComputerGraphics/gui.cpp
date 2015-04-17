@@ -102,8 +102,8 @@ void Gui::FillTweakBar()
     m_tweaker->ClearEntries();
 
     m_tweaker->SetGroup("Scene");
-    m_tweaker->AddEntry("Render Pass", [this](){ return m_data.post->GetPostMap(); });
-    m_tweaker->AddEntry("Frames Per Second", [this](){ return std::to_string(m_timer.GetFPS()); });
+    m_tweaker->AddStrEntry("Render Pass", [this](){ return m_data.post->GetPostMap(); });
+    m_tweaker->AddIntEntry("Frames Per Second", [this](){ return m_timer.GetFPS(); });
     m_tweaker->AddButton("Toggle Wireframe", m_wireframe);
     m_tweaker->AddButton("Reload Scene", [this](){ m_scene.Reload(); });
     m_tweaker->AddButton("Save Textures", [this](){ m_scene.SaveTextures(); });
@@ -112,42 +112,42 @@ void Gui::FillTweakBar()
     m_data.post->AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Meshes");
-    m_tweaker->AddEntry("Selected Mesh", 
+    m_tweaker->AddIntEntry("Selected Mesh", 
         [this](){ return m_selectedMesh; },
         [this](const int value){ m_selectedMesh = value; FillTweakBar(); }, 
         m_data.meshes.size()-1);
     m_data.meshes[m_selectedMesh]->AddToTweaker(*m_tweaker);
     
     m_tweaker->SetGroup("Lights");
-    m_tweaker->AddEntry("Selected Light", 
+    m_tweaker->AddIntEntry("Selected Light", 
         [this](){ return m_selectedLight; },
         [this](const int value){ m_selectedLight = value; FillTweakBar(); }, 
         m_data.lights.size()-1);
     m_data.lights[m_selectedLight]->AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Terrain");
-    m_tweaker->AddEntry("Selected Terrain", 
+    m_tweaker->AddIntEntry("Selected Terrain", 
         [this](){ return m_selectedTerrain; },
         [this](const int value){ m_selectedTerrain = value; FillTweakBar(); }, 
         m_data.terrain.size()-1);
     m_data.terrain[m_selectedTerrain]->AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Water");
-    m_tweaker->AddEntry("Selected Water", 
+    m_tweaker->AddIntEntry("Selected Water", 
         [this](){ return m_selectedWater; },
         [this](const int value){ m_selectedWater = value; FillTweakBar(); }, 
         m_data.water.size()-1);
     m_data.water[m_selectedWater]->AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Emitters");
-    m_tweaker->AddEntry("Selected Emitter", 
+    m_tweaker->AddIntEntry("Selected Emitter", 
         [this](){ return m_selectedEmitter; },
         [this](const int value){ m_selectedEmitter = value; FillTweakBar(); }, 
         m_data.emitters.size()-1);
     m_data.emitters[m_selectedEmitter]->AddToTweaker(*m_tweaker);
     
     m_tweaker->SetGroup("Textures");
-    m_tweaker->AddEntry("Selected Texture", 
+    m_tweaker->AddIntEntry("Selected Texture", 
         [this](){ return m_selectedTexture; },
         [this](const int value){ m_selectedTexture = value; FillTweakBar(); }, 
         m_data.proceduralTextures.size()-1);
