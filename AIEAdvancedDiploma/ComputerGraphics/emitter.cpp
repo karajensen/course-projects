@@ -161,32 +161,30 @@ void Emitter::Tick(float deltatime,
 {
     m_render = ShouldRender(cameraPosition, cameraBounds);
 
-    if (!m_render || m_paused)
+    if (m_render && !m_paused)
     {
-        return;
-    }
-    
-    for (Particle& particle : m_particles)
-    {
-        if (!particle.Tick(deltatime, m_data.direction))
+        for (Particle& particle : m_particles)
         {
-             glm::vec3 particlePosition(m_data.position);
-             particlePosition.x += Random::Generate(-m_data.width, m_data.width) * 0.5f;
-             particlePosition.z += Random::Generate(-m_data.length, m_data.length) * 0.5f;
+            if (!particle.Tick(deltatime, m_data.direction))
+            {
+                 glm::vec3 particlePosition(m_data.position);
+                 particlePosition.x += Random::Generate(-m_data.width, m_data.width) * 0.5f;
+                 particlePosition.z += Random::Generate(-m_data.length, m_data.length) * 0.5f;
     
-             const int textureID = m_textures[Random::Generate(
-                 0, static_cast<int>(m_textures.size()-1))];
+                 const int textureID = m_textures[Random::Generate(
+                     0, static_cast<int>(m_textures.size()-1))];
     
-             particle.Reset(m_data.lifeTime, 
-                            m_data.lifeFade,
-                            Random::Generate(m_data.minSpeed, m_data.maxSpeed),
-                            Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
-                            Random::Generate(m_data.minSize, m_data.maxSize),
-                            Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
-                            Random::Generate(m_data.minFrequency, m_data.maxFrequency),
-                            textureID,
-                            particlePosition);
+                 particle.Reset(m_data.lifeTime, 
+                                m_data.lifeFade,
+                                Random::Generate(m_data.minSpeed, m_data.maxSpeed),
+                                Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
+                                Random::Generate(m_data.minSize, m_data.maxSize),
+                                Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
+                                Random::Generate(m_data.minFrequency, m_data.maxFrequency),
+                                textureID,
+                                particlePosition);
     
+            }
         }
     }
 }

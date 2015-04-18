@@ -63,15 +63,15 @@ glm::ivec2 SceneUpdater::GetPatchInside(const glm::vec3& position) const
     return glm::ivec2(NO_INDEX, NO_INDEX);
 }
 
-void SceneUpdater::Update(const glm::vec3& camera)
+void SceneUpdater::Update(const glm::vec3& cameraPosition)
 {
     if (m_patchInside.x == NO_INDEX || m_patchInside.y == NO_INDEX)
     {
-        m_patchInside = GetPatchInside(camera);
+        m_patchInside = GetPatchInside(cameraPosition);
     }
-    else if(!IsInsidePatch(camera, m_patchInside.x, m_patchInside.y))
+    else if(!IsInsidePatch(cameraPosition, m_patchInside.x, m_patchInside.y))
     {
-        const glm::ivec2 direction(m_patchInside - GetPatchInside(camera));
+        const glm::ivec2 direction(m_patchInside - GetPatchInside(cameraPosition));
 
         // Split the direction as calculations will assume 0,1 or 1,0 
         if (abs(direction.x) > 0)
@@ -83,7 +83,7 @@ void SceneUpdater::Update(const glm::vec3& camera)
             ShiftPatches(glm::ivec2(0, direction.y));
         }
 
-        m_patchInside = GetPatchInside(camera);
+        m_patchInside = GetPatchInside(cameraPosition);
     }
 }
 

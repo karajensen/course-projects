@@ -30,9 +30,13 @@ public:
 
     /**
     * Updates the view matrix
+    * @param mouseDirection The direction the mouse is moving
+    * @param isMouseDown Whether the mouse is being held down
     * @param deltatime Time passed between frames
     */
-    void Update(float deltatime);
+    void Update(const glm::vec2& mouseDirection, 
+                bool isMouseDown, 
+                float deltatime);
 
     /**
     * Resets the camera to the initial state
@@ -140,6 +144,7 @@ private:
     glm::vec3 m_forward;                    ///< Camera forward vector
     glm::vec3 m_right;                      ///< Camera right vector
     glm::vec3 m_target;                     ///< Camera Look at target
+    glm::vec2 m_heightBounds;               ///< The height the camera can travel
     bool m_requiresUpdate = true;           ///< Whether the camera requires updating or not
     bool m_autoMove = false;                ///< Auto move the camera forward
     float m_yaw = 0.0f;                     ///< Degrees amount of yaw

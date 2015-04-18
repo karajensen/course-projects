@@ -40,7 +40,7 @@ public:
     * Updates the scene
     * @param camera The position of the camera
     */
-    void Update(const glm::vec3& camera);
+    void Update(const glm::vec3& cameraPosition);
 
 private:
 

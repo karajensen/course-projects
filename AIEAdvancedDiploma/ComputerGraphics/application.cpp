@@ -31,16 +31,12 @@ void Application::Run()
         const float deltaTime = m_timer->GetDeltaTime();
         const float timePassed = m_timer->GetTotalTime();
 
-        m_input->Update();
-
-        m_camera->Update(deltaTime);
-        if (m_input->IsRightMouseDown())
-        {
-            m_camera->Rotate(m_input->GetMouseDirection(), deltaTime);
-        }
-       
+        m_input->Update();       
         m_gui->Update(*m_input);
         m_scene->Tick(deltaTime, *m_camera);
+
+        m_camera->Update(m_input->GetMouseDirection(),
+            m_input->IsRightMouseDown(), deltaTime);
 
         m_timer->StopSection(Timer::SCENE_UPDATE);
         m_timer->StartSection(Timer::RENDERING);

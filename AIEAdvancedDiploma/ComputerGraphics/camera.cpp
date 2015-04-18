@@ -18,12 +18,14 @@ Camera::Camera() :
     m_initialPos(15.0f, 1.0f, 3.0f),
     m_position(m_initialPos),
     m_target(0.0f, 0.0f, 0.0f),
+    m_heightBounds(-20.0f, 20.0f),
     m_rotationSpeed(5.0f),
     m_translateSpeed(20.0f),
     m_forwardSpeed(20.0f),
     m_pitch(0.0f),
     m_yaw(75.0f),
     m_roll(0.0f),
+    m_requiresUpdate(true),
     m_bounds(std::make_unique<BoundingArea>())
 {
     m_projection = glm::perspective(FIELD_OF_VIEW, 
@@ -33,6 +35,8 @@ Camera::Camera() :
 void Camera::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddEntry("Auto Move", &m_autoMove, TW_TYPE_BOOLCPP);
+    tweaker.AddFltEntry("Minimum Height", &m_heightBounds.x, 0.1f);
+    tweaker.AddFltEntry("Maximum Height", &m_heightBounds.y, 0.1f);
     tweaker.AddFltEntry("Rotation Speed", &m_rotationSpeed, 1.0f);
     tweaker.AddFltEntry("Translate Speed", &m_translateSpeed, 1.0f);
     tweaker.AddFltEntry("Forward Speed", &m_forwardSpeed, 1.0f);
@@ -89,8 +93,15 @@ void Camera::Reset()
     m_pitch = 0;
 }
 
-void Camera::Update(float deltatime)
+void Camera::Update(const glm::vec2& mouseDirection, 
+                    bool isMouseDown, 
+                    float deltatime)
 {
+    if (isMouseDown)
+    {
+        Rotate(mouseDirection, deltatime);
+    }
+
     if (m_autoMove)
     {
         Forward(-deltatime);
@@ -99,6 +110,9 @@ void Camera::Update(float deltatime)
     if (m_requiresUpdate)
     {
         m_requiresUpdate = false;
+
+        m_position.y = Clamp(m_position.y, 
+            m_heightBounds.x, m_heightBounds.y);
         
         glm::mat4 translate;
         translate[3][0] = m_position.x;
