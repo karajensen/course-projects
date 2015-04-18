@@ -30,8 +30,8 @@ MeshData::~MeshData()
 
 void MeshData::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddStrEntry("Name", [this](){ return m_name; });
-    tweaker.AddStrEntry("Shader", [this](){ return m_shaderName; });
+    tweaker.AddStrEntry("Name", m_name);
+    tweaker.AddStrEntry("Shader", m_shaderName);
     tweaker.AddIntEntry("Instances", [this](){ return m_instances.size(); });
     tweaker.AddEntry("Visible", &m_instancesRendered, TW_TYPE_INT32, true);
     tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);

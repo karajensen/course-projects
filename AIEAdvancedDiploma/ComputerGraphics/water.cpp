@@ -47,7 +47,7 @@ void Water::AddToTweaker(Tweaker& tweaker)
         {
             instance.position.y = m_height;
         }
-    });
+    }, 0.1f);
 
     tweaker.AddFltEntry("Speed", &m_speed, 0.1f);
     tweaker.AddFltEntry("Bump Amount", &m_bump, 0.1f);

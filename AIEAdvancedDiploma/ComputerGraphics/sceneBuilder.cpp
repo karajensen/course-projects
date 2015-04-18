@@ -168,7 +168,7 @@ bool SceneBuilder::InitialiseTerrain()
     {
         m_data.sandIndex = m_data.terrain.size();
         Terrain& terrain = InitialiseTerrain("sand", "heightmap",
-            Shader::ID_BUMP_CAUSTICS, glm::vec2(0.25f, 0.25f), -25.0f, 0.0f, 0.5f, 10.0f, 51);
+            Shader::ID_BUMP_CAUSTICS, 4.0f, -25.0f, 0.0f, 0.5f, 10.0f, 51);
         terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
         terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
         terrain.SetTexture(MeshData::CAUSTICS, causticsTexture);
@@ -364,7 +364,7 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
 Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
                                          const std::string& heightmap,
                                          int shaderID,
-                                         const glm::vec2& uvStretch,
+                                         float uvStretch,
                                          float height,
                                          float minHeight,
                                          float maxHeight,
@@ -382,7 +382,7 @@ Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
         name, m_data.shaders[shaderID]->Name(), shaderID, texture.GetPixels()));
     Terrain& terrain = *m_data.terrain[m_data.terrain.size()-1];
 
-    if (!terrain.Initialise(uvStretch, minHeight, maxHeight, height,
+    if (!terrain.Initialise(glm::vec2(uvStretch, uvStretch), minHeight, maxHeight, height,
         spacing, size, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
     {
         LogError("Terrain: " + name + " failed initialisation");

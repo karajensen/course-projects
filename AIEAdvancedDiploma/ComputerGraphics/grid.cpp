@@ -85,6 +85,9 @@ void Grid::ResetGrid()
     const int pointsInFace = 3;
     const int triangleNumber = ((m_rows-1)*(m_columns-1)) * trianglesPerQuad;
 
+    const float uOffset = m_uvStretch.x / static_cast<float>(m_rows-1);
+    const float vOffset = m_uvStretch.y / static_cast<float>(m_columns-1);
+
     m_indices.clear();
     m_vertices.clear();
 
@@ -127,11 +130,11 @@ void Grid::ResetGrid()
             }
 
             index += m_vertexComponentCount;
-            u += 0.5f * m_uvStretch.x;
+            u += uOffset;
         }
 
         u = 0;
-        v += 0.5f * m_uvStretch.y;
+        v += vOffset;
     }
 
     index = 0;

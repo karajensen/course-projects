@@ -31,19 +31,19 @@ void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
     Texture::AddToTweaker(tweaker);
 
     tweaker.AddEntry("Size", &m_size, TW_TYPE_INT32, true);
-
-    tweaker.AddStrEntry("Type", [this]()
-    { 
-        switch (m_type)
-        {
-        case DIAMOND_SQUARE:
-            return "Diamond Square";
-        default:
-            return "None";
-        }
-    });
-
+    tweaker.AddStrEntry("Type", GetTypeName());
     tweaker.AddButton("Reload", [this](){ Reload(); });
+}
+
+std::string ProceduralTexture::GetTypeName() const
+{
+    switch (m_type)
+    {
+    case DIAMOND_SQUARE:
+        return "Diamond Square";
+    default:
+        return "None";
+    }
 }
 
 void ProceduralTexture::Generate()

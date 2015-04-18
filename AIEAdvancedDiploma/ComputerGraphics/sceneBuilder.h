@@ -127,7 +127,7 @@ private:
     Terrain& InitialiseTerrain(const std::string& name,
                                const std::string& heightmap,
                                int shaderID,
-                               const glm::vec2& uvStretch,
+                               float uvStretch,
                                float height,
                                float minHeight,
                                float maxHeight,

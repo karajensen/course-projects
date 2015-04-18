@@ -26,31 +26,23 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
         {
             instance.position.y = m_height;
         }
-    });
+    }, 0.1f);
 
     tweaker.AddFltEntry("Min Height Offset", 
         [this](){ return m_minHeight; },
-        [this](const float value){ m_minHeight = value; Reload(); });
+        [this](const float value){ m_minHeight = value; Reload(); }, 0.1f);
 
     tweaker.AddFltEntry("Max Height Offset", 
         [this](){ return m_maxHeight; },
-        [this](const float value){ m_maxHeight = value; Reload(); });
+        [this](const float value){ m_maxHeight = value; Reload(); }, 0.1f);
 
-    tweaker.AddFltEntry("Texture Scale U", 
+    tweaker.AddFltEntry("Texture Scale", 
         [this](){ return GetUVStretch().x; }, 
         [this](const float value)
     { 
-        SetUVStretch(glm::vec2(value, GetUVStretch().y));
-        Reload(); 
-    });
-
-    tweaker.AddFltEntry("Texture Scale V", 
-        [this](){ return GetUVStretch().y; }, 
-        [this](const float value)
-    { 
-        SetUVStretch(glm::vec2(GetUVStretch().x, value));
-        Reload(); 
-    });
+        SetUVStretch(glm::vec2(value, value));
+        Reload();
+    }, 1.0f);
 
     tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
 

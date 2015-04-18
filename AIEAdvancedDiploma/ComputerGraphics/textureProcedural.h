@@ -71,6 +71,11 @@ private:
     ProceduralTexture& operator=(const ProceduralTexture&) = delete;
 
     /**
+    * @return a description of the type chosen
+    */
+    std::string GetTypeName() const;
+
+    /**
     * Generates the texture
     */
     void Generate();

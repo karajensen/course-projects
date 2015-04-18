@@ -19,7 +19,7 @@ Emitter::~Emitter() = default;
 
 void Emitter::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddStrEntry("Name", [this](){ return m_name; });
+    tweaker.AddStrEntry("Name", m_name);
     tweaker.AddIntEntry("Particles", [this](){ return m_particles.size(); });
     tweaker.AddEntry("Visible", &m_render, TW_TYPE_BOOLCPP);
     tweaker.AddEntry("Paused", &m_paused, TW_TYPE_BOOLCPP);

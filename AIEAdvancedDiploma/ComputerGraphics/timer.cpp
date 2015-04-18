@@ -24,6 +24,8 @@ void Timer::AddToTweaker(Tweaker& tweaker)
     tweaker.AddEntry("Frames Per Second", &m_fps, TW_TYPE_INT32, true);
 
     const int precision = 8;
+    tweaker.AddFltEntry("Capped Time", &m_cappedDeltaTime, precision);
+    tweaker.AddFltEntry("Total Time", &m_deltaTime, precision);
     tweaker.AddFltEntry("Total Rendering", &m_sectionTime[RENDERING], precision);
     tweaker.AddFltEntry("Render Scene", &m_sectionTime[RENDER_SCENE], precision);
     tweaker.AddFltEntry("Render Meshes", &m_sectionTime[RENDER_WATER], precision);
@@ -40,11 +42,11 @@ void Timer::AddToTweaker(Tweaker& tweaker)
 void Timer::UpdateTimer()
 {
     const float currentTime = static_cast<float>(glfwGetTime());
-    const float deltaTime = currentTime - m_previousTime;
+    m_deltaTime = currentTime - m_previousTime;
     m_previousTime = currentTime;
-    m_totalTime += deltaTime;
-    m_deltaTimeCounter += deltaTime;
-    m_deltaTime = Clamp(currentTime - m_previousTime, DT_MINIMUM, DT_MAXIMUM);
+    m_totalTime += m_deltaTime;
+    m_deltaTimeCounter += m_deltaTime;
+    m_cappedDeltaTime = Clamp(m_deltaTime, DT_MINIMUM, DT_MAXIMUM);
 
     if (m_deltaTimeCounter >= 1.0) //one second has passed
     {
@@ -75,5 +77,5 @@ float Timer::GetTotalTime() const
 
 float Timer::GetDeltaTime() const 
 { 
-    return m_deltaTime;
+    return m_cappedDeltaTime;
 }

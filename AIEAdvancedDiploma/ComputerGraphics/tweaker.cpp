@@ -4,6 +4,7 @@
 
 #include "tweaker.h"
 #include "common.h"
+#include <assert.h>
 #include <algorithm>
 
 namespace
@@ -16,15 +17,7 @@ namespace
     {
         virtual void Getter(void* value) const override
         {
-            if (std::is_same<std::string, T>::value)
-            {
-                T source = getter();
-                CopyString(value, &source);
-            }
-            else
-            {
-                *static_cast<T*>(value) = getter();
-            }
+            *static_cast<T*>(value) = getter();
         }
 
         virtual void Setter(const void* value) override
@@ -59,23 +52,33 @@ namespace
         std::function<const std::vector<void*>&(void)> getter = nullptr;
         std::function<void(const void*)> setter = nullptr;
     };
-
-    /**
-    * Helper function for copying a string for the tweak bar
-    * @param destination The string to copy to
-    * @param source The string to copy from
-    */
-    void CopyString(void* destination, void* source)
-    {
-        TwCopyStdStringToLibrary(
-            *static_cast<std::string*>(destination),
-            *static_cast<std::string*>(source));
-    }
 }
 
 Tweaker::Tweaker(CTwBar* tweakbar) :
     m_tweakBar(tweakbar)
 {
+}
+
+Tweaker::~Tweaker()
+{
+
+}
+
+void Tweaker::Update()
+{
+    for (auto& label : m_labels)
+    {
+        if (label->modifiable)
+        {
+            const std::string value = label->getter();
+            if (value != label->value)
+            {
+                assert(value.size() < STR_BUFFER_SIZE);
+                label->value = value;
+                FillBufffer(*label);
+            }
+        }
+    }
 }
 
 std::string Tweaker::Definition(std::string label, unsigned int min, unsigned int max) const
@@ -165,7 +168,8 @@ void Tweaker::AddFltEntry(std::string label,
 
 void Tweaker::AddFltEntry(std::string label,
                           std::function<const float(void)> getter,
-                          std::function<void(const float)> setter)
+                          std::function<void(const float)> setter,
+                          float step)
 {
     const auto index = m_entries.size();
     auto entry = std::make_unique<TweakableEntry<float>>();
@@ -174,7 +178,7 @@ void Tweaker::AddFltEntry(std::string label,
     m_entries.emplace_back(std::move(entry));
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, SetCallback,
-        GetCallback, m_entries[index].get(), Definition(label, 0.1f, 0).c_str());
+        GetCallback, m_entries[index].get(), Definition(label, step, 0).c_str());
 
     LogTweakError();
 }
@@ -210,16 +214,45 @@ void Tweaker::AddIntEntry(std::string label,
     LogTweakError();
 }
 
+void Tweaker::FillBufffer(Label& label)
+{
+    for (unsigned int i = 0; i < label.value.size(); ++i)
+    {
+        label.buffer[i] = label.value[i];
+    }
+    label.buffer[label.value.size()] = '\0';
+}
+
 void Tweaker::AddStrEntry(std::string label, 
                           std::function<const std::string(void)> getter)
 {
-    const auto index = m_entries.size();
-    auto entry = std::make_unique<TweakableEntry<std::string>>();
-    entry->getter = getter;
-    m_entries.emplace_back(std::move(entry));
+    const auto index = m_labels.size();
+    m_labels.push_back(std::make_unique<Label>());
     
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_STDSTRING, nullptr,
-        GetCallback, m_entries[index].get(), Definition(label).c_str());
+    const std::string value = getter();
+    m_labels[index]->getter = getter;
+    m_labels[index]->modifiable = true;
+    m_labels[index]->value = value;
+    FillBufffer(*m_labels[index]);
+
+    TwAddVarRO(m_tweakBar, GetName().c_str(), 
+        TW_TYPE_CSSTRING(STR_BUFFER_SIZE),
+        m_labels[index]->buffer, Definition(label).c_str());
+
+    LogTweakError();
+}
+
+void Tweaker::AddStrEntry(std::string label, std::string value)
+{
+    const auto index = m_labels.size();
+    m_labels.push_back(std::make_unique<Label>());
+    m_labels[index]->modifiable = false;
+    m_labels[index]->value = value;
+    FillBufffer(*m_labels[index]);
+
+   TwAddVarRO(m_tweakBar, GetName().c_str(), 
+       TW_TYPE_CSSTRING(STR_BUFFER_SIZE),
+       m_labels[index]->buffer, Definition(label).c_str());
 
     LogTweakError();
 }

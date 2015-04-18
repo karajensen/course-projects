@@ -84,8 +84,11 @@ void Gui::Render()
     TwDraw();
     m_timer.StopSection(Timer::RENDER_GUI);
 }
+
 void Gui::Update(const Input& input)
 {
+    m_tweaker->Update();
+
     if (input.IsMouseMovedThisTick())
     {
         TwMouseMotion(input.GetMouseX(), input.GetMouseY());
