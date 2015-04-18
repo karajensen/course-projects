@@ -289,7 +289,13 @@ void MeshData::Tick(const glm::vec3& cameraPosition,
             else
             {
                 instance.world[0][0] = instance.scale.x;
+                instance.world[0][1] = 0.0f;
+                instance.world[0][2] = 0.0f;
+                instance.world[1][0] = 0.0f;
                 instance.world[1][1] = instance.scale.y;
+                instance.world[1][2] = 0.0f;
+                instance.world[2][0] = 0.0f;
+                instance.world[2][1] = 0.0f;
                 instance.world[2][2] = instance.scale.z;
                 instance.world[3][0] = instance.position.x;
                 instance.world[3][1] = instance.position.y;
