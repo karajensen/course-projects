@@ -262,5 +262,11 @@
     <FxCompile Include="Assets\Shaders\water_glsl_vert.fx">
       <Filter>Resources</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\Shaders\bumpcaustics_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bumpcaustics_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

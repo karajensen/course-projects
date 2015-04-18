@@ -15,7 +15,7 @@
 Gui::Gui(Scene& scene, 
          Camera& camera,
          Input& input,
-         const Timer& timer,
+         Timer& timer,
          std::function<void(void)> wireframe) :
 
     m_scene(scene),
@@ -65,6 +65,8 @@ Gui::Gui(Scene& scene,
     AddKeyCallback(GLFW_KEY_PERIOD, '.');
     AddKeyCallback(GLFW_KEY_ENTER, TW_KEY_RETURN);
     AddKeyCallback(GLFW_KEY_BACKSPACE, TW_KEY_BACKSPACE);
+
+    LogInfo("GUI: Tweak bar initialised");
 }
 
 Gui::~Gui()
@@ -78,7 +80,9 @@ Gui::~Gui()
 
 void Gui::Render()
 {
+    m_timer.StartSection(Timer::RENDER_GUI);
     TwDraw();
+    m_timer.StopSection(Timer::RENDER_GUI);
 }
 void Gui::Update(const Input& input)
 {
@@ -103,7 +107,6 @@ void Gui::FillTweakBar()
 
     m_tweaker->SetGroup("Scene");
     m_tweaker->AddStrEntry("Render Pass", [this](){ return m_data.post->GetPostMap(); });
-    m_tweaker->AddIntEntry("Frames Per Second", [this](){ return m_timer.GetFPS(); });
     m_tweaker->AddButton("Toggle Wireframe", m_wireframe);
     m_tweaker->AddButton("Reload Scene", [this](){ m_scene.Reload(); });
     m_tweaker->AddButton("Save Textures", [this](){ m_scene.SaveTextures(); });
@@ -158,4 +161,7 @@ void Gui::FillTweakBar()
 
     m_tweaker->SetGroup("Camera");
     m_camera.AddToTweaker(*m_tweaker);
+
+    m_tweaker->SetGroup("Timer");
+    m_timer.AddToTweaker(*m_tweaker);
 }

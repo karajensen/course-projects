@@ -126,6 +126,9 @@ bool SceneBuilder::InitialiseShaders()
 
     success &= InitialiseShader(Shader::ID_FLAT, "flat", Shader::NONE);
 
+    success &= InitialiseShader(Shader::ID_BUMP_CAUSTICS, "bumpcaustics", 
+                                Shader::CAUSTICS|Shader::BUMP);
+
     success &= InitialiseShader(Shader::ID_BUMP_SPEC_CAUSTICS, "bumpspecularcaustics", 
                                 Shader::BUMP|Shader::SPECULAR|Shader::CAUSTICS);
     return success;
@@ -159,13 +162,18 @@ bool SceneBuilder::InitialiseTextures()
 
 bool SceneBuilder::InitialiseTerrain()
 {
+    const int causticsTexture = 
+        m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
+
     {
         m_data.sandIndex = m_data.terrain.size();
         Terrain& terrain = InitialiseTerrain("sand", "heightmap",
-            Shader::ID_BUMP, glm::vec2(0.25f, 0.25f), -25.0f, 0.0f, 0.5f, 10.0f, 51);
+            Shader::ID_BUMP_CAUSTICS, glm::vec2(0.25f, 0.25f), -25.0f, 0.0f, 0.5f, 10.0f, 51);
         terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
         terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
+        terrain.SetTexture(MeshData::CAUSTICS, causticsTexture);
         terrain.Bump(20.0f);
+        terrain.CausticsAmount(0.5f);
     }
 
     return true;
@@ -176,12 +184,12 @@ bool SceneBuilder::InitialiseWater()
     const auto index = m_data.water.size();
     m_data.water.push_back(std::make_unique<Water>(
         "water", m_data.shaders[Shader::ID_WATER]->Name(), Shader::ID_WATER));
-    auto& water = m_data.water[index];
+    auto& water = *m_data.water[index];
 
-    water->SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
-    water->SetTexture(MeshData::NORMAL, GetTexture(m_data, "water_normal"));
-    water->SetTexture(MeshData::ENVIRONMENT, GetTexture(m_data, "water_cube"));
-    return water->Initialise(25.0f, 10.0f, 51);
+    water.SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
+    water.SetTexture(MeshData::NORMAL, GetTexture(m_data, "water_normal"));
+    water.SetTexture(MeshData::ENVIRONMENT, GetTexture(m_data, "water_cube"));
+    return water.Initialise(25.0f, 10.0f, 51);
 }
 
 bool SceneBuilder::InitialiseMeshes()

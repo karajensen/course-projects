@@ -18,7 +18,7 @@ int Animation::GetFrame() const
 void Animation::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddIntEntry("Frames", [this](){ return m_frames.size(); });
-    tweaker.AddEntry("Speed", &m_speed, TW_TYPE_FLOAT, 0.001f);
+    tweaker.AddFltEntry("Speed", &m_speed, 0.001f);
 }
 
 void Animation::Tick(float deltatime)

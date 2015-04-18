@@ -30,6 +30,7 @@ public:
         ID_PARTICLE,
         ID_BUMP,
         ID_BUMP_SPEC_CAUSTICS,
+        ID_BUMP_CAUSTICS,
         ID_DIFFUSE_CAUSTICS,
         ID_POST_PROCESSING,
         ID_PRE_PROCESSING,

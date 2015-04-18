@@ -50,18 +50,18 @@ PostProcessing::PostProcessing()
 
 void PostProcessing::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Saturation", &m_saturation, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Contrast", &m_contrast, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Blur Step", &m_blurStep, TW_TYPE_FLOAT, 0.01f, 4);
-    tweaker.AddEntry("Depth Far", &m_depthFar, TW_TYPE_FLOAT, 10.0f, 1);
-    tweaker.AddEntry("Depth Near", &m_depthNear, TW_TYPE_FLOAT, 1.0f);
-    tweaker.AddEntry("DOF Start", &m_dofStart, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("DOF Fade", &m_dofFade, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Bloom Start", &m_bloomStart, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Bloom Fade", &m_bloomFade, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Bloom Intensity", &m_bloomIntensity, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Fog Start", &m_fogStart, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Fog Fade", &m_fogFade, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddFltEntry("Saturation", &m_saturation, 0.01f);
+    tweaker.AddFltEntry("Contrast", &m_contrast, 0.01f);
+    tweaker.AddFltEntry("Blur Step", &m_blurStep, 0.01f, 4);
+    tweaker.AddFltEntry("Depth Far", &m_depthFar, 10.0f, 1);
+    tweaker.AddFltEntry("Depth Near", &m_depthNear, 1.0f);
+    tweaker.AddFltEntry("DOF Start", &m_dofStart, 0.01f);
+    tweaker.AddFltEntry("DOF Fade", &m_dofFade, 0.01f);
+    tweaker.AddFltEntry("Bloom Start", &m_bloomStart, 0.01f);
+    tweaker.AddFltEntry("Bloom Fade", &m_bloomFade, 0.01f);
+    tweaker.AddFltEntry("Bloom Intensity", &m_bloomIntensity, 0.01f);
+    tweaker.AddFltEntry("Fog Start", &m_fogStart, 0.01f);
+    tweaker.AddFltEntry("Fog Fade", &m_fogFade, 0.01f);
     tweaker.AddEntry("Fog Colour", &m_fogColour.x, TW_TYPE_COLOR3F);
     tweaker.AddEntry("Min Colour", &m_minimumColour.x, TW_TYPE_COLOR3F);
     tweaker.AddEntry("Max Colour", &m_maximumColour.x, TW_TYPE_COLOR3F);

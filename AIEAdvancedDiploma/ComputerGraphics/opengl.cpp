@@ -16,6 +16,7 @@
 #include "texture.h"
 #include "rendertarget.h"
 #include "postprocessing.h"
+#include "timer.h"
 
 OpenGL::OpenGL(const IScene& scene, const Camera& camera) :
     m_scene(scene),
@@ -126,12 +127,23 @@ GLFWwindow& OpenGL::GetWindow() const
     return *m_window;
 }
 
-void OpenGL::RenderScene(float timer)
+void OpenGL::RenderScene(Timer& timer, float timePassed)
 {
-    RenderSceneMap(timer);
+    timer.StartSection(Timer::RENDER_SCENE);
+    RenderSceneMap(timer, timePassed);
+    timer.StopSection(Timer::RENDER_SCENE);
+
+    timer.StartSection(Timer::RENDER_EFFECTS);
     RenderPreEffects();
+    timer.StopSection(Timer::RENDER_EFFECTS);
+
+    timer.StartSection(Timer::RENDER_BLUR);
     RenderBlur();
+    timer.StopSection(Timer::RENDER_BLUR);
+
+    timer.StartSection(Timer::RENDER_POST);
     RenderPostProcessing();
+    timer.StopSection(Timer::RENDER_POST);
 }
 
 void OpenGL::EndRender()
@@ -140,7 +152,7 @@ void OpenGL::EndRender()
     glfwPollEvents();
 }
 
-void OpenGL::RenderSceneMap(float timer)
+void OpenGL::RenderSceneMap(Timer& timer, float timePassed)
 {
     m_sceneTarget->SetActive();
 
@@ -149,10 +161,21 @@ void OpenGL::RenderSceneMap(float timer)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   
     }
 
+    timer.StartSection(Timer::RENDER_TERRAIN);
     RenderTerrain();
+    timer.StopSection(Timer::RENDER_TERRAIN);
+
+    timer.StartSection(Timer::RENDER_MESHES);
     RenderMeshes();
-    RenderWater(timer);
+    timer.StopSection(Timer::RENDER_MESHES);
+
+    timer.StartSection(Timer::RENDER_WATER);
+    RenderWater(timePassed);
+    timer.StopSection(Timer::RENDER_WATER);
+
+    timer.StartSection(Timer::RENDER_EMITTERS);
     RenderEmitters();
+    timer.StopSection(Timer::RENDER_EMITTERS);
 
     if (m_isWireframe)
     {
@@ -192,11 +215,11 @@ void OpenGL::RenderTerrain()
     }
 }
 
-void OpenGL::RenderWater(float timer)
+void OpenGL::RenderWater(float timePassed)
 {
     for (const auto& water : m_scene.Waters())
     {
-        if (UpdateShader(*water, timer))
+        if (UpdateShader(*water, timePassed))
         {
             water->PreRender();
             EnableSelectedShader();
@@ -335,7 +358,7 @@ void OpenGL::UpdateShader(const glm::mat4& world)
     shader.SendUniform("world", world);
 }
 
-bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timer)
+bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timePassed)
 {
     const int index = mesh.ShaderID();
     if (index != NO_INDEX)
@@ -353,7 +376,7 @@ bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timer)
 
             if (index == Shader::ID_WATER)
             {
-                shader.SendUniform("timer", timer);
+                shader.SendUniform("timer", timePassed);
             }
         }
 
@@ -395,9 +418,9 @@ bool OpenGL::UpdateShader(const Terrain& terrain)
     return false;
 }
 
-bool OpenGL::UpdateShader(const Water& water, float timer)
+bool OpenGL::UpdateShader(const Water& water, float timePassed)
 {
-    if (UpdateShader(water, true, timer))
+    if (UpdateShader(water, true, timePassed))
     {
         auto& shader = m_scene.GetShader(water.ShaderID());
         shader.SendUniform("speed", water.Speed());

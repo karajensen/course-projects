@@ -83,11 +83,20 @@ public:
     * @param step The differece between values
     * @param precision The amount of decimal points to display
     */
-    void AddEntry(std::string label,
-                  void* entry, 
-                  TwType type, 
-                  float step,
-                  int precision = 0);
+    void AddFltEntry(std::string label,
+                     void* entry, 
+                     float step,
+                     int precision = 0);
+
+    /**
+    * Creates a new readonly tweakable entry
+    * @param label What to display the entry as
+    * @param entry The address of the entry to add
+    * @param precision The amount of decimal points to display
+    */
+    void AddFltEntry(std::string label,
+                     void* entry,
+                     int precision = 0);
 
     /**
     * Creates a new tweakable entry
@@ -110,15 +119,6 @@ public:
     void AddSubGroup(std::string label,
                      std::vector<std::pair<std::string, float*>>& entries,
                      float step);
-
-    /**
-    * Creates a custom group of tweakables within the current group
-    * @param label What to display the subgroup as
-    * @param entries All values and their label
-    * @param step The differece between values
-    */
-    void AddSubGroup(std::string label,
-                     std::vector<std::pair<std::string, bool*>>& entries);
 
     /**
     * Clears all current entries
@@ -174,9 +174,10 @@ private:
     /**
     * Helper function to get a definition for a tweakable entry
     * @param label What to display the entry as
+    * @param min The minimum value the entry can obtain
     * @param max The maximum value the entry can obtain
     */
-    std::string Definition(std::string label, unsigned int max) const;
+    std::string Definition(std::string label, unsigned int min, unsigned int max) const;
 
     /**
     * Helper function to get a definition for a tweakable entry
@@ -184,9 +185,19 @@ private:
     * @param step The differece between values
     * @param precision The amount of decimal points to display
     */
-    std::string Definition(std::string label, 
-                           float step, 
-                           int precision = 0) const;
+    std::string Definition(std::string label, float step, int precision) const;
+
+    /**
+    * Helper function to get a definition for a tweakable entry
+    * @param label What to display the entry as
+    * @param precision The amount of decimal points to display
+    */
+    std::string Definition(std::string label, int precision) const;
+
+    /**
+    * Determines if there is an error and logs
+    */
+    void LogTweakError() const;
 
     /**
     * Allows adding lambda callbacks to the tweak 

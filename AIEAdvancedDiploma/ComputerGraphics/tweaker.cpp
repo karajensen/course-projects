@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "tweaker.h"
+#include "common.h"
 #include <algorithm>
 
 namespace
@@ -43,25 +44,20 @@ namespace
     {
         virtual void Getter(void* value) const override
         {
-            const std::vector<T> array = getter();
-            for (unsigned int i = 0; i < values.size(); ++i)
+            const std::vector<void*>& array = getter();
+            for (unsigned int i = 0; i < array.size(); ++i)
             {
-                static_cast<T*>(value)[i] = array[i];
+                static_cast<T*>(value)[i] = *static_cast<float*>(array[i]);
             }
         }
 
         virtual void Setter(const void* value) override
         {
-            std::vector<T> array;
-            for (unsigned int i = 0; i < values.size(); ++i)
-            {
-                array.push_back(static_cast<const T*>(value)[i]);
-            }
-            setter(array);
+            setter(value);
         }
 
-        std::function<const std::vector<T>(void)> getter = nullptr;
-        std::function<void(const std::vector<T>)> setter = nullptr;
+        std::function<const std::vector<void*>&(void)> getter = nullptr;
+        std::function<void(const void*)> setter = nullptr;
     };
 
     /**
@@ -82,9 +78,11 @@ Tweaker::Tweaker(CTwBar* tweakbar) :
 {
 }
 
-std::string Tweaker::Definition(std::string label, unsigned int max) const
+std::string Tweaker::Definition(std::string label, unsigned int min, unsigned int max) const
 {
-    return " max=" + std::to_string(max) + " min=0" + Definition(label);
+    return " max=" + std::to_string(max) + 
+           " min=" + std::to_string(min) + 
+           Definition(label);
 }
 
 std::string Tweaker::Definition(std::string label, float step, int precision) const
@@ -93,6 +91,11 @@ std::string Tweaker::Definition(std::string label, float step, int precision) co
     return " step=" + std::to_string(step) + 
         " precision=" + std::to_string(precision == 0 ? defaultPrecision : precision) + 
         Definition(label);
+}
+
+std::string Tweaker::Definition(std::string label, int precision) const
+{
+    return " precision=" + std::to_string(precision) + Definition(label);
 }
 
 std::string Tweaker::Definition(std::string label) const
@@ -135,16 +138,29 @@ void Tweaker::AddEntry(std::string label,
         TwAddVarRW(m_tweakBar, GetName().c_str(), type,
             entry, Definition(label).c_str());
     }
+
+    LogTweakError();
 }
 
-void Tweaker::AddEntry(std::string label, 
-                       void* entry, 
-                       TwType type, 
-                       float step, 
-                       int precision)
+void Tweaker::AddFltEntry(std::string label, 
+                          void* entry, 
+                          float step, 
+                          int precision)
 {
-    TwAddVarRW(m_tweakBar, GetName().c_str(), type, entry, 
+    TwAddVarRW(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, entry, 
         Definition(label, step, precision).c_str());
+
+    LogTweakError();
+}
+
+void Tweaker::AddFltEntry(std::string label, 
+                          void* entry,
+                          int precision)
+{
+    TwAddVarRO(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, entry, 
+        Definition(label, precision).c_str());
+
+    LogTweakError();
 }
 
 void Tweaker::AddFltEntry(std::string label,
@@ -158,7 +174,9 @@ void Tweaker::AddFltEntry(std::string label,
     m_entries.emplace_back(std::move(entry));
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, SetCallback,
-        GetCallback, m_entries[index].get(), Definition(label, 0.1f).c_str());
+        GetCallback, m_entries[index].get(), Definition(label, 0.1f, 0).c_str());
+
+    LogTweakError();
 }
 
 void Tweaker::AddIntEntry(std::string label,
@@ -171,6 +189,8 @@ void Tweaker::AddIntEntry(std::string label,
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, nullptr,
         GetCallback, m_entries[index].get(), Definition(label).c_str());
+
+    LogTweakError();
 }
 
 void Tweaker::AddIntEntry(std::string label,
@@ -185,7 +205,9 @@ void Tweaker::AddIntEntry(std::string label,
     m_entries.emplace_back(std::move(entry));
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, SetCallback,
-        GetCallback, m_entries[index].get(), Definition(label, max).c_str());
+        GetCallback, m_entries[index].get(), Definition(label, 0, max).c_str());
+
+    LogTweakError();
 }
 
 void Tweaker::AddStrEntry(std::string label, 
@@ -198,6 +220,8 @@ void Tweaker::AddStrEntry(std::string label,
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_STDSTRING, nullptr,
         GetCallback, m_entries[index].get(), Definition(label).c_str());
+
+    LogTweakError();
 }
 
 void Tweaker::AddButton(std::string label, 
@@ -209,6 +233,8 @@ void Tweaker::AddButton(std::string label,
     
     TwAddButton(m_tweakBar, GetName().c_str(),
         CallButton, m_buttons[index].get(), Definition(label).c_str());
+
+    LogTweakError();
 }
 
 std::string Tweaker::GetName()
@@ -233,21 +259,16 @@ TwType Tweaker::MakeSubGroup(std::vector<std::pair<std::string, T*>>& entries,
     auto entry = std::make_unique<TweakableSubGroup<T>>();
     auto* subgroup = entry.get();
 
-    entry->getter = [subgroup]() -> const std::vector<T>
+    entry->getter = [subgroup]() -> const std::vector<void*>&
     {
-        std::vector<T> values;
-        for (void* value : subgroup->values)
-        {
-            values.push_back(*static_cast<T*>(value));
-        }
-        return values;
+        return subgroup->values;
     };
 
-    entry->setter = [subgroup](const std::vector<T> values)
+    entry->setter = [subgroup](const void* values)
     {
-        for (unsigned int i = 0; i < values.size(); ++i)
+        for (unsigned int i = 0; i < subgroup->values.size(); ++i)
         {
-            *static_cast<T*>(subgroup->values[i]) = values[i];
+            *static_cast<T*>(subgroup->values[i]) = static_cast<const T*>(values)[i];
         }
     };
 
@@ -282,14 +303,15 @@ void Tweaker::AddSubGroup(std::string label,
 
     TwAddVarCB(m_tweakBar, GetName().c_str(), subgroupType, 
         SetCallback, GetCallback, entry.get(), Definition(label).c_str());
+
+    LogTweakError();
 }
 
-void Tweaker::AddSubGroup(std::string label,
-                          std::vector<std::pair<std::string, bool*>>& entries)
+void Tweaker::LogTweakError() const
 {
-    const TwType subgroupType = MakeSubGroup(entries, TW_TYPE_BOOLCPP);
-    auto& entry = m_subGroups[m_subGroups.size()-1];
-
-    TwAddVarCB(m_tweakBar, GetName().c_str(), subgroupType, 
-        SetCallback, GetCallback, entry.get(), Definition(label).c_str());
+    const char* error = TwGetLastError();
+    if (error != nullptr)
+    {
+        LogError("Tweaker: Error for " + m_group + " - " + std::to_string(m_count));
+    }
 }

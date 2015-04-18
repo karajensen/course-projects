@@ -35,7 +35,7 @@ void MeshData::AddToTweaker(Tweaker& tweaker)
     tweaker.AddIntEntry("Instances", [this](){ return m_instances.size(); });
     tweaker.AddEntry("Visible", &m_instancesRendered, TW_TYPE_INT32, true);
     tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);
-    tweaker.AddEntry("Radius", &m_radius, TW_TYPE_FLOAT);
+    tweaker.AddFltEntry("Radius", &m_radius);
 }
 
 bool MeshData::Initialise()
@@ -152,39 +152,7 @@ void MeshData::Render(RenderInstance renderInstance) const
     {
         if (instance.render)
         {
-            if (instance.rotation.x == 0 &&
-                instance.rotation.y == 0 &&
-                instance.rotation.z == 0)
-            {
-                glm::mat4 scale;
-                scale[0][0] = instance.scale.x;
-                scale[1][1] = instance.scale.y;
-                scale[2][2] = instance.scale.z;
-
-                glm::mat4 translate;
-                translate[3][0] = instance.position.x;
-                translate[3][1] = instance.position.y;
-                translate[3][2] = instance.position.z;
-
-                glm::mat4 rotateX, rotateY, rotateZ;
-                glm::rotate(rotateX, instance.rotation.x, glm::vec3(1,0,0));
-                glm::rotate(rotateY, instance.rotation.y, glm::vec3(0,1,0));
-                glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0,0,1));
-
-                renderInstance(translate * (rotateZ * rotateX * rotateY) * scale);
-            }
-            else
-            {
-                glm::mat4 world;
-                world[0][0] = instance.scale.x;
-                world[1][1] = instance.scale.y;
-                world[2][2] = instance.scale.z;
-                world[3][0] = instance.position.x;
-                world[3][1] = instance.position.y;
-                world[3][2] = instance.position.z;
-                renderInstance(world);
-            }
-
+            renderInstance(instance.world);
             Render();
         }
     }
@@ -203,6 +171,7 @@ const std::vector<MeshData::Instance>& MeshData::Instances() const
 void MeshData::SetInstance(int index, const glm::vec3& position)
 {
     m_instances[index].position = position;
+    m_instances[index].requiresUpdate = true;
 }
 
 void MeshData::SetInstance(int index,
@@ -215,6 +184,7 @@ void MeshData::SetInstance(int index,
     m_instances[index].scale.x = scale;
     m_instances[index].scale.y = scale;
     m_instances[index].scale.z = scale;
+    m_instances[index].requiresUpdate = true;
 }
 
 void MeshData::AddInstance()
@@ -277,17 +247,54 @@ void MeshData::Tick(const glm::vec3& cameraPosition,
     m_instancesRendered = 0;
     for (auto& instance : m_instances)
     {
+        instance.render = ShouldRender(
+            instance, cameraPosition, cameraBounds);
+
         if (m_skybox)
         {
             instance.position = cameraPosition;
+            instance.requiresUpdate = true;
         }
-
-        instance.render = ShouldRender(
-            instance, cameraPosition, cameraBounds);
 
         if (instance.render)
         {
             ++m_instancesRendered;
+        }
+
+        if (instance.requiresUpdate)
+        {
+            instance.requiresUpdate = false;
+
+            if (instance.rotation.x == 0 &&
+                instance.rotation.y == 0 &&
+                instance.rotation.z == 0)
+            {
+                glm::mat4 scale;
+                scale[0][0] = instance.scale.x;
+                scale[1][1] = instance.scale.y;
+                scale[2][2] = instance.scale.z;
+
+                glm::mat4 translate;
+                translate[3][0] = instance.position.x;
+                translate[3][1] = instance.position.y;
+                translate[3][2] = instance.position.z;
+
+                glm::mat4 rotateX, rotateY, rotateZ;
+                glm::rotate(rotateX, instance.rotation.x, glm::vec3(1, 0, 0));
+                glm::rotate(rotateY, instance.rotation.y, glm::vec3(0, 1, 0));
+                glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0, 0, 1));
+
+                instance.world = translate * (rotateZ * rotateX * rotateY) * scale;
+            }
+            else
+            {
+                instance.world[0][0] = instance.scale.x;
+                instance.world[1][1] = instance.scale.y;
+                instance.world[2][2] = instance.scale.z;
+                instance.world[3][0] = instance.position.x;
+                instance.world[3][1] = instance.position.y;
+                instance.world[3][2] = instance.position.z;
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ Water::Water(const std::string& name,
     m_reflectionTint(1.0f, 1.0f, 1.0f),
     m_reflection(1.0f)
 {
-    m_backfacecull = false;
+    BackfaceCull(false);
     m_waves.resize(Wave::MAX);
 
     m_waves[0].amplitude = 1.0f;
@@ -49,16 +49,16 @@ void Water::AddToTweaker(Tweaker& tweaker)
         }
     });
 
-    tweaker.AddEntry("Speed", &m_speed, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Bump Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Bump Velocity X", &m_bumpVelocity.x, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Bump Velocity Z", &m_bumpVelocity.y, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Texture Scale U", &m_uvScale.x, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Texture Scale V", &m_uvScale.y, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Fresnal Scale", &m_fresnal.x, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Fresnal Biase", &m_fresnal.y, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Fresnal Power", &m_fresnal.z, TW_TYPE_FLOAT, 0.1f);
-    tweaker.AddEntry("Reflection Amount", &m_reflection, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddFltEntry("Speed", &m_speed, 0.1f);
+    tweaker.AddFltEntry("Bump Amount", &m_bump, 0.1f);
+    tweaker.AddFltEntry("Bump Velocity X", &m_bumpVelocity.x, 0.1f);
+    tweaker.AddFltEntry("Bump Velocity Z", &m_bumpVelocity.y, 0.1f);
+    tweaker.AddFltEntry("Texture Scale U", &m_uvScale.x, 0.1f);
+    tweaker.AddFltEntry("Texture Scale V", &m_uvScale.y, 0.1f);
+    tweaker.AddFltEntry("Fresnal Scale", &m_fresnal.x, 0.1f);
+    tweaker.AddFltEntry("Fresnal Biase", &m_fresnal.y, 0.1f);
+    tweaker.AddFltEntry("Fresnal Power", &m_fresnal.z, 0.1f);
+    tweaker.AddFltEntry("Reflection Amount", &m_reflection, 0.1f);
     tweaker.AddEntry("Reflection Tint", &m_reflectionTint, TW_TYPE_COLOR3F);
     tweaker.AddEntry("Shallow Colour", &m_shallowColour, TW_TYPE_COLOR4F);
     tweaker.AddEntry("Deep Colour", &m_deepColour, TW_TYPE_COLOR4F);
@@ -140,6 +140,7 @@ void Water::SetInstance(int index, const glm::vec2& position, bool flippedX, boo
     m_instances[index].position.z = position.y;
     m_instances[index].scale.x = flippedX ? -1.0f : 1.0f;
     m_instances[index].scale.z = flippedZ ? -1.0f : 1.0f;
+    m_instances[index].requiresUpdate = true;
 }
 
 void Water::AddInstance(const glm::vec2& position, bool flippedX, bool flippedZ)

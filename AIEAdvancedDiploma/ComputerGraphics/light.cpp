@@ -13,13 +13,13 @@ Light::Light(const std::string& name) :
 void Light::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddStrEntry("Name", [this](){ return m_name; });
-    tweaker.AddEntry("Position X", &m_position.x, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Position Y", &m_position.y, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Position Z", &m_position.z, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Attenuation X", &m_attenuation.x, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Attenuation Y", &m_attenuation.y, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Attenuation Z", &m_attenuation.z, TW_TYPE_FLOAT, 0.01f);
-    tweaker.AddEntry("Specularity", &m_specularity, TW_TYPE_FLOAT, 0.01f);
+    tweaker.AddFltEntry("Position X", &m_position.x, 0.01f);
+    tweaker.AddFltEntry("Position Y", &m_position.y, 0.01f);
+    tweaker.AddFltEntry("Position Z", &m_position.z, 0.01f);
+    tweaker.AddFltEntry("Attenuation X", &m_attenuation.x, 0.01f);
+    tweaker.AddFltEntry("Attenuation Y", &m_attenuation.y, 0.01f);
+    tweaker.AddFltEntry("Attenuation Z", &m_attenuation.z, 0.01f);
+    tweaker.AddFltEntry("Specularity", &m_specularity, 0.01f);
     tweaker.AddEntry("Specular", &m_specular.x, TW_TYPE_COLOR3F);
     tweaker.AddEntry("Diffuse", &m_diffuse.x, TW_TYPE_COLOR3F);
 }

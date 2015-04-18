@@ -25,11 +25,14 @@ void Application::Run()
 {
     while(m_engine->IsRunning())
     {
+        m_timer->StartSection(Timer::SCENE_UPDATE);
+
         m_timer->UpdateTimer();
         const float deltaTime = m_timer->GetDeltaTime();
         const float timePassed = m_timer->GetTotalTime();
 
         m_input->Update();
+
         m_camera->Update(deltaTime);
         if (m_input->IsRightMouseDown())
         {
@@ -39,9 +42,14 @@ void Application::Run()
         m_gui->Update(*m_input);
         m_scene->Tick(deltaTime, *m_camera);
 
-        m_engine->RenderScene(timePassed);
+        m_timer->StopSection(Timer::SCENE_UPDATE);
+        m_timer->StartSection(Timer::RENDERING);
+
+        m_engine->RenderScene(*m_timer, timePassed);
         m_gui->Render();
         m_engine->EndRender();
+
+        m_timer->StopSection(Timer::RENDERING);
     }
 }
 

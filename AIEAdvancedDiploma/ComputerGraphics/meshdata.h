@@ -43,10 +43,12 @@ public:
     */
     struct Instance
     {
+        glm::mat4 world;                       ///< World matrix
         glm::vec3 position = glm::vec3(0,0,0); ///< Position offset
         glm::vec3 rotation = glm::vec3(0,0,0); ///< Degrees rotated around each axis
         glm::vec3 scale = glm::vec3(1,1,1);    ///< Scaling of the mesh
         bool render = true;                    ///< Whether to draw the mesh
+        bool requiresUpdate = false;           ///< Whether to update the world matrix
     };
 
     /**
@@ -209,6 +211,28 @@ public:
 protected:
 
     /**
+    * @return whether this mesh renders with caustics
+    */
+    bool UsesCaustics() const;
+
+    /**
+    * @return whether this mesh renders with bump mapping
+    */
+    bool UsesBumpMapping() const;
+
+    /**
+    * @return whether this mesh renders with specular highlights
+    */
+    bool UsesSpecular() const;
+
+    int m_vertexComponentCount = 0;     ///< Number of components that make up a vertex
+    std::vector<float> m_vertices;      ///< Mesh Vertex information
+    std::vector<DWORD> m_indices;       ///< Mesh Index information
+    std::vector<Instance> m_instances;  ///< Instances of this mesh
+
+private:
+
+    /**
     * Prevent copying
     */
     MeshData(const MeshData&) = delete;
@@ -225,21 +249,6 @@ protected:
                       const BoundingArea& bounds);
 
     /**
-    * @return whether this mesh renders with caustics
-    */
-    bool UsesCaustics() const;
-
-    /**
-    * @return whether this mesh renders with bump mapping
-    */
-    bool UsesBumpMapping() const;
-
-    /**
-    * @return whether this mesh renders with specular highlights
-    */
-    bool UsesSpecular() const;
-
-    /**
     * Determines the radius surrounding this mesh
     * This is the based on the furthest vertex from the mesh center
     */
@@ -247,9 +256,6 @@ protected:
 
     bool m_backfacecull = true;         ///< Whether backface culling is enabled
     int m_instancesRendered = 0;        ///< Number of instances currently rendered
-    int m_vertexComponentCount = 0;     ///< Number of components that make up a vertex
-    std::vector<float> m_vertices;      ///< Mesh Vertex information
-    std::vector<DWORD> m_indices;       ///< Mesh Index information
     const std::string m_name;           ///< Name of the mesh
     int m_shaderIndex = -1;             ///< Unique Index of the mesh shader to use
     GLuint m_vaoID = 0;                 ///< An unique ID for Vertex Array Object (VAO)
@@ -257,7 +263,6 @@ protected:
     GLuint m_iboID = 0;                 ///< Unique ID for the Index Buffer Object (IBO)
     bool m_initialised = false;         ///< Whether the vertex buffer object is initialised or not
     std::vector<int> m_textureIDs;      ///< IDs for each texture used
-    std::vector<Instance> m_instances;  ///< Instances of this mesh
     const std::string m_shaderName;     ///< Name of the shader to use
     bool m_skybox = false;              ///< Whether this mesh is a skybox
     float m_radius = 0.0f;              ///< The radius of the sphere surrounding the mesh

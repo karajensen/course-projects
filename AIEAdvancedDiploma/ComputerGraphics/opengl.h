@@ -19,6 +19,7 @@ class Quad;
 class RenderTarget;
 class MeshData;
 class Terrain;
+class Timer;
 
 /**
 * Engine for initialising and managing OpenGL
@@ -52,9 +53,10 @@ public:
 
     /**
     * Renders the scene
-    * @param timer The time passed since scene start
+    * @param timer Allows logging time taken for rendering steps
+    * @param timePassed The time passed since scene start
     */
-    void RenderScene(float timer);
+    void RenderScene(Timer& timer, float timePassed);
 
     /**
     * Ends the rendering pipeline
@@ -88,11 +90,12 @@ private:
     * Updates and switches to main shader the mesh requires
     * @param mesh The mesh currently rendering
     * @param alphaBlend Whether to use alpha blending
-    * @param timer The timer to send or -1 if not to send
+    * @param timePassed The timePassed to send
     * @return whether the mesh can now be rendered
     */
     bool UpdateShader(const MeshData& mesh, 
-        bool alphaBlend, float timer = -1.0f);
+                      bool alphaBlend, 
+                      float timePassed = 0.0f);
 
     /**
     * Updates and switches to main shader the mesh requires
@@ -118,10 +121,10 @@ private:
     * Updates and switches to main shader the water requires
     * @param water The water currently rendering
     * @param lights All lighting in the scene
-    * @param timer The time passed since scene start
+    * @param timePassed The time passed since scene start
     * @return whether the mesh can now be rendered
     */
-    bool UpdateShader(const Water& water, float timer);
+    bool UpdateShader(const Water& water, float timePassed);
 
     /**
     * Updates and switches to the shader for an emitter
@@ -161,9 +164,10 @@ private:
 
     /**
     * Renders the scene
-    * @param timer The time passed since scene start
+    * @param timer Allows logging time taken for rendering steps
+    * @param timePassed The time passed since scene start
     */
-    void RenderSceneMap(float timer);
+    void RenderSceneMap(Timer& timer, float timePassed);
 
     /**
     * Renders the scene with post processing
@@ -197,9 +201,9 @@ private:
 
     /**
     * Renders all water
-    * @param timer The time passed since scene start
+    * @param timePassed The time passed since scene start
     */
-    void RenderWater(float timer);
+    void RenderWater(float timePassed);
 
     /**
     * Sets whether alpha blending is enabled or not

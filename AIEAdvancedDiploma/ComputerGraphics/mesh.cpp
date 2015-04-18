@@ -15,29 +15,32 @@ Mesh::Mesh(const std::string& name,
            int instances) :
     MeshData(name, shaderName, shaderID)
 {
-    m_instances.resize(instances);
+    for (int i = 0; i < instances; ++i)
+    {
+        AddInstance();
+    }
 }
 
 void Mesh::AddToTweaker(Tweaker& tweaker)
 {
     MeshData::AddToTweaker(tweaker);
 
-    tweaker.AddEntry("Ambience", &m_ambience, TW_TYPE_FLOAT, 0.1f);
+    tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
 
     if (UsesBumpMapping())
     {
-        tweaker.AddEntry("Bump Amount", &m_bump, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddFltEntry("Bump Amount", &m_bump, 0.1f);
     }
 
     if (UsesCaustics())
     {
-        tweaker.AddEntry("Caustics Amount", &m_causticsAmount, TW_TYPE_FLOAT, 0.1f);
-        tweaker.AddEntry("Caustics Scale", &m_causticsScale, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddFltEntry("Caustics Amount", &m_causticsAmount, 0.1f);
+        tweaker.AddFltEntry("Caustics Scale", &m_causticsScale, 0.1f);
     }
 
     if (UsesSpecular())
     {
-        tweaker.AddEntry("Specularity", &m_specularity, TW_TYPE_FLOAT, 0.1f);
+        tweaker.AddFltEntry("Specularity", &m_specularity, 0.1f);
     }    
 }
 
@@ -249,7 +252,7 @@ bool Mesh::InitialiseFromFBX(const std::string& path,
 
     if (!fbx->load(path.c_str(), FBXFile::UNITS_METER, false, false, false))
     {
-        LogError("FBX loader failed for " + m_name);
+        LogError("FBX loader failed for " + Name());
         return false;
     }
 
