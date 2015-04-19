@@ -101,19 +101,7 @@ bool Scene::Initialise(const glm::vec3& camera)
 {
     m_builder = std::make_unique<SceneBuilder>(*m_data);
     m_updater = std::make_unique<ScenePlacer>(*m_data);
-
-    if (m_builder->Initialise())
-    {
-        // To prevent unnecessary shader switching, sort by shader used
-        std::sort(m_data->meshes.begin(), m_data->meshes.end(), 
-            [](const std::unique_ptr<Mesh>& m1, const std::unique_ptr<Mesh>& m2)->bool
-            {
-                return m1->ShaderID() < m2->ShaderID();
-            });
-
-        return m_updater->Initialise(camera);
-    }
-    return false;
+    return m_builder->Initialise() && m_updater->Initialise(camera);
 }
 
 void Scene::SetPostMap(PostProcessing::Map map)

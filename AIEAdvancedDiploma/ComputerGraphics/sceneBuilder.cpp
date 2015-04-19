@@ -393,7 +393,7 @@ Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
         name, m_data.shaders[shaderID]->Name(), shaderID, texture.GetPixels()));
     Terrain& terrain = *m_data.terrain[m_data.terrain.size()-1];
 
-    if (!terrain.Initialise(glm::vec2(uvStretch, uvStretch), minHeight, maxHeight, height,
+    if (!terrain.Initialise(uvStretch, minHeight, maxHeight, height,
         spacing, size, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
     {
         LogError("Terrain: " + name + " failed initialisation");

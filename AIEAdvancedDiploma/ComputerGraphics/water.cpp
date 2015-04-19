@@ -15,7 +15,7 @@ Water::Water(const std::string& name,
     m_bumpVelocity(0.0f, 0.0f),
     m_uvScale(1.0f, 1.0f),
     m_fresnal(1.0f, 0.5f, 2.0f),
-    m_shallowColour(1.0f, 1.0f, 1.0f, 0.5),
+    m_shallowColour(1.0f, 1.0f, 1.0f, 0.5f),
     m_deepColour(0.8f, 0.8f, 0.8f, 1.0f),
     m_reflectionTint(1.0f, 1.0f, 1.0f),
     m_reflection(1.0f)

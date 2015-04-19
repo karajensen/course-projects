@@ -90,7 +90,7 @@ void Terrain::CausticsScale(float value)
     m_causticsScale = value;
 }
 
-bool Terrain::Initialise(const glm::vec2& uvStretch,
+bool Terrain::Initialise(float uvStretch,
                          float minHeight,
                          float maxHeight,
                          float height,
@@ -103,7 +103,8 @@ bool Terrain::Initialise(const glm::vec2& uvStretch,
     m_minHeight = minHeight;
     m_maxHeight = maxHeight;
 
-    if (CreateGrid(uvStretch, spacing, size, size, hasNormals, hasTangents))
+    if (CreateGrid(glm::vec2(uvStretch, uvStretch), 
+        spacing, size, size, hasNormals, hasTangents))
     {
         GenerateTerrain();
         RecalculateNormals();

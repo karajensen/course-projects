@@ -43,7 +43,7 @@ public:
     * @param hasNormals Whether the terrain requires tangents
     * @return whether call was successful
     */
-    bool Initialise(const glm::vec2& uvStretch,
+    bool Initialise(float uvStretch,
                     float minHeight,
                     float maxHeight,
                     float height,
@@ -51,12 +51,6 @@ public:
                     int size,
                     bool hasNormals,
                     bool hasTangents);
-
-    /**
-    * Sets the position of the terrain
-    * @param position The position of the terrain
-    */
-    void Set(const glm::vec2& position);
 
     /**
     * Reloads the terrain
