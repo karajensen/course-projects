@@ -104,7 +104,7 @@ void Camera::Update(const glm::vec2& mouseDirection,
 
     if (m_autoMove)
     {
-        Forward(-deltatime);
+        Forward(deltatime);
     }
 
     if (m_requiresUpdate)

@@ -70,9 +70,6 @@
     <ClCompile Include="textureProcedural.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="sceneUpdater.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="gui.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -80,6 +77,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="timer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="scenePlacer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -159,9 +159,6 @@
     <ClInclude Include="textureProcedural.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="sceneUpdater.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="sceneData.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -172,6 +169,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="timer.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="scenePlacer.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

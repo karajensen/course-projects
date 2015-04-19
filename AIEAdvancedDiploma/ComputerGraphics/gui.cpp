@@ -5,6 +5,7 @@
 #include "gui.h"
 #include "scene.h"
 #include "sceneData.h"
+#include "scenePlacer.h"
 #include "renderdata.h"
 #include "tweaker.h"
 #include "input.h"
@@ -167,6 +168,9 @@ void Gui::FillTweakBar()
 
     m_tweaker->SetGroup("Camera");
     m_camera.AddToTweaker(*m_tweaker);
+
+    m_tweaker->SetGroup("Placement");
+    m_scene.GetUpdater().AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Timer");
     m_timer.AddToTweaker(*m_tweaker);

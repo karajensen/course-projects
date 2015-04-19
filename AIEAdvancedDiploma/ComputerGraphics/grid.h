@@ -61,16 +61,6 @@ protected:
     float GetHeight(int row, int column) const;
 
     /**
-    * @return the number of rows of the grid
-    */
-    int Rows() const;
-
-    /**
-    * @return the number of columns of the grid
-    */
-    int Columns() const;
-
-    /**
     * Determines the normals for the grid
     */
     void RecalculateNormals();
@@ -92,6 +82,16 @@ public:
     * @note only valid for grids with the same rows/column size
     */
     float Size() const;
+
+    /**
+    * @return the number of rows of the grid
+    */
+    int Rows() const;
+
+    /**
+    * @return the number of columns of the grid
+    */
+    int Columns() const;
 
 private:
 

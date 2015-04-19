@@ -11,14 +11,10 @@
 
 Mesh::Mesh(const std::string& name, 
            const std::string& shaderName,
-           int shaderID, 
-           int instances) :
+           int shaderID) :
+
     MeshData(name, shaderName, shaderID)
 {
-    for (int i = 0; i < instances; ++i)
-    {
-        AddInstance();
-    }
 }
 
 void Mesh::AddToTweaker(Tweaker& tweaker)

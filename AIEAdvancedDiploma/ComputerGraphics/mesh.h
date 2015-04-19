@@ -20,12 +20,10 @@ public:
     * @param name The name of the mesh
     * @param shaderName The name of the shader to use
     * @param shaderID The ID of the shader to use
-    * @param instances The number of default instances to create
     */
     Mesh(const std::string& name, 
          const std::string& shaderName, 
-         int shaderID, 
-         int instances);
+         int shaderID);
 
     /**
     * Adds data for this element to be tweaked by the gui

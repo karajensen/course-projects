@@ -198,30 +198,28 @@ bool SceneBuilder::InitialiseMeshes()
         m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
 
     {
-        auto& mesh = InitialiseMesh("skybox", "mock_skybox.obj", Shader::ID_FLAT);
+        auto& mesh = InitialiseMesh("skybox", "mock_skybox.obj", Shader::ID_FLAT, 1, false);
         mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "sky"));
         mesh.SetSkyBox();
     }
     {
-        auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS);
+        auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS, 120, true);
         mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "ground"));
         mesh.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
         mesh.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "specular"));
         mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        mesh.SetInstance(0, glm::vec3(0, 5, 0));
         mesh.Bump(20.0f);
         mesh.Specularity(5.0f);
     }
     {
-        auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS);
+        auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS, 120, true);
         mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
         mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
     }
     {
-        auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE_CAUSTICS);
+        auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE_CAUSTICS, 120, true);
         mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
         mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        mesh.SetInstance(0, glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), 2.0f);
     }
     return true;
 }
@@ -329,11 +327,24 @@ ProceduralTexture& SceneBuilder::InitialiseTexture(const std::string& name,
 Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
                                    const std::string& filename,
                                    int shaderID,
-                                   int instances)
+                                   int intances,
+                                   bool isfoliage)
 {
+    const auto index = m_data.meshes.size();
+
     m_data.meshes.push_back(std::make_unique<Mesh>(
-        name, m_data.shaders[shaderID]->Name(), shaderID, instances));
-    auto& mesh = *m_data.meshes[m_data.meshes.size()-1];
+        name, m_data.shaders[shaderID]->Name(), shaderID));
+
+    auto& mesh = *m_data.meshes[index];
+
+    if (isfoliage)
+    {
+        m_data.foliage.push_back(std::make_pair(index, intances));
+    }
+    else
+    {
+        mesh.AddInstances(intances);
+    }
 
     if (!mesh.InitialiseFromFile(MESHES_PATH + filename, 
         true, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))

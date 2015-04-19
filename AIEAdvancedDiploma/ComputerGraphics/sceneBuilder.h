@@ -103,13 +103,15 @@ private:
     * @param name The name of the mesh
     * @param filename The filename of the mesh
     * @param shaderID The shader to use
-    * @param instances The number of instances to create
+    * @param instances The amount of instances to create
+    * @param isfoliage Whether this is a mesh to place on terrain
     * @return The mesh initialised
     */
     Mesh& InitialiseMesh(const std::string& name,
                          const std::string& filename,
                          int shaderID,
-                         int instances = 1);
+                         int intances,
+                         bool isfoliage);
 
     /**
     * Initialises terrain

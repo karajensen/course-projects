@@ -178,6 +178,16 @@ public:
     void AddInstance();
 
     /**
+    * Adds instances at the world center with default values
+    */
+    void AddInstances(int amount);
+
+    /**
+    * Clears all currently created instances
+    */
+    void ClearInstances();
+
+    /**
     * Sets an instance for this mesh
     * @param index The ID of this instance
     * @param position The position offset 

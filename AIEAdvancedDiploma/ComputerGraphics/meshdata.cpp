@@ -192,6 +192,19 @@ void MeshData::AddInstance()
     m_instances.emplace_back();
 }
 
+void MeshData::ClearInstances()
+{
+    m_instances.clear();
+}
+
+void MeshData::AddInstances(int amount)
+{
+    for (int i = 0; i < amount; ++i)
+    {
+        AddInstance();
+    }
+}
+
 void MeshData::AddInstance(const glm::vec3& position,
                            const glm::vec3& rotation,
                            float scale)

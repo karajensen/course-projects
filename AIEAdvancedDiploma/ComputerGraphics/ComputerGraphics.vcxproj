@@ -111,7 +111,7 @@
     <ClInclude Include="sceneData.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="sceneInterface.h" />
-    <ClInclude Include="sceneUpdater.h" />
+    <ClInclude Include="scenePlacer.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="terrain.h" />
     <ClInclude Include="texture.h" />
@@ -140,7 +140,7 @@
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="sceneBuilder.cpp" />
     <ClCompile Include="gui.cpp" />
-    <ClCompile Include="sceneUpdater.cpp" />
+    <ClCompile Include="scenePlacer.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="terrain.cpp" />
     <ClCompile Include="texture.cpp" />

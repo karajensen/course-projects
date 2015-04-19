@@ -6,7 +6,7 @@
 #include "renderdata.h"
 #include "sceneData.h"
 #include "sceneBuilder.h"
-#include "sceneUpdater.h"
+#include "scenePlacer.h"
 #include "camera.h"
 
 Scene::Scene() :
@@ -100,7 +100,7 @@ void Scene::Tick(float deltatime, const Camera& camera)
 bool Scene::Initialise(const glm::vec3& camera)
 {
     m_builder = std::make_unique<SceneBuilder>(*m_data);
-    m_updater = std::make_unique<SceneUpdater>(*m_data);
+    m_updater = std::make_unique<ScenePlacer>(*m_data);
 
     if (m_builder->Initialise())
     {
@@ -152,4 +152,9 @@ void Scene::Reload()
 SceneData& Scene::GetData()
 {
     return *m_data;
+}
+
+ScenePlacer& Scene::GetUpdater()
+{
+    return *m_updater;
 }
