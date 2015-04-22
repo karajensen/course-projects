@@ -8,7 +8,6 @@ in vec2 ex_UVs;
 
 out vec4 out_Color;
 
-uniform float normalMask;
 uniform float bloomStart;
 uniform float bloomFade;
 

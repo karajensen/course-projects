@@ -115,6 +115,12 @@ private:
     void PlaceFoliage(int instanceID);
 
     /**
+    * Places the assigned emitters on the patch
+    * @param instance The instance ID to update
+    */
+    void PlaceEmitters(int instanceID);
+
+    /**
     * Updates any data stored for the patch
     * @param instance The instance ID to update
     */
@@ -128,12 +134,12 @@ private:
     float GetPatchHeight(int instanceID, float x, float z) const;
 
     /**
-    * Key for obtaining the mesh instance assigned to a patch
+    * Key for obtaining the instance assigned to a patch
     */
-    struct MeshKey
+    struct InstanceKey
     {
-        int index = 0;       ///< Mesh ID
-        int instance = 0;    ///< Mesh Instance ID
+        int index = 0;       ///< Scene data ID
+        int instance = 0;    ///< Instance ID
     };
 
     /**
@@ -141,10 +147,10 @@ private:
     */
     struct Patch
     {
-        glm::vec2 minBounds;            ///< Maximum global coordinates of the patch 
-        glm::vec2 maxBounds;            ///< Minimum global coordinates of the patch
-        std::vector<MeshKey> rocks;     ///< Data for what rocks to use
-        std::vector<MeshKey> foliage;   ///< Data for what foliage to use
+        glm::vec2 minBounds;                ///< Maximum global coordinates of the patch 
+        glm::vec2 maxBounds;                ///< Minimum global coordinates of the patch
+        std::vector<InstanceKey> foliage;   ///< Data for what foliage to use
+        std::vector<InstanceKey> emitters;  ///< Data for what emitters to use
     };
 
     SceneData& m_data;              ///< Data for manipulating the scene

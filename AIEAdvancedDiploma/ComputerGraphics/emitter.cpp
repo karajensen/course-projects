@@ -7,12 +7,11 @@
 #include "quad.h"
 #include "tweaker.h"
 
-Emitter::Emitter(const std::string& name, int shaderID, int amount) :
+Emitter::Emitter(const std::string& name, int shaderID) :
     m_shaderIndex(shaderID),
     m_name(name),
     m_particle(std::make_unique<Quad>(name, shaderID))
 {
-    m_particles.resize(amount);
 }
 
 Emitter::~Emitter() = default;
@@ -20,18 +19,18 @@ Emitter::~Emitter() = default;
 void Emitter::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddStrEntry("Name", m_name);
-    tweaker.AddIntEntry("Particles", [this](){ return m_particles.size(); });
-    tweaker.AddEntry("Visible", &m_render, TW_TYPE_BOOLCPP);
+    tweaker.AddIntEntry("Instances", [this](){ return m_instances.size(); });
+    tweaker.AddEntry("Particles", &m_totalParticles, TW_TYPE_INT32, true);
+    tweaker.AddEntry("Visible", &m_instancesRendered, TW_TYPE_INT32, true);
     tweaker.AddEntry("Paused", &m_paused, TW_TYPE_BOOLCPP);
     tweaker.AddFltEntry("Radius", &m_data.radius, 0.1f);
     tweaker.AddFltEntry("Length", &m_data.length, 0.1f);
     tweaker.AddFltEntry("Width", &m_data.width, 0.1f);
-    tweaker.AddFltEntry("Position X", &m_data.position.x, 0.1f);
-    tweaker.AddFltEntry("Position Y", &m_data.position.y, 0.1f);
-    tweaker.AddFltEntry("Position Z", &m_data.position.z, 0.1f);
     tweaker.AddFltEntry("Direction", &m_data.direction.y, 0.1f);
     tweaker.AddFltEntry("Life Time", &m_data.lifeTime, 0.1f);
     tweaker.AddFltEntry("Life Fade", &m_data.lifeFade, 0.1f);
+    tweaker.AddFltEntry("Min Wait Time", &m_data.minWaitTime, 0.1f);
+    tweaker.AddFltEntry("Max Wait Time", &m_data.maxWaitTime, 0.1f);
     tweaker.AddFltEntry("Min Amplitude", &m_data.minAmplitude, 0.1f);
     tweaker.AddFltEntry("Max Amplitude", &m_data.maxAmplitude, 0.1f);
     tweaker.AddFltEntry("Min Frequency", &m_data.minFrequency, 0.1f);
@@ -48,7 +47,31 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
 bool Emitter::Initialise(const EmitterData& data)
 {
     m_data = data;
+    m_data.radius = std::max(m_data.length, m_data.width);
+    m_instances.resize(data.instances);
+    m_totalParticles = data.instances * data.particles;
+
+    for (Instance& instance : m_instances)
+    {
+        instance.particles.resize(data.particles);
+    }
+
     return m_particle->Initialise();
+}
+
+const Emitter::Instance& Emitter::GetInstance(int index) const
+{
+    return m_instances[index];
+}
+
+unsigned int Emitter::InstanceCount() const
+{
+    return m_instances.size();
+}
+
+void Emitter::SetInstance(int index, const glm::vec3& position)
+{
+    m_instances[index].position = position;
 }
 
 void Emitter::PreRender()
@@ -60,43 +83,48 @@ void Emitter::Render(RenderParticle renderParticle,
                      const glm::vec3& cameraPosition,
                      const glm::vec3& cameraUp)
 {
-    for (const Particle& particle : Particles())
+    glm::mat4 scale, rotate, translate;
+
+    for (const Instance& instance : m_instances)
     {
-        if (particle.Alive())
+        if (instance.render)
         {
-            // Particle always facing the camera
-            glm::vec3 right, up, forward;
-            forward.x = cameraPosition.x - particle.Position().x;
-            forward.y = cameraPosition.y - particle.Position().y;
-            forward.z = cameraPosition.z - particle.Position().z;
-            
-            forward = glm::normalize(forward);
-            right = glm::cross(forward, cameraUp);
-            up = glm::cross(forward, right);
+            for (const Particle& particle : instance.particles)
+            {
+                if (particle.Alive())
+                {
+                    // Particle always facing the camera
+                    glm::vec3 right, up, forward;
+                    forward.x = cameraPosition.x - particle.Position().x;
+                    forward.y = cameraPosition.y - particle.Position().y;
+                    forward.z = cameraPosition.z - particle.Position().z;
 
-            glm::mat4 scale;
-            scale[0][0] = particle.Size();  
-            scale[1][1] = particle.Size();
-            scale[2][2] = particle.Size();
-            
-            glm::mat4 rotate;
-            rotate[0][0] = right.x;  
-            rotate[0][1] = right.y;
-            rotate[0][2] = right.z;
-            rotate[1][0] = up.x;  
-            rotate[1][1] = up.y;
-            rotate[1][2] = up.z;
-            rotate[2][0] = forward.x;  
-            rotate[2][1] = forward.y;
-            rotate[2][2] = forward.z;
+                    forward = glm::normalize(forward);
+                    right = glm::cross(forward, cameraUp);
+                    up = glm::cross(forward, right);
 
-            glm::mat4 translate;
-            translate[3][0] = particle.Position().x;
-            translate[3][1] = particle.Position().y;
-            translate[3][2] = particle.Position().z;
-            
-            renderParticle(translate * rotate * scale, particle);
-            m_particle->Render();
+                    scale[0][0] = particle.Size();
+                    scale[1][1] = particle.Size();
+                    scale[2][2] = particle.Size();
+
+                    rotate[0][0] = right.x;
+                    rotate[0][1] = right.y;
+                    rotate[0][2] = right.z;
+                    rotate[1][0] = up.x;
+                    rotate[1][1] = up.y;
+                    rotate[1][2] = up.z;
+                    rotate[2][0] = forward.x;
+                    rotate[2][1] = forward.y;
+                    rotate[2][2] = forward.z;
+
+                    translate[3][0] = particle.Position().x;
+                    translate[3][1] = particle.Position().y;
+                    translate[3][2] = particle.Position().z;
+
+                    renderParticle(translate * rotate * scale, particle);
+                    m_particle->Render();
+                }
+            }
         }
     }
 }
@@ -114,11 +142,6 @@ const std::string& Emitter::Name() const
 const std::vector<int>& Emitter::Textures() const
 {
     return m_textures;
-}
-
-const std::vector<Particle>& Emitter::Particles() const
-{
-    return m_particles;
 }
 
 int Emitter::ShaderID() const
@@ -141,49 +164,56 @@ void Emitter::AddTexture(int ID)
     m_textures.push_back(ID);
 }
 
-bool Emitter::ShouldRender(const glm::vec3& position, 
+bool Emitter::ShouldRender(const glm::vec3& cameraPosition, 
+                           const glm::vec3& emitterPosition,
                            const BoundingArea& bounds)
 {
     // Radius requires a buffer as particles can move outside bounds
     m_data.radius = std::max(m_data.width, m_data.length) * m_data.maxAmplitude * 2.0f;
-    const glm::vec3 centerToMesh = m_data.position - bounds.center;
+    const glm::vec3 centerToMesh = emitterPosition - bounds.center;
     return glm::length(centerToMesh) <= m_data.radius + bounds.radius;
-}
-
-bool Emitter::ShouldRender() const
-{
-    return m_render;
 }
 
 void Emitter::Tick(float deltatime,
                    const glm::vec3& cameraPosition,
                    const BoundingArea& cameraBounds)
 {
-    m_render = ShouldRender(cameraPosition, cameraBounds);
-
-    if (m_render && !m_paused)
+    if (m_paused)
     {
-        for (Particle& particle : m_particles)
+        return;
+    }
+
+    m_instancesRendered = 0;
+    for (Instance& instance : m_instances)
+    {
+        instance.render = ShouldRender(cameraPosition, instance.position, cameraBounds);
+        if (instance.render)
         {
-            if (!particle.Tick(deltatime, m_data.direction))
+            ++m_instancesRendered;
+
+            for (Particle& particle : instance.particles)
             {
-                 glm::vec3 particlePosition(m_data.position);
-                 particlePosition.x += Random::Generate(-m_data.width, m_data.width) * 0.5f;
-                 particlePosition.z += Random::Generate(-m_data.length, m_data.length) * 0.5f;
+                if (!particle.Tick(deltatime, m_data.direction))
+                {
+                     glm::vec3 particlePosition(instance.position);
+                     particlePosition.x += Random::Generate(-m_data.width, m_data.width) * 0.5f;
+                     particlePosition.z += Random::Generate(-m_data.length, m_data.length) * 0.5f;
     
-                 const int textureID = m_textures[Random::Generate(
-                     0, static_cast<int>(m_textures.size()-1))];
+                     const int textureID = m_textures[Random::Generate(
+                         0, static_cast<int>(m_textures.size()-1))];
     
-                 particle.Reset(m_data.lifeTime, 
-                                m_data.lifeFade,
-                                Random::Generate(m_data.minSpeed, m_data.maxSpeed),
-                                Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
-                                Random::Generate(m_data.minSize, m_data.maxSize),
-                                Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
-                                Random::Generate(m_data.minFrequency, m_data.maxFrequency),
-                                textureID,
-                                particlePosition);
+                     particle.Reset(m_data.lifeTime, 
+                                    m_data.lifeFade,
+                                    Random::Generate(m_data.minWaitTime, m_data.maxWaitTime),
+                                    Random::Generate(m_data.minSpeed, m_data.maxSpeed),
+                                    Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
+                                    Random::Generate(m_data.minSize, m_data.maxSize),
+                                    Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
+                                    Random::Generate(m_data.minFrequency, m_data.maxFrequency),
+                                    textureID,
+                                    particlePosition);
     
+                }
             }
         }
     }

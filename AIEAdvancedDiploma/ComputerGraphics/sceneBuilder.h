@@ -188,13 +188,11 @@ private:
     * Initialises an emitter
     * @param name The name of the emitter
     * @param shader The id of the shader to use
-    * @param amount The number of particles to emit
     * @param textures The particle textures to use
     * @param data The data for the emission
     */
     bool InitialiseEmitter(const std::string& name, 
                            int shaderID,
-                           int amount,
                            const std::vector<int>& textures,
                            const EmitterData& data);
 

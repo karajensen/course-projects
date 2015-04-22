@@ -5,13 +5,13 @@
 #include "particle.h"
 #include "common.h"
 
-Particle::Particle() :
-    m_maxWaitTime(Random::Generate(0.0f,1.0f))
+Particle::Particle()
 {
 }
 
 void Particle::Reset(float lifeTime,
                      float lifeFade,
+                     float waitTime,
                      float speed,
                      float waveSpeed,
                      float size,
@@ -34,6 +34,7 @@ void Particle::Reset(float lifeTime,
     m_frequency = frequency;
     m_startPosition = position;
     m_position = position;
+    m_maxWaitTime = waitTime;
 }
 
 bool Particle::Tick(float deltatime, const glm::vec3& direction)

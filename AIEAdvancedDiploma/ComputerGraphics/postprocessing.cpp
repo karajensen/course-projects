@@ -12,7 +12,7 @@ PostProcessing::PostProcessing()
     m_blurStep = 0.004f;
     m_depthFar = 1000.0f;
     m_depthNear = 1.0f;
-    m_dofStart = 1.0f;
+    m_dofStart = 0.99f;
     m_dofFade = 0.01f;
     m_fogColour.r = 0.0f;
     m_fogColour.g = 69.0f/255.0f;
@@ -172,8 +172,6 @@ std::string PostProcessing::GetMapName(PostProcessing::Map map)
         return "Final Scene";
     case SCENE_MAP:
         return "Scene Map";
-    case NORMAL_MAP:
-        return "Normal Map";
     case DEPTH_MAP:
         return "Depth Map";
     case BLUR_MAP:

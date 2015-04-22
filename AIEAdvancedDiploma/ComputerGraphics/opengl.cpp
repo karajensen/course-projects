@@ -242,7 +242,7 @@ void OpenGL::RenderEmitters()
 
     for (auto& emitter : m_scene.Emitters())
     {
-        if (emitter->ShouldRender() && UpdateShader(*emitter))
+        if (UpdateShader(*emitter))
         {
             emitter->PreRender();
             EnableSelectedShader();
@@ -274,7 +274,6 @@ void OpenGL::RenderPostProcessing()
     postShader.SendUniform("bloomIntensity", post.BloomIntensity());
     postShader.SendUniform("finalMask", post.Mask(PostProcessing::FINAL_MAP));
     postShader.SendUniform("sceneMask", post.Mask(PostProcessing::SCENE_MAP));
-    postShader.SendUniform("normalMask", post.Mask(PostProcessing::NORMAL_MAP));
     postShader.SendUniform("depthMask", post.Mask(PostProcessing::DEPTH_MAP));
     postShader.SendUniform("blurSceneMask", post.Mask(PostProcessing::BLUR_MAP));
     postShader.SendUniform("depthOfFieldMask", post.Mask(PostProcessing::DOF_MAP));
@@ -457,6 +456,8 @@ bool OpenGL::UpdateShader(const Emitter& emitter)
         if (index != m_selectedShader)
         {
             SetSelectedShader(index);
+            shader.SendUniform("depthNear", m_scene.Post().DepthNear());
+            shader.SendUniform("depthFar", m_scene.Post().DepthFar());
         }
 
         shader.SendUniform("tint", emitter.Tint());
@@ -523,6 +524,7 @@ void OpenGL::EnableAlphaBlending(bool enable)
     {
         m_isAlphaBlend = enable;
         enable ? glEnablei(GL_BLEND, 0) : glDisablei(GL_BLEND, 0);
+        enable ? glEnablei(GL_BLEND, 1) : glDisablei(GL_BLEND, 1);
     }
 }
 

@@ -89,7 +89,7 @@ bool SceneBuilder::InitialiseShaderConstants()
         std::make_pair("SAMPLES", std::to_string(MULTISAMPLING_COUNT)),
         std::make_pair("SCENE_TEXTURES", std::to_string(RenderTarget::SCENE_TEXTURES)),
         std::make_pair("ID_COLOUR", std::to_string(RenderTarget::SCENE_ID)),
-        std::make_pair("ID_NORMAL", std::to_string(RenderTarget::NORMAL_ID)),
+        std::make_pair("ID_DEPTH", std::to_string(RenderTarget::NORMAL_ID)),
         std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
         std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
         std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),
@@ -241,27 +241,30 @@ bool SceneBuilder::InitialiseBubbles()
     data.direction.x = 0.0f;
     data.direction.y = 1.0f;
     data.direction.z = 0.0f;
-    data.position.x = 0.0f;
-    data.position.y = 0.0f;
-    data.position.z = 0.0f;
     data.length = 10.0f;
     data.width = 10.0f;
-    data.lifeTime = 2.0f;
-    data.lifeFade = 0.25f;
-    data.maxAmplitude = 1.0f;
-    data.minAmplitude = 1.0f;
+    data.lifeTime = 5.0f;
+    data.lifeFade = 0.5f;
+    data.maxAmplitude = 0.5f;
+    data.minAmplitude = 1.5f;
     data.maxFrequency = 1.0f;
-    data.minFrequency = 1.0f;
+    data.minFrequency = 0.5f;
     data.maxWaveSpeed = 1.0f;
     data.minWaveSpeed = 1.0f;
-    data.maxSpeed = 0.5f;
+    data.maxSpeed = 0.3f;
     data.minSpeed = 0.2f;
+    data.minSize = 2.0f;
+    data.maxSize = 4.0f;
+    data.minWaitTime = 0.5f;
+    data.maxWaitTime = 3.0f;    
     data.tint.r = 0.0f;
     data.tint.g = 0.5f;
     data.tint.b = 1.0f;
     data.tint.a = 1.0f;
+    data.instances = 80;
+    data.particles = 10;
 
-    return InitialiseEmitter("test", Shader::ID_PARTICLE, 10, textures, data);
+    return InitialiseEmitter("bubbles", Shader::ID_PARTICLE, textures, data);
 }
 
 bool SceneBuilder::InitialiseCaustics()
@@ -358,11 +361,10 @@ Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
 
 bool SceneBuilder::InitialiseEmitter(const std::string& name,
                                      int shaderID,
-                                     int amount,
                                      const std::vector<int>& textures,
                                      const EmitterData& data)
 {
-    m_data.emitters.push_back(std::make_unique<Emitter>(name, shaderID, amount));
+    m_data.emitters.push_back(std::make_unique<Emitter>(name, shaderID));
     Emitter& emitter = *m_data.emitters[m_data.emitters.size()-1];
 
     for (int texture : textures)

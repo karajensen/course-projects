@@ -55,6 +55,7 @@ public:
     * Resets the particle
     * @param lifeTime The maximum allowed life
     * @param lifeFade Time for fading in/out of life
+    * @param waitTime Time for waiting before respawning
     * @param speed How fast the particle moves up
     * @param waveSpeed How fast the particle moves in waves
     * @param size The scale of the particle
@@ -65,6 +66,7 @@ public:
     */
     void Reset(float lifeTime, 
                float lifeFade, 
+               float waitTime,
                float speed,
                float waveSpeed, 
                float size, 

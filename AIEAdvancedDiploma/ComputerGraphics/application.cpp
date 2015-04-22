@@ -91,21 +91,18 @@ void Application::InitialiseInput()
         [this](){ m_scene->SetPostMap(PostProcessing::SCENE_MAP); });
 
     m_input->AddCallback(GLFW_KEY_F3, false, 
-        [this](){ m_scene->SetPostMap(PostProcessing::NORMAL_MAP); });
-
-    m_input->AddCallback(GLFW_KEY_F4, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::DEPTH_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_F5, false, 
+    m_input->AddCallback(GLFW_KEY_F4, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::BLUR_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_F6, false, 
+    m_input->AddCallback(GLFW_KEY_F5, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::BLOOM_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_F7, false, 
+    m_input->AddCallback(GLFW_KEY_F6, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::FOG_MAP); });
 
-    m_input->AddCallback(GLFW_KEY_F8, false, 
+    m_input->AddCallback(GLFW_KEY_F7, false, 
         [this](){ m_scene->SetPostMap(PostProcessing::DOF_MAP); });
 
     m_input->AddCallback(GLFW_KEY_W, true, 

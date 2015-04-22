@@ -124,7 +124,7 @@ void ScenePlacer::ShiftPatches(const glm::ivec2& direction)
         // Update the new position of the new top row
         for (int c = 0; c < m_patchPerRow; ++c)
         {
-            UpdatePatch(0, c, glm::ivec2(-1.0, 0.0));
+            UpdatePatch(0, c, glm::ivec2(-1, 0));
         }
     }
     else if (direction.x < 0)
@@ -147,7 +147,7 @@ void ScenePlacer::ShiftPatches(const glm::ivec2& direction)
         // Update the new position of the new top row
         for (int c = 0; c < m_patchPerRow; ++c)
         {
-            UpdatePatch(maxIndex, c, glm::ivec2(1.0, 0.0));
+            UpdatePatch(maxIndex, c, glm::ivec2(1, 0));
         }
     }
     else if (direction.y > 0)
@@ -170,7 +170,7 @@ void ScenePlacer::ShiftPatches(const glm::ivec2& direction)
         // Update the new position of the new left row
         for (int r = 0; r < m_patchPerRow; ++r)
         {
-            UpdatePatch(r, 0, glm::ivec2(0.0, -1.0));
+            UpdatePatch(r, 0, glm::ivec2(0, -1));
         }
     }
     else if (direction.y < 0) 
@@ -193,7 +193,7 @@ void ScenePlacer::ShiftPatches(const glm::ivec2& direction)
         // Update the new position of the new top row
         for (int r = 0; r < m_patchPerRow; ++r)
         {
-            UpdatePatch(r, maxIndex, glm::ivec2(0.0, 1.0));
+            UpdatePatch(r, maxIndex, glm::ivec2(0, 1));
         }
     }
 }
@@ -303,11 +303,11 @@ void ScenePlacer::GeneratePatchData()
     for (Patch& patch : m_patchData)
     {
         patch.foliage.clear();
-        patch.rocks.clear();
+        patch.emitters.clear();
     }
 
     // Create all the instances for the foliage meshes
-    std::vector<MeshKey> meshKeys;
+    std::vector<InstanceKey> meshKeys;
     for (auto& foliage : m_data.foliage)
     {
         unsigned int meshID = foliage.first;
@@ -330,16 +330,36 @@ void ScenePlacer::GeneratePatchData()
         }
     }
 
+    // Grab all avaliable emitters to assign
+    std::vector<InstanceKey> emitterKeys;
+    for (unsigned int i = 0; i < m_data.emitters.size(); ++i)
+    {
+        const auto count = m_data.emitters[i]->InstanceCount();
+        for (unsigned int j = 0; j < count; ++j)
+        {
+            const auto index = emitterKeys.size();
+            emitterKeys.emplace_back();
+            emitterKeys[index].index = i;
+            emitterKeys[index].instance = j;
+        }
+    }
+
+    std::random_shuffle(emitterKeys.begin(), emitterKeys.end());
     std::random_shuffle(meshKeys.begin(), meshKeys.end());
 
-    // Assign the foliage to the patches
-    for (MeshKey& key : meshKeys)
+    // Assign the elements to the patches
+    for (auto& key : meshKeys)
     {
         const int index = Random::Generate(0, m_patchData.size()-1);
         m_patchData[index].foliage.push_back(key);
     }
 
-    // Place the foliage on the rocks
+    for (auto& key : emitterKeys)
+    {
+        const int index = Random::Generate(0, m_patchData.size()-1);
+        m_patchData[index].emitters.push_back(key);
+    }
+
     ResetPatches();
 }
 
@@ -363,6 +383,7 @@ void ScenePlacer::UpdatePatchData(int instanceID)
     data.maxBounds.y = instance.position.z + halfSize; 
 
     PlaceFoliage(instanceID);
+    PlaceEmitters(instanceID);
 }
 
 float ScenePlacer::GetPatchHeight(int instanceID, float x, float z) const
@@ -393,9 +414,8 @@ void ScenePlacer::PlaceFoliage(int instanceID)
     const float maxRotation = DegToRad(360.0f);
     const float minScale = 5.0f;
     const float maxScale = 10.0f;
-    const float maxIndex = m_sand.Rows()-1.0f;
 
-    for (MeshKey& foliage : patchData.foliage)
+    for (auto& foliage : patchData.foliage)
     {
         const float x = Random::Generate(minBounds.x, maxBounds.x);
         const float z = Random::Generate(minBounds.y, maxBounds.y);
@@ -405,5 +425,20 @@ void ScenePlacer::PlaceFoliage(int instanceID)
 
         auto& mesh = *m_data.meshes[foliage.index];
         mesh.SetInstance(foliage.instance, position, rotation, scale);
+    }
+}
+
+void ScenePlacer::PlaceEmitters(int instanceID)
+{
+    auto& patchData = m_patchData[instanceID];
+    const glm::vec2& minBounds = patchData.minBounds;
+    const glm::vec2& maxBounds = patchData.maxBounds;
+
+    for (auto& emitter : patchData.emitters)
+    {
+        const float x = Random::Generate(minBounds.x, maxBounds.x);
+        const float z = Random::Generate(minBounds.y, maxBounds.y);
+        const glm::vec3 position(x, GetPatchHeight(instanceID, x, z), z);
+        m_data.emitters[emitter.index]->SetInstance(emitter.instance, position);
     }
 }

@@ -33,9 +33,12 @@ struct EmitterData
     float maxFrequency = 1.0f;    ///< The maximum intensity of the waves
     float lifeTime = 0.0f;        ///< Seconds the particle can live before dying
     float lifeFade = 1.0f;        ///< Seconds before lifetime ends to fade the particle
-    glm::vec3 position;           ///< The position of the emitter
+    float minWaitTime = 0.0f;     ///< Seconds to wait before respawning
+    float maxWaitTime = 0.0f;     ///< Seconds to wait before respawning
     glm::vec3 direction;          ///< The direction the particles will spawn 
     glm::vec4 tint;               ///< Colour to tint the particle texture
+    int instances = 0;            ///< Number of instances of this emitter
+    int particles = 0;            ///< Number of particles per instance
 };
 
 /**
@@ -55,14 +58,24 @@ public:
     * Constructor
     * @param name The name of the emitter
     * @param shaderID The ID of the shader to render with
-    * @param amound The amount of particles for this emitter
     */
-    Emitter(const std::string& name, int shaderID, int amount);
+    Emitter(const std::string& name, int shaderID);
 
     /**
     * Destructor
     */
     ~Emitter();
+
+    /**
+    * Holds information for an instance of this emitter
+    * @note instances have the same data but particles do not match
+    */
+    struct Instance
+    {
+        std::vector<Particle> particles;   ///< Particles this emitter can spawn
+        bool render = true;                ///< Whether this emitter should be rendered
+        glm::vec3 position;                ///< Position of this emitter
+    };
 
     /**
     * Adds data for this element to be tweaked by the gui
@@ -113,11 +126,6 @@ public:
     const std::string& Name() const;
 
     /**
-    * @return The particles in the emitter
-    */
-    const std::vector<Particle>& Particles() const;
-
-    /**
     * @return The texture IDs used in the emitter
     */
     const std::vector<int>& Textures() const;
@@ -136,12 +144,22 @@ public:
     * Adds a texture to be used by the particles
     * @param ID The unique ID of the texture to use
     */
-    void AddTexture(int ID);
+    void AddTexture(int ID);    
 
     /**
-    * @return whether this emitter should be rendered
+    * @return the instance of the emitter
     */
-    bool ShouldRender() const;        
+    const Instance& GetInstance(int index) const;
+
+    /**
+    * Sets the position of the instance
+    */
+    void SetInstance(int index, const glm::vec3& position);
+
+    /**
+    * @return the amount of instances of this emitter
+    */
+    unsigned int InstanceCount() const;
 
 private:
 
@@ -153,18 +171,21 @@ private:
 
     /**
     * Determines whether the emitter should be rendered
-    * @param position The position of the camera
+    * @param cameraPosition The position of the camera
+    * @param emitterPosition The position of the emitter
     * @param cameraBounds Bounding area in front of the camera
     */
-    bool ShouldRender(const glm::vec3& position, 
+    bool ShouldRender(const glm::vec3& cameraPosition, 
+                      const glm::vec3& emitterPosition, 
                       const BoundingArea& bounds);
 
     EmitterData m_data;                  ///< Data for this emitter
     std::vector<int> m_textures;         ///< Indexes for the particle textures to use
-    std::vector<Particle> m_particles;   ///< Particles this emitter can spawn
+    std::vector<Instance> m_instances;   ///< All instances of this emitter
     std::unique_ptr<Quad> m_particle;    ///< Particle quad for rendering
     int m_shaderIndex = -1;              ///< Unique Index of the mesh shader to render with
+    int m_totalParticles = 0;            ///< Total amount of particles over all instances
+    int m_instancesRendered = 0;         ///< Number of instances currently rendered
     std::string m_name;                  ///< Name of this emitter
     bool m_paused = false;               ///< Whether emission is paused
-    bool m_render = true;                ///< Whether to render this emitter
 };
