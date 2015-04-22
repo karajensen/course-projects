@@ -170,7 +170,7 @@ void Gui::FillTweakBar()
     m_camera.AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Placement");
-    m_scene.GetUpdater().AddToTweaker(*m_tweaker);
+    m_scene.GetPlacer().AddToTweaker(*m_tweaker);
 
     m_tweaker->SetGroup("Timer");
     m_timer.AddToTweaker(*m_tweaker);

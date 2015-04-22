@@ -339,6 +339,7 @@ Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
 
     if (isfoliage)
     {
+        // Scene placer will allocate foliage instances
         m_data.foliage.push_back(std::make_pair(index, intances));
     }
     else

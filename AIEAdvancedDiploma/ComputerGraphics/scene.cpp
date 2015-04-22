@@ -94,14 +94,18 @@ void Scene::Tick(float deltatime, const Camera& camera)
         water->Tick(position, bounds, causticsTexture);
     }
 
-    m_updater->Update(position);
+    m_placer->Update(position);
 }
 
 bool Scene::Initialise(const glm::vec3& camera)
 {
     m_builder = std::make_unique<SceneBuilder>(*m_data);
-    m_updater = std::make_unique<ScenePlacer>(*m_data);
-    return m_builder->Initialise() && m_updater->Initialise(camera);
+    if (m_builder->Initialise())
+    {
+        m_placer = std::make_unique<ScenePlacer>(*m_data);
+        return m_placer->Initialise(camera);
+    }
+    return false;
 }
 
 void Scene::SetPostMap(PostProcessing::Map map)
@@ -135,6 +139,8 @@ void Scene::Reload()
     {
         terrain->Reload();
     }
+
+    m_placer->ResetPatches();
 }
 
 SceneData& Scene::GetData()
@@ -142,7 +148,7 @@ SceneData& Scene::GetData()
     return *m_data;
 }
 
-ScenePlacer& Scene::GetUpdater()
+ScenePlacer& Scene::GetPlacer()
 {
-    return *m_updater;
+    return *m_placer;
 }

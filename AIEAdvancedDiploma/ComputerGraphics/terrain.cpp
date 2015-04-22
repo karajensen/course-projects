@@ -25,6 +25,7 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
         for (auto& instance : Instances())
         {
             instance.position.y = m_height;
+            instance.requiresUpdate = true;
         }
     }, 0.1f);
 

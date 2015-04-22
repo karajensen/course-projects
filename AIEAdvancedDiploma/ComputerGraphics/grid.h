@@ -11,7 +11,7 @@
 */
 class Grid : public MeshData
 {
-protected:
+public:
 
     /**
     * Constructor
@@ -22,6 +22,29 @@ protected:
     Grid(const std::string& name, 
          const std::string& shaderName, 
          int shaderID);
+
+    /**
+    * @return the local height at the given row/column
+    */
+    float GetHeight(int row, int column) const;
+
+    /**
+    * @return the size of the grid
+    * @note only valid for grids with the same rows/column size
+    */
+    float Size() const;
+
+    /**
+    * @return the number of rows of the grid
+    */
+    int Rows() const;
+
+    /**
+    * @return the number of columns of the grid
+    */
+    int Columns() const;
+
+protected:
 
     /**
     * Adds data for this element to be tweaked by the gui
@@ -56,11 +79,6 @@ protected:
     void SetHeight(int row, int column, float height);
 
     /**
-    * @return the height at the given row/column
-    */
-    float GetHeight(int row, int column) const;
-
-    /**
     * Determines the normals for the grid
     */
     void RecalculateNormals();
@@ -74,24 +92,6 @@ protected:
     * Sets the UV texture stretch
     */
     void SetUVStretch(const glm::vec2& value);
-
-public:
-
-    /**
-    * @return the size of the grid
-    * @note only valid for grids with the same rows/column size
-    */
-    float Size() const;
-
-    /**
-    * @return the number of rows of the grid
-    */
-    int Rows() const;
-
-    /**
-    * @return the number of columns of the grid
-    */
-    int Columns() const;
 
 private:
 
@@ -136,11 +136,10 @@ private:
     */
     glm::vec2 GetUVs(int index) const;
 
-    glm::vec2 m_uvStretch;                      ///< Texture stretch multiplier
-    float m_spacing = 0.0f;                     ///< The spacing between vertices
-    int m_columns = 0;                          ///< The number of columns of this mesh
-    int m_rows = 0;                             ///< The number of rows of this mesh
-    bool m_hasNormals = false;                  ///< Whether to generate normals
-    bool m_hasTangents = false;                 ///< Whether to generate tangent/bitangents
-    std::vector<std::vector<float*>> m_heights; ///< Row x columns of the vertices
+    glm::vec2 m_uvStretch;        ///< Texture stretch multiplier
+    float m_spacing = 0.0f;       ///< The spacing between vertices
+    int m_columns = 0;            ///< The number of columns of this mesh
+    int m_rows = 0;               ///< The number of rows of this mesh
+    bool m_hasNormals = false;    ///< Whether to generate normals
+    bool m_hasTangents = false;   ///< Whether to generate tangent/bitangents
 };

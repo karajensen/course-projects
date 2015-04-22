@@ -13,7 +13,9 @@ namespace
 }
 
 ScenePlacer::ScenePlacer(SceneData& data) :
-    m_data(data)
+    m_data(data),
+    m_ocean(*data.water[data.oceanIndex]),
+    m_sand(*data.terrain[data.sandIndex])
 {
     const int patchAmount = 36;
     const int minPatchAmount = 9;
@@ -37,7 +39,8 @@ ScenePlacer::~ScenePlacer() = default;
 void ScenePlacer::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddEntry("Randomize Count", &m_countRandom, TW_TYPE_INT32);
-    tweaker.AddButton("Reset Scene Placement", [this](){ GenerateFoliage(); });
+    tweaker.AddButton("Reset Placement", [this](){ ResetPatches(); });
+    tweaker.AddButton("Re-Generate", [this](){ GeneratePatchData(); });
 }
 
 int ScenePlacer::Index(int row, int column) const
@@ -195,21 +198,13 @@ void ScenePlacer::ShiftPatches(const glm::ivec2& direction)
     }
 }
 
-bool ScenePlacer::IsValid(int index) const
-{
-    return index >= 0 && index < static_cast<int>(m_patches.size());
-}
-
 void ScenePlacer::UpdatePatch(int row,
-                               int column,
-                               const glm::ivec2& direction)
+                              int column,
+                              const glm::ivec2& direction)
 {
-    auto& sand = *m_data.terrain[m_data.sandIndex];
-    auto& water = *m_data.water[m_data.oceanIndex];
-
     // Look at one pace in opposite direction
     const int backIndex = Index(row-direction.x, column-direction.y);
-    const auto& backInstance = water.GetInstance(m_patches[backIndex]);
+    const auto& backInstance = m_ocean.GetInstance(m_patches[backIndex]);
     
     const glm::vec2 position(
         backInstance.position.x + (direction.x * m_patchSize), 
@@ -244,23 +239,18 @@ void ScenePlacer::UpdatePatch(int row,
 
     // Update the patch instance with the new values
     const int index = Index(row, column);
-    water.SetInstance(m_patches[index], position, xFlipped, zFlipped);
-    sand.SetInstance(m_patches[index], position);
-
-    // Update any foliage attached to this patch
-    PlaceFoliage(index);
+    const int instance = m_patches[index];
+    m_ocean.SetInstance(instance, position, xFlipped, zFlipped);
+    m_sand.SetInstance(instance, position);
+    UpdatePatchData(instance);
 }
                                
 bool ScenePlacer::Initialise(const glm::vec3& camera)
 {
     const float halfPatch = m_patchPerRow / 2.0f;
 
-    assert(!m_data.water.empty());
-    auto& sand = *m_data.terrain[m_data.sandIndex];
-    auto& water = *m_data.water[m_data.oceanIndex];
-
-    const float sandSize = sand.Size();
-    const float waterSize = water.Size();
+    const float sandSize = m_sand.Size();
+    const float waterSize = m_ocean.Size();
     assert(sandSize == waterSize);
     m_patchSize = sandSize;
 
@@ -281,13 +271,13 @@ bool ScenePlacer::Initialise(const glm::vec3& camera)
             position.x = start.x + (r * m_patchSize);
             position.y = start.y + (c * m_patchSize);
 
-            water.AddInstance(position, xFlipped, zFlipped);
-            sand.AddInstance(position);
+            m_ocean.AddInstance(position, xFlipped, zFlipped);
+            m_sand.AddInstance(position);
 
             if (USE_DIAGNOSTICS)
             {
                 const int index = Index(r,c);
-                sand.Instances()[index].scale *= 0.98f;
+                m_sand.Instances()[index].scale *= 0.98f;
             }
 
             m_patches[instance] = instance;
@@ -296,7 +286,7 @@ bool ScenePlacer::Initialise(const glm::vec3& camera)
     }
 
     // Place meshes over the patches
-    GenerateFoliage();
+    GeneratePatchData();
 
     m_patchInside = GetPatchInside(camera);
     if (m_patchInside.x == NO_INDEX || m_patchInside.y == NO_INDEX)
@@ -307,7 +297,7 @@ bool ScenePlacer::Initialise(const glm::vec3& camera)
     return true;   
 }
 
-void ScenePlacer::GenerateFoliage()
+void ScenePlacer::GeneratePatchData()
 {
     // Reset all the patch data
     for (Patch& patch : m_patchData)
@@ -350,43 +340,66 @@ void ScenePlacer::GenerateFoliage()
     }
 
     // Place the foliage on the rocks
-    for (int ID : m_patches)
+    ResetPatches();
+}
+
+void ScenePlacer::ResetPatches()
+{
+    for (int instanceID : m_patches)
     {
-        PlaceFoliage(ID);
+        UpdatePatchData(instanceID);
     }
 }
 
-void ScenePlacer::PlaceFoliage(int ID)
+void ScenePlacer::UpdatePatchData(int instanceID)
 {
-    const int patchID = m_patches[ID];
-    auto& patchData = m_patchData[patchID];
+    auto& data = m_patchData[instanceID];
+    const auto& instance = m_sand.GetInstance(instanceID);
 
-    const auto& sand = *m_data.terrain[m_data.sandIndex];
-    const auto& sandInstance = sand.GetInstance(patchID);
-
-    const auto& center = sandInstance.position;
     const float halfSize = m_patchSize * 0.5f;
-    const glm::vec2 minBounds(center.x - halfSize, center.z - halfSize);
-    const glm::vec2 maxBounds(center.x + halfSize, center.z + halfSize);
+    data.minBounds.x = instance.position.x - halfSize;
+    data.minBounds.y = instance.position.z - halfSize;
+    data.maxBounds.x = instance.position.x + halfSize;
+    data.maxBounds.y = instance.position.z + halfSize; 
+
+    PlaceFoliage(instanceID);
+}
+
+float ScenePlacer::GetPatchHeight(int instanceID, float x, float z) const
+{
+    const auto& data = m_patchData[instanceID];
+    const float maxIndex = m_sand.Rows() - 1.0f;
+
+    const float row = Clamp(ConvertRange(x, data.minBounds.x, 
+        data.maxBounds.x, 0.0f, maxIndex), 0.0f, maxIndex);
+
+    const float column = Clamp(ConvertRange(z, data.minBounds.y, 
+        data.maxBounds.y, 0.0f, maxIndex), 0.0f, maxIndex);
+    
+    const float localHeight = m_sand.GetHeight(
+        static_cast<int>(std::round(row)), 
+        static_cast<int>(std::round(column)));
+
+    return m_sand.GetInstance(instanceID).position.y + localHeight;
+}
+
+void ScenePlacer::PlaceFoliage(int instanceID)
+{
+    auto& patchData = m_patchData[instanceID];
+    const glm::vec2& minBounds = patchData.minBounds;
+    const glm::vec2& maxBounds = patchData.maxBounds;
 
     const float minRotation = 0.0f;
     const float maxRotation = DegToRad(360.0f);
     const float minScale = 5.0f;
     const float maxScale = 10.0f;
-
-    // Determines the average height at the given point
-    auto GetHeight = [&](float x, float z) -> float
-    {
-        const float localX = ConvertRange(x, minBounds.x, maxBounds.x, 0.0f, m_patchSize);
-        const float localZ = ConvertRange(z, minBounds.y, maxBounds.y, 0.0f, m_patchSize);
-        return -20.0f; //Temporary
-    };
+    const float maxIndex = m_sand.Rows()-1.0f;
 
     for (MeshKey& foliage : patchData.foliage)
     {
         const float x = Random::Generate(minBounds.x, maxBounds.x);
         const float z = Random::Generate(minBounds.y, maxBounds.y);
-        const glm::vec3 position(x, GetHeight(x, z), z);
+        const glm::vec3 position(x, GetPatchHeight(instanceID, x, z), z);
         const glm::vec3 rotation(0.0f, Random::Generate(minRotation, maxRotation), 0.0f);
         const float scale = Random::Generate(minScale, maxScale);
 

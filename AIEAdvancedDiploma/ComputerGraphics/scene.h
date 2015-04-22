@@ -112,9 +112,9 @@ public:
     SceneData& GetData();
 
     /**
-    * @return the updater for the scene
+    * @return the placement updater for the scene
     */
-    ScenePlacer& GetUpdater();
+    ScenePlacer& GetPlacer();
 
 private:
 
@@ -126,5 +126,5 @@ private:
 
     std::unique_ptr<SceneData> m_data;         ///< Elements of the scene
     std::unique_ptr<SceneBuilder> m_builder;   ///< Creates meshes, lighting and shader data
-    std::unique_ptr<ScenePlacer> m_updater;   ///< Updates the scene depending on the camera
+    std::unique_ptr<ScenePlacer> m_placer;     ///< Updates the scene depending on the camera
 }; 
