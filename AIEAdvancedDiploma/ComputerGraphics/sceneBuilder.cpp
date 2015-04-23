@@ -200,6 +200,7 @@ bool SceneBuilder::InitialiseMeshes()
     {
         auto& mesh = InitialiseMesh("skybox", "skybox.obj", Shader::ID_FLAT, 1, false);
         mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "skybox"));
+        mesh.BackfaceCull(false);
         mesh.SetSkyBox();
     }
     {
