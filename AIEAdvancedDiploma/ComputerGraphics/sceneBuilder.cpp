@@ -149,7 +149,7 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
     success &= InitialiseTexture("bridge", "bridge.bmp", Texture::FROM_FILE);
     success &= InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("sky", "sky.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("skybox", "skybox.png", Texture::FROM_FILE);
 
     {
         auto& texture = InitialiseTexture("heightmap", Texture::NEAREST,
@@ -198,8 +198,8 @@ bool SceneBuilder::InitialiseMeshes()
         m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
 
     {
-        auto& mesh = InitialiseMesh("skybox", "mock_skybox.obj", Shader::ID_FLAT, 1, false);
-        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "sky"));
+        auto& mesh = InitialiseMesh("skybox", "skybox.obj", Shader::ID_FLAT, 1, false);
+        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "skybox"));
         mesh.SetSkyBox();
     }
     {
@@ -245,8 +245,8 @@ bool SceneBuilder::InitialiseBubbles()
     data.width = 10.0f;
     data.lifeTime = 5.0f;
     data.lifeFade = 0.5f;
-    data.maxAmplitude = 0.5f;
-    data.minAmplitude = 1.5f;
+    data.maxAmplitude = 1.5f;
+    data.minAmplitude = 0.5f;
     data.maxFrequency = 1.0f;
     data.minFrequency = 0.5f;
     data.maxWaveSpeed = 1.0f;
@@ -261,7 +261,7 @@ bool SceneBuilder::InitialiseBubbles()
     data.tint.g = 0.5f;
     data.tint.b = 1.0f;
     data.tint.a = 1.0f;
-    data.instances = 80;
+    data.instances = 120;
     data.particles = 10;
 
     return InitialiseEmitter("bubbles", Shader::ID_PARTICLE, textures, data);

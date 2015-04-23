@@ -21,7 +21,7 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
     tweaker.AddStrEntry("Name", m_name);
     tweaker.AddIntEntry("Instances", [this](){ return m_instances.size(); });
     tweaker.AddEntry("Particles", &m_totalParticles, TW_TYPE_INT32, true);
-    tweaker.AddEntry("Visible", &m_instancesRendered, TW_TYPE_INT32, true);
+    tweaker.AddEntry("Visible", &m_visibleInstances, TW_TYPE_INT32, true);
     tweaker.AddEntry("Paused", &m_paused, TW_TYPE_BOOLCPP);
     tweaker.AddFltEntry("Radius", &m_data.radius, 0.1f);
     tweaker.AddFltEntry("Length", &m_data.length, 0.1f);
@@ -164,18 +164,16 @@ void Emitter::AddTexture(int ID)
     m_textures.push_back(ID);
 }
 
-bool Emitter::ShouldRender(const glm::vec3& cameraPosition, 
-                           const glm::vec3& emitterPosition,
+bool Emitter::ShouldRender(const glm::vec3& instancePosition,
                            const BoundingArea& bounds)
 {
     // Radius requires a buffer as particles can move outside bounds
     m_data.radius = std::max(m_data.width, m_data.length) * m_data.maxAmplitude * 2.0f;
-    const glm::vec3 centerToMesh = emitterPosition - bounds.center;
+    const glm::vec3 centerToMesh = instancePosition - bounds.center;
     return glm::length(centerToMesh) <= m_data.radius + bounds.radius;
 }
 
 void Emitter::Tick(float deltatime,
-                   const glm::vec3& cameraPosition,
                    const BoundingArea& cameraBounds)
 {
     if (m_paused)
@@ -183,13 +181,13 @@ void Emitter::Tick(float deltatime,
         return;
     }
 
-    m_instancesRendered = 0;
+    m_visibleInstances = 0;
     for (Instance& instance : m_instances)
     {
-        instance.render = ShouldRender(cameraPosition, instance.position, cameraBounds);
+        instance.render = ShouldRender(instance.position, cameraBounds);
         if (instance.render)
         {
-            ++m_instancesRendered;
+            ++m_visibleInstances;
 
             for (Particle& particle : instance.particles)
             {

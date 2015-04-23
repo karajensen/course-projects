@@ -93,11 +93,9 @@ public:
     /**
     * Ticks the emitter
     * @param deltatime The time passed between ticks
-    * @param cameraPosition The world coordinates of the camera
     * @param cameraBounds Bounding area in front of the camera
     */
     void Tick(float deltatime, 
-              const glm::vec3& cameraPosition,
               const BoundingArea& cameraBounds);
 
     /**
@@ -171,12 +169,10 @@ private:
 
     /**
     * Determines whether the emitter should be rendered
-    * @param cameraPosition The position of the camera
-    * @param emitterPosition The position of the emitter
+    * @param instancePosition The position of the emitter instance
     * @param cameraBounds Bounding area in front of the camera
     */
-    bool ShouldRender(const glm::vec3& cameraPosition, 
-                      const glm::vec3& emitterPosition, 
+    bool ShouldRender(const glm::vec3& instancePosition, 
                       const BoundingArea& bounds);
 
     EmitterData m_data;                  ///< Data for this emitter
@@ -185,7 +181,7 @@ private:
     std::unique_ptr<Quad> m_particle;    ///< Particle quad for rendering
     int m_shaderIndex = -1;              ///< Unique Index of the mesh shader to render with
     int m_totalParticles = 0;            ///< Total amount of particles over all instances
-    int m_instancesRendered = 0;         ///< Number of instances currently rendered
+    int m_visibleInstances = 0;          ///< Number of instances currently rendered
     std::string m_name;                  ///< Name of this emitter
     bool m_paused = false;               ///< Whether emission is paused
 };

@@ -251,11 +251,9 @@ private:
     /**
     * Determines whether the instance should be rendered
     * @param instance The instance to check
-    * @param position The position of the camera
     * @param cameraBounds Bounding area in front of the camera
     */
     bool ShouldRender(const Instance& instance,
-                      const glm::vec3& position, 
                       const BoundingArea& bounds);
 
     /**

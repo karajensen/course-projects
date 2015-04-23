@@ -235,7 +235,6 @@ bool MeshData::UsesSpecular() const
 }
 
 bool MeshData::ShouldRender(const Instance& instance,
-                            const glm::vec3& position, 
                             const BoundingArea& bounds)
 {
     const float scale = std::max(std::max(instance.scale.x, instance.scale.y), instance.scale.z);
@@ -260,8 +259,7 @@ void MeshData::Tick(const glm::vec3& cameraPosition,
     m_instancesRendered = 0;
     for (auto& instance : m_instances)
     {
-        instance.render = ShouldRender(
-            instance, cameraPosition, cameraBounds);
+        instance.render = ShouldRender(instance, cameraBounds);
 
         if (m_skybox)
         {
