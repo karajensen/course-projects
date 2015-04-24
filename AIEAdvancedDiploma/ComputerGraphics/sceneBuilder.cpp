@@ -141,8 +141,9 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("water_cube", "water_environment", Texture::CUBE, Texture::ANISOTROPIC);
     success &= InitialiseTexture("water_colour", "water.png", Texture::FROM_FILE);
     success &= InitialiseTexture("water_normal", "water_normal.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("particle1", "particle1.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("particle2", "particle2.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("bubble1", "bubble1.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("bubble2", "bubble2.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("bubble3", "bubble3.png", Texture::FROM_FILE);
     success &= InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
     success &= InitialiseTexture("specular", "specular.jpg", Texture::FROM_FILE);
     success &= InitialiseTexture("ground", "ground.png", Texture::FROM_FILE);
@@ -234,8 +235,9 @@ bool SceneBuilder::InitialiseBubbles()
 {
     std::vector<int> textures = 
     {
-        GetTexture(m_data, "particle1"),
-        GetTexture(m_data, "particle2")
+        GetTexture(m_data, "bubble1"),
+        GetTexture(m_data, "bubble2"),
+        GetTexture(m_data, "bubble3")
     };
 
     EmitterData data;
@@ -254,16 +256,16 @@ bool SceneBuilder::InitialiseBubbles()
     data.minWaveSpeed = 1.0f;
     data.maxSpeed = 0.3f;
     data.minSpeed = 0.2f;
-    data.minSize = 2.0f;
-    data.maxSize = 4.0f;
+    data.minSize = 0.5f;
+    data.maxSize = 1.5f;
     data.minWaitTime = 0.5f;
     data.maxWaitTime = 3.0f;    
-    data.tint.r = 0.0f;
-    data.tint.g = 0.5f;
+    data.tint.r = 1.0f;
+    data.tint.g = 1.0f;
     data.tint.b = 1.0f;
     data.tint.a = 1.0f;
-    data.instances = 120;
-    data.particles = 10;
+    data.instances = 100;
+    data.particles = 15;
 
     return InitialiseEmitter("bubbles", Shader::ID_PARTICLE, textures, data);
 }
