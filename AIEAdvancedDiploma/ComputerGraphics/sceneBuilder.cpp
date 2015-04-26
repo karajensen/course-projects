@@ -203,7 +203,7 @@ bool SceneBuilder::InitialiseMeshes()
     }
     {
         auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS, 120, true);
-        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "ground"));
+        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
         mesh.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
         mesh.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "blank"));
         mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);

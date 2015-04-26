@@ -80,7 +80,7 @@ private:
     /**
     * @return a description of the type chosen
     */
-    std::string GetTypeName() const;
+    std::string GetAlgorithmName() const;
 
     /**
     * Generates the texture from an algorithm

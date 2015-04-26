@@ -38,14 +38,16 @@ ProceduralTexture::~ProceduralTexture()
 
 void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
 {
-    Texture::AddToTweaker(tweaker);
-
-    tweaker.AddEntry("Size", &m_size, TW_TYPE_INT32, true);
-    tweaker.AddStrEntry("Type", GetTypeName());
-    tweaker.AddButton("Reload", [this](){ Reload(); });
+    if (GetType() == PROCEDURAL)
+    {
+        Texture::AddToTweaker(tweaker);
+        tweaker.AddEntry("Size", &m_size, TW_TYPE_INT32, true);
+        tweaker.AddStrEntry("Type", GetAlgorithmName());
+        tweaker.AddButton("Reload", [this](){ Reload(); });
+    }
 }
 
-std::string ProceduralTexture::GetTypeName() const
+std::string ProceduralTexture::GetAlgorithmName() const
 {
     switch (m_algorithm)
     {
@@ -140,24 +142,27 @@ void ProceduralTexture::Reload()
 
 void ProceduralTexture::Save()
 {
-    const int channels = 3;
-    std::vector<unsigned char> data(m_pixels.size() * channels);
+    if (GetType() == PROCEDURAL)
+    {
+        const int channels = 3;
+        std::vector<unsigned char> data(m_pixels.size() * channels);
 
-    for (unsigned int i = 0, j = 0; i < m_pixels.size(); ++i, j+=channels)
-    {
-        data[j] = RedAsChar(i);
-        data[j+1] = GreenAsChar(i);
-        data[j+2] = BlueAsChar(i);
-    }
+        for (unsigned int i = 0, j = 0; i < m_pixels.size(); ++i, j += channels)
+        {
+            data[j] = RedAsChar(i);
+            data[j + 1] = GreenAsChar(i);
+            data[j + 2] = BlueAsChar(i);
+        }
 
-    if (SOIL_save_image(Path().c_str(), SOIL_SAVE_TYPE_BMP, 
-        m_size, m_size, channels, &data[0]) == 0)
-    {
-        LogError("Failed to save " + Name());
-    }
-    else
-    {
-        LogInfo("Saved texture " + Path());
+        if (SOIL_save_image(Path().c_str(), SOIL_SAVE_TYPE_BMP,
+            m_size, m_size, channels, &data[0]) == 0)
+        {
+            LogError("Failed to save " + Name());
+        }
+        else
+        {
+            LogInfo("Saved texture " + Path());
+        }
     }
 }
 
