@@ -8,18 +8,28 @@
 #include "tweaker.h"
 
 ProceduralTexture::ProceduralTexture(const std::string& name, 
-                                     const std::string& path, 
-                                     int size, 
+                                     const std::string& path,
+                                     int size,
                                      Filter filter,
-                                     Type type) :
+                                     Type type,
+                                     Algorithm algorithm) :
 
-    Texture(name, path, PROCEDURAL, filter),
+    Texture(name, path, type, filter),
     m_size(size),
-    m_type(type)
+    m_algorithm(algorithm)
 {
     m_pixels.resize(size * size);
     m_pixels.assign(m_pixels.size(), 0);
-    Generate();
+
+    switch (type)
+    {
+    case PROCEDURAL:
+        GenerateFromAlgorithm();
+        break;
+    case PROCEDURAL_FROM_FILE:
+        GenerateFromFile();
+        break;
+    }
 }
 
 ProceduralTexture::~ProceduralTexture()
@@ -37,7 +47,7 @@ void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
 
 std::string ProceduralTexture::GetTypeName() const
 {
-    switch (m_type)
+    switch (m_algorithm)
     {
     case DIAMOND_SQUARE:
         return "Diamond Square";
@@ -46,9 +56,32 @@ std::string ProceduralTexture::GetTypeName() const
     }
 }
 
-void ProceduralTexture::Generate()
+void ProceduralTexture::GenerateFromFile()
 {
-    switch (m_type)
+    int width, height;
+    unsigned char* image = SOIL_load_image(Path().c_str(), 
+        &width, &height, 0, SOIL_LOAD_RGBA);
+
+    assert(m_size == width);
+    assert(m_size == height);
+
+    const int channels = 4;
+    const int size = m_size * m_size * channels;
+    for (int i = 0, j = 0; i < size; i += channels, ++j)
+    {
+        const auto r = image[i];
+        const auto g = image[i+1];
+        const auto b = image[i+2];
+        const auto a = image[i+3];
+        m_pixels[j] = Convert(r, g, b, a);
+    }
+
+    SOIL_free_image_data(image);
+}
+
+void ProceduralTexture::GenerateFromAlgorithm()
+{
+    switch (m_algorithm)
     {
     case DIAMOND_SQUARE:
         MakeDiamondSquareFractal();
@@ -58,39 +91,50 @@ void ProceduralTexture::Generate()
 
 bool ProceduralTexture::InitialiseFromPixels()
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-        m_size, m_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-    if(HasCallFailed())
+    if (m_renderableTexture)
     {
-        LogError("Failed to load " + Name() + " texture");
-        return false;
-    }
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+            m_size, m_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-    return SetFiltering() && ReloadPixels();
+        if(HasCallFailed())
+        {
+            LogError("Failed to load " + Name() + " texture");
+            return false;
+        }
+
+        return SetFiltering() && ReloadPixels();
+    }
+    return true;
 }
 
 bool ProceduralTexture::ReloadPixels()
 {
-    glBindTexture(GL_TEXTURE_2D, GetID());
-
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_size, 
-        m_size, GL_RGBA, GL_UNSIGNED_BYTE, &m_pixels[0]);
-
-    if(HasCallFailed())
+    if (m_renderableTexture)
     {
-        LogError("Failed " + Name() + " texture");
-        return false;
+        glBindTexture(GL_TEXTURE_2D, GetID());
+
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_size, 
+            m_size, GL_RGBA, GL_UNSIGNED_BYTE, &m_pixels[0]);
+
+        if(HasCallFailed())
+        {
+            LogError("Failed " + Name() + " texture");
+            return false;
+        }
     }
     return true;
 }
 
 void ProceduralTexture::Reload()
 {
-    Generate();
-    if (!ReloadPixels())
+    if (GetType() == PROCEDURAL)
     {
-        LogError("Texture: Reload failed for " + Name());
+        GenerateFromAlgorithm();
+
+        if (!ReloadPixels())
+        {
+            LogError("Texture: Reload failed for " + Name());
+        }
     }
 }
 
@@ -180,6 +224,14 @@ void ProceduralTexture::Set(unsigned int index, float r, float g, float b, float
         static_cast<int>(a * 255.0f));
 }
 
+unsigned int ProceduralTexture::Convert(int r, int g, int b, int a) const
+{
+    return ((a & 0xFF) << 24) + 
+           ((b & 0xFF) << 16) + 
+           ((g & 0xFF) << 8) + 
+           (r & 0xFF);
+}
+
 void ProceduralTexture::Set(unsigned int index, int r, int g, int b, int a)
 {
     using namespace std;
@@ -187,10 +239,7 @@ void ProceduralTexture::Set(unsigned int index, int r, int g, int b, int a)
     g = min(255, max(0, g));
     b = min(255, max(0, b));
     a = min(255, max(0, a));
-    m_pixels[index] = ((a & 0xFF) << 24) + 
-                      ((b & 0xFF) << 16) + 
-                      ((g & 0xFF) << 8) + 
-                      (r & 0xFF);
+    m_pixels[index] = Convert(r, g, b, a);
 }
 
 unsigned char ProceduralTexture::RedAsChar(unsigned int index)
@@ -371,4 +420,10 @@ void ProceduralTexture::MakeDiamondSquareFractal()
     }   
 
     LogInfo("Texture: " + Name() + " generated");
+}
+
+GLuint ProceduralTexture::GetID() const
+{
+    assert(m_renderableTexture);
+    return Texture::GetID();
 }

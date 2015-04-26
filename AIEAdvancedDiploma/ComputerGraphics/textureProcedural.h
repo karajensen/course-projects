@@ -16,9 +16,10 @@ public:
     /**
     * Avaliable types
     */
-    enum Type
+    enum Algorithm
     {
-        DIAMOND_SQUARE
+        DIAMOND_SQUARE,
+        NONE
     };
 
     /**
@@ -26,15 +27,16 @@ public:
     * @param name The filename of the texture
     * @param path The full path to save the texture
     * @param size The dimensions of the texture
-    * @param type The type of texture to make
     * @param filter The type of filtering for this texture
-    * @Param type The type of texture to create
+    * @param type The type of texture to make
+    * @Param algorithm The type of texture to create
     */
     ProceduralTexture(const std::string& name, 
                       const std::string& path,
                       int size,
                       Filter filter,
-                      Type type);
+                      Type type,
+                      Algorithm algorithm);
                      
     /**
     * Destructor
@@ -62,6 +64,11 @@ public:
     */
     virtual const std::vector<unsigned int>& GetPixels() const override;
 
+    /**
+    * @return the unique ID for the texture
+    */
+    virtual GLuint GetID() const override;
+
 private:
 
     /**
@@ -76,9 +83,14 @@ private:
     std::string GetTypeName() const;
 
     /**
-    * Generates the texture
+    * Generates the texture from an algorithm
     */
-    void Generate();
+    void GenerateFromAlgorithm();
+
+    /**
+    * Generates the texture from a file
+    */
+    void GenerateFromFile();
 
     /**
     * Creates a fractal texture using the diamond square algorithm
@@ -106,6 +118,11 @@ private:
     * @return the index from the row and column value
     */
     unsigned int Index(int row, int column) const;
+
+    /**
+    * Converts the colour components to an unsigned int
+    */
+    unsigned int Convert(int r, int g, int b, int a) const;
 
     /**
     * Sets the colour from each component
@@ -164,5 +181,6 @@ private:
 
     std::vector<unsigned int> m_pixels; ///< pixels of the texture
     int m_size = 0;                     ///< Dimensions of the texture
-    Type m_type;                        ///< The type of texture this is
+    Algorithm m_algorithm;              ///< The type of texture this is
+    bool m_renderableTexture = false;   ///< Whether this texture is to be rendered
 };

@@ -24,7 +24,8 @@ public:
     {
         FROM_FILE,
         CUBE,
-        PROCEDURAL
+        PROCEDURAL,
+        PROCEDURAL_FROM_FILE
     };
 
     /**
@@ -89,7 +90,7 @@ public:
     /**
     * @return the unique ID for the texture
     */
-    GLuint GetID() const;
+    virtual GLuint GetID() const;
 
     /**
     * Reloads the texture
@@ -117,6 +118,11 @@ protected:
     * @return whether setting was successful
     */
     bool SetFiltering();
+
+    /**
+    * @return the type of texture this is
+    */
+    Type GetType() const;
 
 private:
 
@@ -160,7 +166,7 @@ private:
     bool LoadTexture(GLenum type, const std::string& path);
 
     Filter m_filter;             ///< The type of filtering for this texture
-    Type m_image;                ///< The type of image displayed
+    Type m_type;                 ///< The type of image displayed
     bool m_initialised = false;  ///< Whether this texture is initialised
     GLuint m_id = 0;             ///< Unique id for the texture
     std::string m_name;          ///< Name of the texture

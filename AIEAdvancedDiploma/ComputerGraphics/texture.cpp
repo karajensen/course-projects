@@ -14,7 +14,7 @@ Texture::Texture(const std::string& name,
 
     m_name(name),
     m_path(path),
-    m_image(type),
+    m_type(type),
     m_filter(filter)
 {
 }
@@ -45,12 +45,12 @@ const std::string& Texture::Path() const
 
 bool Texture::IsCubeMap() const
 {
-    return m_image == CUBE;
+    return m_type == CUBE;
 }
 
 bool Texture::IsProcedural() const
 {
-    return m_image == PROCEDURAL;
+    return m_type == PROCEDURAL || m_type == PROCEDURAL_FROM_FILE;
 }
 
 bool Texture::Initialise()
@@ -62,11 +62,11 @@ bool Texture::Initialise()
     glBindTexture(type, m_id);
 
     bool success = false;
-    if (m_image == CUBE)
+    if (m_type == CUBE)
     {
         success = InitialiseCubeMap();
     }
-    else if (m_image == FROM_FILE)
+    else if (m_type == FROM_FILE)
     {
         success = InitialiseFromFile();
     }
@@ -175,4 +175,9 @@ bool Texture::LoadTexture(GLenum type, const std::string& path)
 GLuint Texture::GetID() const
 {
     return m_id;
+}
+
+Texture::Type Texture::GetType() const
+{
+    return m_type;
 }
