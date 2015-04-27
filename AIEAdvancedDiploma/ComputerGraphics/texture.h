@@ -24,8 +24,7 @@ public:
     {
         FROM_FILE,
         CUBE,
-        PROCEDURAL,
-        PROCEDURAL_FROM_FILE
+        PROCEDURAL
     };
 
     /**
@@ -118,11 +117,6 @@ protected:
     * @return whether setting was successful
     */
     bool SetFiltering();
-
-    /**
-    * @return the type of texture this is
-    */
-    Type GetType() const;
 
 private:
 

@@ -50,7 +50,7 @@ bool Texture::IsCubeMap() const
 
 bool Texture::IsProcedural() const
 {
-    return m_type == PROCEDURAL || m_type == PROCEDURAL_FROM_FILE;
+    return m_type == PROCEDURAL;
 }
 
 bool Texture::Initialise()
@@ -175,9 +175,4 @@ bool Texture::LoadTexture(GLenum type, const std::string& path)
 GLuint Texture::GetID() const
 {
     return m_id;
-}
-
-Texture::Type Texture::GetType() const
-{
-    return m_type;
 }

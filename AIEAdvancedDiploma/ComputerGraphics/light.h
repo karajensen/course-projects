@@ -22,7 +22,6 @@ public:
     enum Index
     {
         ID_SUN,
-        ID_SPOT,
         MAX_LIGHTS
     };
 

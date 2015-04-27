@@ -66,13 +66,13 @@ bool SceneBuilder::InitialiseLighting()
     sun->Specular(glm::vec3(1.0, 1.0, 1.0));
     sun->Specularity(1.0f);
 
-    auto& spot = m_data.lights[Light::ID_SPOT];
-    spot = std::make_unique<Light>("Spot");
-    spot->Position(glm::vec3(0.0, 6.0, 0.0));
-    spot->Attenuation(glm::vec3(0.0, 0.0, 0.08));
-    spot->Diffuse(glm::vec3(0.0, 1.0, 0.0));
-    spot->Specular(glm::vec3(1.0, 0.0, 0.0));
-    spot->Specularity(1.0f);
+    //auto& spot = m_data.lights[Light::ID_SPOT];
+    //spot = std::make_unique<Light>("Spot");
+    //spot->Position(glm::vec3(0.0, 6.0, 0.0));
+    //spot->Attenuation(glm::vec3(0.0, 0.0, 0.08));
+    //spot->Diffuse(glm::vec3(0.0, 1.0, 0.0));
+    //spot->Specular(glm::vec3(1.0, 0.0, 0.0));
+    //spot->Specularity(1.0f);
 
     return true;
 }
@@ -150,8 +150,8 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("sand", "sand.png", Texture::FROM_FILE);
     success &= InitialiseTexture("sand_bump", "sand_bump.png", Texture::FROM_FILE);
     success &= InitialiseTexture("sand_specular", "sand_specular.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("sand_height", Texture::PROCEDURAL_FROM_FILE, ProceduralTexture::NONE, 512);
-    //success &= InitialiseTexture("heightmap", Texture::PROCEDURAL, ProceduralTexture::DIAMOND_SQUARE, 256);
+    //success &= InitialiseTexture("heightmap", ProceduralTexture::DIAMOND_SQUARE, 256);
+    success &= InitialiseTexture("sand_height", ProceduralTexture::FROM_FILE, 128);
 
     return success && InitialiseCaustics();
 }
@@ -164,13 +164,14 @@ bool SceneBuilder::InitialiseTerrain()
     {
         m_data.sandIndex = m_data.terrain.size();
         Terrain& terrain = InitialiseTerrain("sand", "sand_height",
-            Shader::ID_BUMP_SPEC_CAUSTICS, 4.0f, -25.0f, 0.0f, 0.5f, 10.0f, 51);
+            Shader::ID_BUMP_SPEC_CAUSTICS, 4.0f, -40.0f, 0.0f, 5.0f, 10.0f, 51);
         terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "sand"));
         terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "sand_bump"));
         terrain.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "sand_specular"));
         terrain.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        terrain.Bump(8.0f);
-        terrain.Specularity(1.0f);
+        terrain.Bump(4.0f);
+        terrain.Specularity(5.0f);
+        terrain.Ambience(1.5f);
         terrain.CausticsAmount(0.3f);
     }
 
@@ -314,19 +315,17 @@ bool SceneBuilder::InitialiseTexture(const std::string& name,
 }
 
 bool SceneBuilder::InitialiseTexture(const std::string& name, 
-                                     Texture::Type type,
-                                     ProceduralTexture::Algorithm algorithm,
+                                     ProceduralTexture::Generation generation,
                                      int size)
 {
     const auto index = m_data.textures.size();
     m_data.proceduralTextures.push_back(index);
 
-    const std::string path(type == Texture::PROCEDURAL ? 
-        GENERATED_TEXTURES + name + ".bmp" :
-        TEXTURE_PATH + name + ".png");
+    const std::string path(generation == ProceduralTexture::FROM_FILE ? 
+        TEXTURE_PATH + name + ".png" : GENERATED_TEXTURES + name + ".bmp");
 
     m_data.textures.push_back(std::make_unique<ProceduralTexture>(
-        name, path, size, Texture::NEAREST, type, algorithm));
+        name, path, size, generation));
 
     return m_data.textures[index]->Initialise();
 }

@@ -174,14 +174,12 @@ private:
     /**
     * Initialises a procedural texture
     * @param name The name of the texture
-    * @param type The image type of the texture
-    * @param algorithm The type of procedural algorithm to use
+    * @param generation The type of procedural algorithm to use
     * @param size The size of the texture
     * @return whether initialisation succeeded
     */
     bool InitialiseTexture(const std::string& name, 
-                           Texture::Type type,
-                           ProceduralTexture::Algorithm algorithm,
+                           ProceduralTexture::Generation generation,
                            int size);
 
     /**

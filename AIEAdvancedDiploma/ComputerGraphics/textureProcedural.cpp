@@ -10,26 +10,16 @@
 ProceduralTexture::ProceduralTexture(const std::string& name, 
                                      const std::string& path,
                                      int size,
-                                     Filter filter,
-                                     Type type,
-                                     Algorithm algorithm) :
+                                     Generation generation) :
 
-    Texture(name, path, type, filter),
+    Texture(name, path, PROCEDURAL, NEAREST),
     m_size(size),
-    m_algorithm(algorithm)
+    m_generation(generation)
 {
     m_pixels.resize(size * size);
     m_pixels.assign(m_pixels.size(), 0);
 
-    switch (type)
-    {
-    case PROCEDURAL:
-        GenerateFromAlgorithm();
-        break;
-    case PROCEDURAL_FROM_FILE:
-        GenerateFromFile();
-        break;
-    }
+    Generate();
 }
 
 ProceduralTexture::~ProceduralTexture()
@@ -38,27 +28,26 @@ ProceduralTexture::~ProceduralTexture()
 
 void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
 {
-    if (GetType() == PROCEDURAL)
-    {
-        Texture::AddToTweaker(tweaker);
-        tweaker.AddEntry("Size", &m_size, TW_TYPE_INT32, true);
-        tweaker.AddStrEntry("Type", GetAlgorithmName());
-        tweaker.AddButton("Reload", [this](){ Reload(); });
-    }
+    Texture::AddToTweaker(tweaker);
+    tweaker.AddEntry("Size", &m_size, TW_TYPE_INT32, true);
+    tweaker.AddStrEntry("Type", GetGenerationName());
+    tweaker.AddButton("Reload", [this](){ Reload(); });
 }
 
-std::string ProceduralTexture::GetAlgorithmName() const
+std::string ProceduralTexture::GetGenerationName() const
 {
-    switch (m_algorithm)
+    switch (m_generation)
     {
     case DIAMOND_SQUARE:
         return "Diamond Square";
+    case FROM_FILE:
+        return "From File";
     default:
         return "None";
     }
 }
 
-void ProceduralTexture::GenerateFromFile()
+void ProceduralTexture::MakeFromFile()
 {
     int width, height;
     unsigned char* image = SOIL_load_image(Path().c_str(), 
@@ -81,10 +70,13 @@ void ProceduralTexture::GenerateFromFile()
     SOIL_free_image_data(image);
 }
 
-void ProceduralTexture::GenerateFromAlgorithm()
+void ProceduralTexture::Generate()
 {
-    switch (m_algorithm)
+    switch (m_generation)
     {
+    case FROM_FILE:
+        MakeFromFile();
+        break;
     case DIAMOND_SQUARE:
         MakeDiamondSquareFractal();
         break;
@@ -129,9 +121,9 @@ bool ProceduralTexture::ReloadPixels()
 
 void ProceduralTexture::Reload()
 {
-    if (GetType() == PROCEDURAL)
+    if (m_generation != FROM_FILE)
     {
-        GenerateFromAlgorithm();
+        Generate();
 
         if (!ReloadPixels())
         {
@@ -142,7 +134,7 @@ void ProceduralTexture::Reload()
 
 void ProceduralTexture::Save()
 {
-    if (GetType() == PROCEDURAL)
+    if (m_generation != FROM_FILE)
     {
         const int channels = 3;
         std::vector<unsigned char> data(m_pixels.size() * channels);

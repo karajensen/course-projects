@@ -16,10 +16,10 @@ public:
     /**
     * Avaliable types
     */
-    enum Algorithm
+    enum Generation
     {
-        DIAMOND_SQUARE,
-        NONE
+        FROM_FILE,
+        DIAMOND_SQUARE
     };
 
     /**
@@ -27,16 +27,12 @@ public:
     * @param name The filename of the texture
     * @param path The full path to save the texture
     * @param size The dimensions of the texture
-    * @param filter The type of filtering for this texture
-    * @param type The type of texture to make
-    * @Param algorithm The type of texture to create
+    * @Param generation The type of texture to make
     */
     ProceduralTexture(const std::string& name, 
                       const std::string& path,
                       int size,
-                      Filter filter,
-                      Type type,
-                      Algorithm algorithm);
+                      Generation generation);
                      
     /**
     * Destructor
@@ -80,17 +76,17 @@ private:
     /**
     * @return a description of the type chosen
     */
-    std::string GetAlgorithmName() const;
+    std::string GetGenerationName() const;
 
     /**
     * Generates the texture from an algorithm
     */
-    void GenerateFromAlgorithm();
+    void Generate();
 
     /**
-    * Generates the texture from a file
+    * Creates the texture from a file
     */
-    void GenerateFromFile();
+    void MakeFromFile();
 
     /**
     * Creates a fractal texture using the diamond square algorithm
@@ -181,6 +177,6 @@ private:
 
     std::vector<unsigned int> m_pixels; ///< pixels of the texture
     int m_size = 0;                     ///< Dimensions of the texture
-    Algorithm m_algorithm;              ///< The type of texture this is
+    Generation m_generation;            ///< The type of texture to make
     bool m_renderableTexture = false;   ///< Whether this texture is to be rendered
 };
