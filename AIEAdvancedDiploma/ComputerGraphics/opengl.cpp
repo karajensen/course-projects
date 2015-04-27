@@ -391,12 +391,7 @@ bool OpenGL::UpdateShader(const Mesh& mesh)
 {
     if (UpdateShader(mesh, false))
     {
-        auto& shader = m_scene.GetShader(mesh.ShaderID());
-        shader.SendUniform("meshCausticAmount", mesh.CausticsAmount());
-        shader.SendUniform("meshCausticScale", mesh.CausticsScale());
-        shader.SendUniform("meshAmbience", mesh.Ambience());
-        shader.SendUniform("meshBump", mesh.Bump());
-        shader.SendUniform("meshSpecularity", mesh.Specularity());
+        SendAttributes(mesh);
         return true;
     }
     return false;
@@ -406,12 +401,7 @@ bool OpenGL::UpdateShader(const Terrain& terrain)
 {
     if (UpdateShader(terrain, false))
     {
-        auto& shader = m_scene.GetShader(terrain.ShaderID());
-        shader.SendUniform("meshCausticAmount", terrain.CausticsAmount());
-        shader.SendUniform("meshCausticScale", terrain.CausticsScale());
-        shader.SendUniform("meshAmbience", terrain.Ambience());
-        shader.SendUniform("meshBump", terrain.Bump());
-        shader.SendUniform("meshSpecularity", terrain.Specularity());
+        SendAttributes(terrain);
         return true;
     }
     return false;
@@ -475,6 +465,18 @@ void OpenGL::UpdateShader(const glm::mat4& world, const Particle& particle)
     shader.SendUniform("worldViewProjection", m_camera.ViewProjection() * world);
     shader.SendUniform("alpha", particle.Alpha());
     SendTexture(0, particle.Texture());
+}
+
+void OpenGL::SendAttributes(const MeshAttributes& attributes)
+{
+    auto& shader = m_scene.GetShader(m_selectedShader);
+    shader.SendUniform("meshCausticAmount", attributes.CausticsAmount());
+    shader.SendUniform("meshCausticScale", attributes.CausticsScale());
+    shader.SendUniform("meshAmbience", attributes.Ambience());
+    shader.SendUniform("meshBump", attributes.Bump());
+    shader.SendUniform("meshSpecularity", attributes.Specularity());
+    shader.SendUniform("meshSpecular", attributes.Specular());
+    shader.SendUniform("meshDiffuse", attributes.Diffuse());
 }
 
 void OpenGL::SendLights()

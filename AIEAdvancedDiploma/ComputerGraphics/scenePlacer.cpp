@@ -77,6 +77,9 @@ glm::ivec2 ScenePlacer::GetPatchInside(const glm::vec3& position) const
 
 void ScenePlacer::Update(const glm::vec3& cameraPosition)
 {
+    m_data.lights[Light::ID_SUN]->PositionX(cameraPosition.x);
+    m_data.lights[Light::ID_SUN]->PositionZ(cameraPosition.z);
+
     if (m_patchInside.x == NO_INDEX || m_patchInside.y == NO_INDEX)
     {
         m_patchInside = GetPatchInside(cameraPosition);

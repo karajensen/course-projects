@@ -82,6 +82,9 @@
     <ClCompile Include="scenePlacer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="meshAttributes.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -172,6 +175,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="scenePlacer.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="meshAttributes.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

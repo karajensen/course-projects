@@ -33,7 +33,7 @@ public:
 
     /**
     * Adds data for this element to be tweaked by the gui
-    * @param tweaker The helper for adding tweakable entries
+    * @param tweaker The helpe r for adding tweakable entries
     */
     void AddToTweaker(Tweaker& tweaker);
 
@@ -91,6 +91,16 @@ public:
     * Sets the World coordinates of the light
     */
     void Position(const glm::vec3& value);
+
+    /**
+    * Sets the World coordinates of the light
+    */
+    void PositionX(float x);
+
+    /**
+    * Sets the World coordinates of the light
+    */
+    void PositionZ(float z);
 
     /**
     * Sets The brightness of the specular highlights

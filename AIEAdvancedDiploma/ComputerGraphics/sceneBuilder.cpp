@@ -60,11 +60,11 @@ bool SceneBuilder::InitialiseLighting()
     
     auto& sun = m_data.lights[Light::ID_SUN];
     sun = std::make_unique<Light>("Sun");
-    sun->Position(glm::vec3(0.0, 12.0, 0.0));
-    sun->Attenuation(glm::vec3(1.3, 0.0, 0.0));
-    sun->Diffuse(glm::vec3(1.0, 1.0, 1.0));
+    sun->Position(glm::vec3(0.0, 60.0, 0.0));
+    sun->Attenuation(glm::vec3(1.0, 0.0, 0.0));
+    sun->Diffuse(glm::vec3(0.85, 0.85, 1.0));
     sun->Specular(glm::vec3(1.0, 1.0, 1.0));
-    sun->Specularity(1.0f);
+    sun->Specularity(20.0f);
 
     //auto& spot = m_data.lights[Light::ID_SPOT];
     //spot = std::make_unique<Light>("Spot");
@@ -149,7 +149,6 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
     success &= InitialiseTexture("sand", "sand.png", Texture::FROM_FILE);
     success &= InitialiseTexture("sand_bump", "sand_bump.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("sand_specular", "sand_specular.png", Texture::FROM_FILE);
     //success &= InitialiseTexture("heightmap", ProceduralTexture::DIAMOND_SQUARE, 256);
     success &= InitialiseTexture("sand_height", ProceduralTexture::FROM_FILE, 128);
 
@@ -164,14 +163,12 @@ bool SceneBuilder::InitialiseTerrain()
     {
         m_data.sandIndex = m_data.terrain.size();
         Terrain& terrain = InitialiseTerrain("sand", "sand_height",
-            Shader::ID_BUMP_SPEC_CAUSTICS, 4.0f, -40.0f, 0.0f, 5.0f, 10.0f, 51);
+            Shader::ID_BUMP_CAUSTICS, 4.0f, -40.0f, 0.0f, 5.0f, 10.0f, 51);
         terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "sand"));
         terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "sand_bump"));
-        terrain.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "sand_specular"));
         terrain.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        terrain.Bump(4.0f);
-        terrain.Specularity(5.0f);
-        terrain.Ambience(1.5f);
+        terrain.Bump(10.0f);
+        terrain.Ambience(1.0f);
         terrain.CausticsAmount(0.3f);
     }
 
@@ -200,6 +197,7 @@ bool SceneBuilder::InitialiseMeshes()
         auto& mesh = InitialiseMesh("skybox", "skybox.obj", Shader::ID_FLAT, 1, false);
         mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "skybox"));
         mesh.BackfaceCull(false);
+        mesh.Ambience(0.85f);
         mesh.SetSkyBox();
     }
     {
@@ -209,7 +207,8 @@ bool SceneBuilder::InitialiseMeshes()
         mesh.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "blank"));
         mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
         mesh.Bump(20.0f);
-        mesh.Specularity(5.0f);
+        mesh.Specularity(20.0f);
+        mesh.Specular(0.1f);
     }
     {
         auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS, 120, true);

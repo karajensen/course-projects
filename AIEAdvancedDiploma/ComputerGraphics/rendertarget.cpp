@@ -13,12 +13,12 @@ RenderTarget::RenderTarget(const std::string& name) :
 RenderTarget::RenderTarget(const std::string& name, 
                                int textures, 
                                bool multisampled, 
-                               bool usesChain) :
+                               bool readWrite) :
 
     m_multisampled(multisampled),
     m_name(name),
     m_count(textures),
-    m_readWrite(usesChain)
+    m_readWrite(readWrite)
 {
     m_attachments.resize(m_count);
     m_texturesMain.resize(m_count);
@@ -107,12 +107,12 @@ bool RenderTarget::Initialise()
         if (m_multisampled)
         {
             glRenderbufferStorageMultisample(GL_RENDERBUFFER, MULTISAMPLING_COUNT, 
-                GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
+                GL_DEPTH_COMPONENT24, WINDOW_WIDTH, WINDOW_HEIGHT);
         }
         else
         {
             glRenderbufferStorage(GL_RENDERBUFFER,
-                GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
+                GL_DEPTH_COMPONENT24, WINDOW_WIDTH, WINDOW_HEIGHT);
         }
 
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, 
@@ -144,7 +144,7 @@ bool RenderTarget::CreateTexture(GLuint& id, unsigned int type)
     if (m_multisampled)
     {
         glTexImage2DMultisample(type, MULTISAMPLING_COUNT, 
-            GL_RGBA32F, WINDOW_WIDTH, WINDOW_HEIGHT, GL_TRUE);  
+            GL_RGBA, WINDOW_WIDTH, WINDOW_HEIGHT, GL_TRUE);  
     }
     else
     {

@@ -21,6 +21,8 @@ uniform vec3 lightAttenuation[MAX_LIGHTS];
 uniform vec3 lightSpecular[MAX_LIGHTS];
 uniform float lightSpecularity[MAX_LIGHTS];
 
+uniform float meshDiffuse;
+uniform float meshSpecular;
 uniform float meshAmbience;
 uniform float meshBump;
 uniform float meshCausticAmount;
@@ -59,13 +61,13 @@ void main(void)
 
         vertToLight /= lightLength;
         lightColour *= ((dot(vertToLight, normal) + 1.0) * 0.5);
+        diffuse.rgb += lightColour * attenuation * lightActive[i] * meshDiffuse;
 
         float specularity = lightSpecularity[i] * meshSpecularity;
         vec3 halfVector = normalize(vertToLight + vertToCamera);
         float specularFactor = pow(max(dot(normal, halfVector), 0.0), specularity); 
-        specular.rgb += specularFactor * lightSpecular[i] * attenuation * lightActive[i];
-        
-        diffuse.rgb += lightColour * attenuation * lightActive[i];
+        specular.rgb += specularFactor * lightSpecular[i] * 
+            attenuation * lightActive[i] * meshSpecular;
     }
 
     vec3 caustics = texture(CausticsSampler, 

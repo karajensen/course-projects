@@ -7,11 +7,12 @@
 #include <string>
 #include <vector>
 #include "meshdata.h"
+#include "meshAttributes.h"
 
 /**
 * Mesh loaded from file to be rendered in the scene
 */
-class Mesh : public MeshData
+class Mesh : public MeshData, public MeshAttributes
 {
 public:
 
@@ -43,56 +44,6 @@ public:
                             bool requiresUVs,
                             bool requiresNormals, 
                             bool requiresTangents);
-
-    /**
-    * @return Brightness of the specular highlights
-    */
-    float Specularity() const;
-
-    /**
-    * @return The saturation of the bump
-    */
-    float Bump() const;
-
-    /**
-    * @return Ambient light multiplier
-    */
-    float Ambience() const;
-
-    /**
-    * @return Caustics multiplier
-    */
-    float CausticsAmount() const;
-
-    /**
-    * @return Caustics scale
-    */
-    float CausticsScale() const;
-
-    /**
-    * Sets the Brightness of the specular highlights
-    */
-    void Specularity(float value);
-
-    /**
-    * Sets The saturation of the bump
-    */
-    void Bump(float value);
-
-    /**
-    * Sets the Ambient light multiplier
-    */
-    void Ambience(float value);
-
-    /**
-    * Sets the Caustics multiplier
-    */
-    void CausticsAmount(float value);
-
-    /**
-    * Sets the Caustics scale
-    */
-    void CausticsScale(float value);
 
 private:
 
@@ -127,10 +78,4 @@ private:
                            bool requiresUVs,
                            bool requiresNormals, 
                            bool requiresTangents);
-
-    float m_bump = 1.0f;                 ///< Saturation of bump
-    float m_causticsAmount = 1.0f;       ///< How much of the caustics are visible
-    float m_causticsScale = 1.0f;        ///< The scale of the caustic texture
-    float m_specularity = 1.0f;          ///< Brightness of the specular highlights
-    float m_ambience = 1.0f;             ///< Ambient light multiplier
 };

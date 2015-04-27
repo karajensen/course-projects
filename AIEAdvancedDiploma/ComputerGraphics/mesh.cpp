@@ -21,8 +21,6 @@ void Mesh::AddToTweaker(Tweaker& tweaker)
 {
     MeshData::AddToTweaker(tweaker);
 
-    tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
-
     if (UsesBumpMapping())
     {
         tweaker.AddFltEntry("Bump Amount", &m_bump, 0.1f);
@@ -38,6 +36,10 @@ void Mesh::AddToTweaker(Tweaker& tweaker)
     {
         tweaker.AddFltEntry("Specularity", &m_specularity, 0.1f);
     }    
+
+    tweaker.AddFltEntry("Specular", &m_specular, 0.1f);
+    tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
+    tweaker.AddFltEntry("Diffuse", &m_diffuse, 0.1f);
 }
 
 bool Mesh::InitialiseFromFile(const std::string& path, 
@@ -63,56 +65,6 @@ bool Mesh::InitialiseFromFile(const std::string& path,
     }
 
     return success && MeshData::Initialise();
-}
-
-float Mesh::Bump() const
-{
-    return m_bump;
-}
-
-float Mesh::Specularity() const
-{
-    return m_specularity;
-}
-
-float Mesh::Ambience() const
-{
-    return m_ambience;
-}
-
-float Mesh::CausticsAmount() const
-{
-    return m_causticsAmount;
-}
-
-float Mesh::CausticsScale() const
-{
-    return m_causticsScale;
-}
-
-void Mesh::Specularity(float value)
-{
-    m_specularity = value;
-}
-
-void Mesh::Bump(float value)
-{
-    m_bump = value;
-}
-
-void Mesh::Ambience(float value)
-{
-    m_ambience = value;
-}
-
-void Mesh::CausticsAmount(float value)
-{
-    m_causticsAmount = value;
-}
-
-void Mesh::CausticsScale(float value)
-{
-    m_causticsScale = value;
 }
 
 bool Mesh::InitialiseFromOBJ(const std::string& path,

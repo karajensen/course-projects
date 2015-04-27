@@ -13,6 +13,7 @@ Light::Light(const std::string& name) :
 void Light::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddStrEntry("Name", m_name);
+    tweaker.AddFltEntry("Activity", &m_active, 0.01f);
     tweaker.AddFltEntry("Position X", &m_position.x, 0.01f);
     tweaker.AddFltEntry("Position Y", &m_position.y, 0.01f);
     tweaker.AddFltEntry("Position Z", &m_position.z, 0.01f);
@@ -77,6 +78,16 @@ void Light::Attenuation(const glm::vec3& value)
 void Light::Position(const glm::vec3& value)
 {
     m_position = value;
+}
+
+void Light::PositionX(float x)
+{
+    m_position.x = x;
+}
+
+void Light::PositionZ(float z)
+{
+    m_position.z = z;
 }
 
 void Light::Specularity(float value)

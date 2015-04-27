@@ -152,15 +152,13 @@ void Camera::GenerateBounds()
     // Determine the largest forward bounding area based on the far plane
     // http://www.lighthouse3d.com/tutorials/view-frustum-culling/view-frustums-shape/
 
-    const float height = 2.0f * std::tan(DegToRad(FIELD_OF_VIEW) * 0.5f) * FRUSTRUM_BOUNDS_FAR;
-	const float width = height * RATIO;
-    const float halfHeight = height * 0.5f;
-    const float halfWidth = width * 0.5f;
+    float farHeight = 2.0f * std::tan(DegToRad(FIELD_OF_VIEW) * 0.5f) * FRUSTRUM_BOUNDS_FAR;
+	const float farWidth = farHeight * RATIO;
 
     const glm::vec3 nearPoint = m_position + (m_forward * FRUSTRUM_BOUNDS_NEAR);
     const glm::vec3 farPoint = m_position + (m_forward * FRUSTRUM_BOUNDS_FAR);
 
-    m_bounds->radius = std::max(halfWidth, halfHeight);
+    m_bounds->radius = std::max(farWidth * 0.5f, farHeight * 0.5f);
     m_bounds->center = (farPoint + nearPoint) * 0.5f;
 }
 

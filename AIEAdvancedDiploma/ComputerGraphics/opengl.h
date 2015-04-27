@@ -12,6 +12,7 @@ struct GLFWwindow;
 class IScene;
 class Camera;
 class Water;
+class MeshAttributes;
 class Mesh;
 class Emitter;
 class Particle;
@@ -148,6 +149,12 @@ private:
     * Sends light information to the selected shader
     */
     void SendLights();
+
+    /**
+    * Sends any attributes for a mesh
+    * @param attributes The attributes of the mesh currently rendering
+    */
+    void SendAttributes(const MeshAttributes& attributes);
 
     /**
     * Sends all textures to the selected shader

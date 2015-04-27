@@ -45,8 +45,6 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
         Reload();
     }, 1.0f);
 
-    tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
-
     if (UsesBumpMapping())
     {
         tweaker.AddFltEntry("Bump Amount", &m_bump, 0.1f);
@@ -63,32 +61,11 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
         tweaker.AddFltEntry("Specularity", &m_specularity, 0.1f);
     }
 
+    tweaker.AddFltEntry("Specular", &m_specular, 0.1f);
+    tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
+    tweaker.AddFltEntry("Diffuse", &m_diffuse, 0.1f);
+
     tweaker.AddButton("Reload", [this](){ Reload(); });
-}
-
-void Terrain::Specularity(float value)
-{
-    m_specularity = value;
-}
-
-void Terrain::Bump(float value)
-{
-    m_bump = value;
-}
-
-void Terrain::Ambience(float value)
-{
-    m_ambience = value;
-}
-
-void Terrain::CausticsAmount(float value)
-{
-    m_causticsAmount = value;
-}
-
-void Terrain::CausticsScale(float value)
-{
-    m_causticsScale = value;
 }
 
 bool Terrain::Initialise(float uvStretch,
@@ -124,31 +101,6 @@ void Terrain::Reload()
     {
         LogError("Terrain: Reload failed for " + Name());
     }
-}
-
-float Terrain::Specularity() const
-{
-    return m_specularity;
-}
-
-float Terrain::Ambience() const
-{
-    return m_ambience;
-}
-
-float Terrain::Bump() const
-{
-    return m_bump;
-}
-
-float Terrain::CausticsAmount() const
-{
-    return m_causticsAmount;
-}
-
-float Terrain::CausticsScale() const
-{
-    return m_causticsScale;
 }
 
 void Terrain::GenerateTerrain()

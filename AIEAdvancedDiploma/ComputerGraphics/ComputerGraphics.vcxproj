@@ -98,6 +98,7 @@
     <ClInclude Include="input.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="meshAttributes.h" />
     <ClInclude Include="meshdata.h" />
     <ClInclude Include="opengl.h" />
     <ClInclude Include="opengl\gl_core_4_4.h" />
@@ -130,6 +131,7 @@
     <ClCompile Include="light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="meshAttributes.cpp" />
     <ClCompile Include="meshdata.cpp" />
     <ClCompile Include="opengl.cpp" />
     <ClCompile Include="opengl\gl_core_4_4.c" />

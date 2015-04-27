@@ -18,6 +18,7 @@ uniform vec3 lightPosition[MAX_LIGHTS];
 uniform vec3 lightDiffuse[MAX_LIGHTS];
 uniform vec3 lightAttenuation[MAX_LIGHTS];
 
+uniform float meshDiffuse;
 uniform float meshAmbience;
 uniform float meshBump;
 uniform float meshCausticAmount;
@@ -51,7 +52,7 @@ void main(void)
         vertToLight /= lightLength;
         lightColour *= ((dot(vertToLight, normal) + 1.0) * 0.5);
 
-        diffuse.rgb += lightColour * attenuation * lightActive[i];
+        diffuse.rgb += lightColour * attenuation * lightActive[i] * meshDiffuse;
     }
 
     vec3 caustics = texture(CausticsSampler, 
