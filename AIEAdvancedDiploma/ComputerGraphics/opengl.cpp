@@ -35,6 +35,8 @@ void OpenGL::Release()
     m_screenQuad.reset();
     m_backBuffer.reset();
     m_sceneTarget.reset();
+    m_blurTarget.reset();
+    m_effectsTarget.reset();
 
     if (m_window)
     {
@@ -101,6 +103,8 @@ bool OpenGL::Initialise()
     m_sceneTarget = std::make_unique<RenderTarget>("Scene", RenderTarget::SCENE_TEXTURES, true);
     m_effectsTarget = std::make_unique<RenderTarget>("Effects", RenderTarget::EFFECTS_TEXTURES, false);
     m_blurTarget = std::make_unique<RenderTarget>("Blur", RenderTarget::BLUR_TEXTURES, false, true);
+
+    m_sceneTarget->SetHighQuality(RenderTarget::DEPTH_ID); // Require for DOF
 
     if (!m_backBuffer->Initialise() ||
         !m_sceneTarget->Initialise() ||
@@ -282,7 +286,7 @@ void OpenGL::RenderPostProcessing()
 
     postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
     postShader.SendTexture(1, *m_blurTarget, RenderTarget::BLUR_ID);
-    postShader.SendTexture(2, *m_sceneTarget, RenderTarget::NORMAL_ID);
+    postShader.SendTexture(2, *m_sceneTarget, RenderTarget::DEPTH_ID);
 
     m_backBuffer->SetActive();
     m_screenQuad->PreRender();

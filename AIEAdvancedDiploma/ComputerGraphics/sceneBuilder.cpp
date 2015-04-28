@@ -89,7 +89,7 @@ bool SceneBuilder::InitialiseShaderConstants()
         std::make_pair("SAMPLES", std::to_string(MULTISAMPLING_COUNT)),
         std::make_pair("SCENE_TEXTURES", std::to_string(RenderTarget::SCENE_TEXTURES)),
         std::make_pair("ID_COLOUR", std::to_string(RenderTarget::SCENE_ID)),
-        std::make_pair("ID_DEPTH", std::to_string(RenderTarget::NORMAL_ID)),
+        std::make_pair("ID_DEPTH", std::to_string(RenderTarget::DEPTH_ID)),
         std::make_pair("WEIGHT0", std::to_string(post.BlurWeight(0))),
         std::make_pair("WEIGHT1", std::to_string(post.BlurWeight(1))),
         std::make_pair("WEIGHT2", std::to_string(post.BlurWeight(2))),

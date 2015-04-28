@@ -24,7 +24,7 @@ public:
         BLUR_TEXTURES = 1,
         SCENE_ID = 0,
         BLUR_ID = 0,
-        NORMAL_ID = 1
+        DEPTH_ID = 1
     };
 
     /**
@@ -55,6 +55,12 @@ public:
     * Releases the render target
     */
     void Release();
+
+    /**
+    * Sets the render target texture as high quality
+    * @note needs to be called before initialise
+    */
+    void SetHighQuality(int index);
 
     /**
     * Initialises the render target
@@ -100,9 +106,10 @@ private:
     * Creates the texture
     * @param id The ID to fill in for the new texture
     * @param type The type of texture to create
+    * @param highQuality Whether to make it a high quality texture
     * @return whether create was successful
     */
-    bool CreateTexture(GLuint& id, unsigned int type);
+    bool CreateTexture(GLuint& id, unsigned int type, bool highQuality);
 
     bool m_mainAttached = false;        ///< Whether the main textures are attached
     bool m_readWrite = false;           ///< Whether this target both read/writes to itself
@@ -114,6 +121,7 @@ private:
     std::vector<GLuint> m_texturesMain; ///< Unique IDs of the main attached textures
     std::vector<GLuint> m_texturesAlt;  ///< Unique IDs of the alternative attached textures
     std::vector<GLenum> m_attachments;  ///< Container of attachment slots taken up
+    std::vector<bool> m_highQuality;    ///< Whether to use high quality textures
     GLuint m_renderBuffer = 0;          ///< Unique ID of the buffer holding the depth information
     GLuint m_frameBuffer = 0;           ///< Unique ID of the frame buffer
 };
