@@ -13,6 +13,8 @@ int main()
 {
     bool pauseConsole = true;
 
+    Random::Initialise();
+
     auto application = std::make_unique<Application>();
     if (application->Initialise())
     {

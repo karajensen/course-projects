@@ -41,9 +41,11 @@ void main(void)
             + lightAttenuation[i].z * lightLength * lightLength);
 
         vertToLight /= lightLength;
-        lightColour *= ((dot(vertToLight, normal) + 1.0) * 0.5);
+        
+        lightColour *= ((dot(vertToLight, normal) + 1.0) *
+            ((1.0 - meshDiffuse) * 0.5)) + meshDiffuse;
 
-        diffuse.rgb += lightColour * attenuation * lightActive[i] * meshDiffuse;
+        diffuse.rgb += lightColour * attenuation * lightActive[i];
     }
 
     vec3 caustics = texture(CausticsSampler, 

@@ -277,7 +277,6 @@ std::string Tweaker::GetName()
 
 void Tweaker::ClearEntries()
 {
-    m_count = 0;
     m_entries.clear();
     m_buttons.clear();
     m_group.clear();

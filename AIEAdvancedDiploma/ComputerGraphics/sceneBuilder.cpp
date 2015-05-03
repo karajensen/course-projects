@@ -19,18 +19,26 @@ namespace
     const std::string GENERATED_TEXTURES(TEXTURE_PATH + "Generated//");
 
     /**
-    * Helper function to get a texture by name
+    * Shared values for creating meshes
     */
-    int GetTexture(const SceneData& data, const std::string& name)
+    const int PATCH_GRID_VERTICES = 51;
+    const int PATCH_ROCK_TYPES = 3;
+    const float PATCH_GRID_SPACING = 8.0f;
+
+    /**
+    * Helper function to get an asset by name
+    */
+    template<typename T> 
+    int GetID(const std::vector<T>& data, const std::string& name)
     {
-        for (unsigned int i = 0; i < data.textures.size(); ++i)
+        for (unsigned int i = 0; i < data.size(); ++i)
         {
-            if (IsStrEqual(name, data.textures[i]->Name()))
+            if (IsStrEqual(name, data[i]->Name()))
             {
                 return i;
             }
         }
-        LogError("Could not find texture " + name);
+        LogError("Could not find " + name);
         return NO_INDEX;
     }
 }
@@ -144,13 +152,31 @@ bool SceneBuilder::InitialiseTextures()
     success &= InitialiseTexture("bubble1", "bubble1.png", Texture::FROM_FILE);
     success &= InitialiseTexture("bubble2", "bubble2.png", Texture::FROM_FILE);
     success &= InitialiseTexture("bubble3", "bubble3.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("blank", "blank.png", Texture::FROM_FILE);
     success &= InitialiseTexture("skybox", "skybox.png", Texture::FROM_FILE);
-    success &= InitialiseTexture("bump", "bump.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("coral", "coral.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("flower2_top", "flower2_top.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("flower2_bot", "flower2_bot.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("flower3_top", "flower3_top.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("flower3_bot", "flower3_bot.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("flower1_top", "flower1_top.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("flower1_bot", "flower1_bot.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("leaf", "leaf.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("shell", "shell.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("starfish", "starfish.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("urchin", "urchin.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("rock", "rock.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("rock_bump", "rock_bump.png", Texture::FROM_FILE);
+    success &= InitialiseTexture("rock_specular", "rock_specular.png", Texture::FROM_FILE);
     success &= InitialiseTexture("sand", "sand.png", Texture::FROM_FILE);
     success &= InitialiseTexture("sand_bump", "sand_bump.png", Texture::FROM_FILE);
-    //success &= InitialiseTexture("heightmap", ProceduralTexture::DIAMOND_SQUARE, 256);
-    success &= InitialiseTexture("sand_height", ProceduralTexture::FROM_FILE, 128);
+
+    for (int i = 0; i < PATCH_ROCK_TYPES; ++i)
+    {
+        success &= InitialiseTexture("terrain" + 
+            std::to_string(i), ProceduralTexture::PERLIN_NOISE_ROCK, 128);
+    }
+
+    success &= InitialiseTexture("sand_height", ProceduralTexture::FROM_FILE, 256);
 
     return success && InitialiseCaustics();
 }
@@ -160,16 +186,39 @@ bool SceneBuilder::InitialiseTerrain()
     const int causticsTexture = 
         m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
 
+    m_data.sandIndex = m_data.terrain.size();
+    Terrain& sand = InitialiseTerrain("sand", "sand_height", 
+        Shader::ID_BUMP_CAUSTICS, 4.0f, true, -45.0f, 
+        0.0f, 5.0f, PATCH_GRID_SPACING, PATCH_GRID_VERTICES);
+
+    sand.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "sand"));
+    sand.SetTexture(MeshData::NORMAL, GetID(m_data.textures, "sand_bump"));
+    sand.SetTexture(MeshData::CAUSTICS, causticsTexture);
+    sand.Bump(10.0f);
+    sand.Ambience(1.0f);
+    sand.CausticsAmount(0.2f);
+
+    const int instancesPerType = 10;
+    for (int i = 0; i < PATCH_ROCK_TYPES; ++i)
     {
-        m_data.sandIndex = m_data.terrain.size();
-        Terrain& terrain = InitialiseTerrain("sand", "sand_height",
-            Shader::ID_BUMP_CAUSTICS, 4.0f, -40.0f, 0.0f, 5.0f, 10.0f, 51);
-        terrain.SetTexture(MeshData::COLOUR, GetTexture(m_data, "sand"));
-        terrain.SetTexture(MeshData::NORMAL, GetTexture(m_data, "sand_bump"));
-        terrain.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        terrain.Bump(10.0f);
-        terrain.Ambience(1.0f);
-        terrain.CausticsAmount(0.3f);
+        for (int j = 0; j < instancesPerType; ++j)
+        {
+            const auto index = m_data.rocks.size();
+            m_data.rocks.emplace_back();
+            m_data.rocks[index].index = m_data.terrain.size();
+            m_data.rocks[index].instance = j;
+        }
+
+        const auto ID(std::to_string(i));
+        Terrain& rock = InitialiseTerrain("rock" + ID, "terrain" + ID, 
+            Shader::ID_BUMP_CAUSTICS, 4.0f, false, 0.0f, -5.0f, 40.0f, 5.0f, 30);
+
+        rock.AddInstances(instancesPerType);
+        rock.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "rock"));
+        rock.SetTexture(MeshData::NORMAL, GetID(m_data.textures, "rock_bump"));
+        rock.SetTexture(MeshData::CAUSTICS, causticsTexture);
+        rock.Bump(15.0f);
+        rock.CausticsAmount(0.8f);
     }
 
     return true;
@@ -182,45 +231,117 @@ bool SceneBuilder::InitialiseWater()
         "water", m_data.shaders[Shader::ID_WATER]->Name(), Shader::ID_WATER));
     auto& water = *m_data.water[index];
 
-    water.SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
-    water.SetTexture(MeshData::NORMAL, GetTexture(m_data, "water_normal"));
-    water.SetTexture(MeshData::ENVIRONMENT, GetTexture(m_data, "water_cube"));
-    return water.Initialise(25.0f, 10.0f, 51);
+    water.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "water_colour"));
+    water.SetTexture(MeshData::NORMAL, GetID(m_data.textures, "water_normal"));
+    water.SetTexture(MeshData::ENVIRONMENT, GetID(m_data.textures, "water_cube"));
+    return water.Initialise(25.0f, PATCH_GRID_SPACING, PATCH_GRID_VERTICES);
 }
 
 bool SceneBuilder::InitialiseMeshes()
 {
+    bool success = true;
+
     const int causticsTexture = 
         m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
 
     {
-        auto& mesh = InitialiseMesh("skybox", "skybox.obj", Shader::ID_FLAT, 1, false);
-        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "skybox"));
+        auto& mesh = InitialiseMesh("skybox", "skybox.obj", 0.0f, 0.0f, Shader::ID_FLAT);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "skybox"));
         mesh.BackfaceCull(false);
         mesh.Ambience(0.85f);
         mesh.SetSkyBox();
+        mesh.AddInstances(1);
     }
     {
-        auto& mesh = InitialiseMesh("sphere1", "sphere.obj", Shader::ID_BUMP_SPEC_CAUSTICS, 120, true);
-        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
-        mesh.SetTexture(MeshData::NORMAL, GetTexture(m_data, "bump"));
-        mesh.SetTexture(MeshData::SPECULAR, GetTexture(m_data, "blank"));
-        mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        mesh.Bump(20.0f);
-        mesh.Specularity(20.0f);
-        mesh.Specular(0.1f);
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("sealeaves", "sealeaves.obj", 0.25f, 4.0f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "leaf"));
+        mesh.BackfaceCull(false);
+        mesh.Diffuse(0.3f); // Ensures backfaces are lit
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
     }
     {
-        auto& mesh = InitialiseMesh("sphere2", "sphere.obj", Shader::ID_DIFFUSE_CAUSTICS, 120, true);
-        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "blank"));
-        mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("seaweed1", "seaweed1.obj", 0.25f, 4.0f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "leaf"));
+        mesh.BackfaceCull(false);
+        mesh.Diffuse(0.3f); // Ensures backfaces are lit
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
     }
     {
-        auto& mesh = InitialiseMesh("cube", "cube.fbx", Shader::ID_DIFFUSE_CAUSTICS, 120, true);
-        mesh.SetTexture(MeshData::COLOUR, GetTexture(m_data, "water_colour"));
-        mesh.SetTexture(MeshData::CAUSTICS, causticsTexture);
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("seaweed2", "seaweed2.obj", 0.2f, 8.0f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "leaf"));
+        mesh.BackfaceCull(false);
+        mesh.Diffuse(0.3f); // Ensures backfaces are lit
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
     }
-    return true;
+    {
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("shell", "shell.obj", 2.0f, 4.0f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "shell"));
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
+    }
+    {
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("starfish", "starfish.obj", 0.5f, 0.5f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "starfish"));
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
+    }
+    {
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("urchin", "urchin.obj", 1.0f, 1.0f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "urchin"));
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
+    }
+    {
+        const int instances = 80;
+        auto& mesh = InitialiseMesh("coral", "coral.obj", 1.0f, 4.0f, Shader::ID_DIFFUSE);
+        mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "coral"));
+        mesh.AddInstances(instances);
+        success &= AddFoliage({ &mesh }, instances);
+    }
+    {
+        const int instances = 80;
+        auto& mesh1 = InitialiseMesh("flower1 top", "flower1_top.obj", 1.0f, 1.0f, Shader::ID_DIFFUSE);
+        mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flower1_top"));
+        mesh1.AddInstances(instances);
+
+        auto& mesh2 = InitialiseMesh("flower1 bot", "flower1_bot.obj", 2.0f, 2.0f, Shader::ID_DIFFUSE);
+        mesh2.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flower1_bot"));
+        mesh2.AddInstances(instances);
+        success &= AddFoliage({ &mesh1, &mesh2 }, instances);
+    }
+    {
+        const int instances = 80;
+        auto& mesh1 = InitialiseMesh("flower2 top", "flower2_top.obj", 1.0f, 1.0f, Shader::ID_DIFFUSE);
+        mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flower2_top"));
+        mesh1.AddInstances(instances);
+    
+        auto& mesh2 = InitialiseMesh("flower2 bot", "flower2_bot.obj", 3.0f, 3.0f, Shader::ID_DIFFUSE);
+        mesh2.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flower2_bot"));
+        mesh2.AddInstances(instances);
+        success &= AddFoliage({ &mesh1, &mesh2 }, instances);
+    }
+    {
+        const int instances = 80;
+        auto& mesh1 = InitialiseMesh("flower3 top", "flower3_top.obj", 1.0f, 1.0f, Shader::ID_DIFFUSE);
+        mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flower3_top"));
+        mesh1.AddInstances(instances);
+
+        auto& mesh2 = InitialiseMesh("flower3 bot", "flower3_bot.obj", 1.0f, 2.0f, Shader::ID_DIFFUSE);
+        mesh2.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flower3_bot"));
+        mesh2.AddInstances(instances);
+        success &= AddFoliage({ &mesh1, &mesh2 }, instances);
+    }
+
+    return success;
 }
 
 bool SceneBuilder::InitialiseEmitters()
@@ -232,9 +353,9 @@ bool SceneBuilder::InitialiseBubbles()
 {
     std::vector<int> textures = 
     {
-        GetTexture(m_data, "bubble1"),
-        GetTexture(m_data, "bubble2"),
-        GetTexture(m_data, "bubble3")
+        GetID(m_data.textures, "bubble1"),
+        GetID(m_data.textures, "bubble2"),
+        GetID(m_data.textures, "bubble3")
     };
 
     EmitterData data;
@@ -326,14 +447,19 @@ bool SceneBuilder::InitialiseTexture(const std::string& name,
     m_data.textures.push_back(std::make_unique<ProceduralTexture>(
         name, path, size, generation));
 
-    return m_data.textures[index]->Initialise();
+    if (m_data.textures[index]->Initialise())
+    {
+        m_data.textures[index]->Save();
+        return true;
+    }
+    return false;
 }
 
 Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
                                    const std::string& filename,
-                                   int shaderID,
-                                   int intances,
-                                   bool isfoliage)
+                                   float uScale,
+                                   float vScale,
+                                   int shaderID)
 {
     const auto index = m_data.meshes.size();
 
@@ -342,18 +468,8 @@ Mesh& SceneBuilder::InitialiseMesh(const std::string& name,
 
     auto& mesh = *m_data.meshes[index];
 
-    if (isfoliage)
-    {
-        // Scene placer will allocate foliage instances
-        m_data.foliage.push_back(std::make_pair(index, intances));
-    }
-    else
-    {
-        mesh.AddInstances(intances);
-    }
-
-    if (!mesh.InitialiseFromFile(MESHES_PATH + filename, 
-        true, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
+    if (!mesh.InitialiseFromFile(MESHES_PATH + filename, glm::vec2(uScale, vScale),
+        true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
     {
         LogError("Mesh: " + name + " failed initialisation");
     }
@@ -380,14 +496,15 @@ bool SceneBuilder::InitialiseEmitter(const std::string& name,
 Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
                                          const std::string& heightmap,
                                          int shaderID,
-                                         float uvStretch,
+                                         float uvTextureStretch,
+                                         bool tiling,
                                          float height,
                                          float minHeight,
                                          float maxHeight,
                                          float spacing,
                                          int size)
 {
-    const int ID = GetTexture(m_data, heightmap);
+    const int ID = GetID(m_data.textures, heightmap);
     if (ID == NO_INDEX)
     {
         LogError("Terrain: " + name + " could not find texture " + heightmap);
@@ -398,10 +515,38 @@ Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
         name, m_data.shaders[shaderID]->Name(), shaderID, texture.GetPixels()));
     Terrain& terrain = *m_data.terrain[m_data.terrain.size()-1];
 
-    if (!terrain.Initialise(uvStretch, minHeight, maxHeight, height,
-        spacing, size, true, m_data.shaders[shaderID]->HasComponent(Shader::BUMP)))
+    if (!terrain.Initialise(uvTextureStretch, minHeight, 
+        maxHeight, height, spacing, size, true, 
+        m_data.shaders[shaderID]->HasComponent(Shader::BUMP), tiling))
     {
         LogError("Terrain: " + name + " failed initialisation");
     }
     return terrain;
+}
+
+bool SceneBuilder::AddFoliage(std::initializer_list<const MeshData*> meshes, int instances)
+{
+    if (meshes.size() == 0)
+    {
+        LogError("Empty foliage mesh group");
+        return false;
+    }
+
+    for (int i = 0; i < instances; ++i)
+    {
+        const auto index = m_data.foliage.size();
+        m_data.foliage.emplace_back();
+
+        for (const auto* mesh : meshes)
+        {
+            if (static_cast<int>(mesh->Instances().size()) != instances)
+            {
+                LogError("Mesh " + mesh->Name() + " did not have require instances");
+                return false;
+            }
+
+            m_data.foliage[index].AddMesh(GetID(m_data.meshes, mesh->Name()), i);
+        }
+    }
+    return true;
 }

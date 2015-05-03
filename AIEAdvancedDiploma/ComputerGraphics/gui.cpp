@@ -64,10 +64,13 @@ Gui::Gui(Scene& scene,
     AddKeyCallback(GLFW_KEY_8, '8');
     AddKeyCallback(GLFW_KEY_9, '9');
     AddKeyCallback(GLFW_KEY_PERIOD, '.');
+    AddKeyCallback(GLFW_KEY_MINUS, '-');
     AddKeyCallback(GLFW_KEY_ENTER, TW_KEY_RETURN);
     AddKeyCallback(GLFW_KEY_LEFT, TW_KEY_LEFT);
     AddKeyCallback(GLFW_KEY_RIGHT, TW_KEY_RIGHT);
     AddKeyCallback(GLFW_KEY_TAB, TW_KEY_TAB);
+    AddKeyCallback(GLFW_KEY_END, TW_KEY_END);
+    AddKeyCallback(GLFW_KEY_HOME, TW_KEY_HOME);
     AddKeyCallback(GLFW_KEY_BACKSPACE, TW_KEY_BACKSPACE);
 
     LogInfo("GUI: Tweak bar initialised");

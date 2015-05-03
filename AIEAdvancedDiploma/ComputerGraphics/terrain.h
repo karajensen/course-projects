@@ -34,7 +34,7 @@ public:
 
     /**
     * Initialises the terrain
-    * @param uvStretch Texture stretch multiplier
+    * @param uvTextureStretch The texture stretch multipliers
     * @param minHeight The minimum height offset of the terrain
     * @param maxHeight The maximum height offset of the terrain
     * @param height The starting height of the terrain
@@ -42,16 +42,18 @@ public:
     * @param size How many rows/columns for the grid
     * @param hasNormals Whether the terrain requires normals
     * @param hasNormals Whether the terrain requires tangents
+    * @param whether to force tiling between edges
     * @return whether call was successful
     */
-    bool Initialise(float uvStretch,
+    bool Initialise(float uvTextureStretch,
                     float minHeight,
                     float maxHeight,
                     float height,
                     float spacing, 
                     int size,
                     bool hasNormals,
-                    bool hasTangents);
+                    bool hasTangents,
+                    bool requiresTiling);
 
     /**
     * Reloads the terrain
@@ -71,6 +73,40 @@ public:
     */
     void SetInstance(int index, const glm::vec2& position);
 
+    /**
+    * Sets an instance for this mesh
+    * @param index The ID of this instance
+    * @param position The position offset 
+    * @param rotation How much to rotate 
+    * @param scale The size of the mesh
+    */
+    void SetInstance(int index,
+                     const glm::vec3& position,
+                     const glm::vec3& rotation,
+                     const glm::vec3& scale);
+    /**
+    * Adds instances at the world center with default values
+    */
+    virtual void AddInstances(int amount) override;
+
+    /**
+    * @param instance The ID of the instance to use
+    * @return the minimum bounds of the grid
+    */
+    const glm::vec2& GetMinBounds(int instance) const;
+
+    /**
+    * @param instance The ID of the instance to use
+    * @return the maximum bounds of the grid
+    */
+    const glm::vec2& GetMaxBounds(int instance) const;
+
+    /**
+    * @param instance The ID of the instance to use
+    * @return the approximate absoluate position on the terrain
+    */
+    glm::vec3 GetAbsolutePosition(int instance, float x, float z);
+
 private:
 
     /**
@@ -84,8 +120,16 @@ private:
     */
     void GenerateTerrain();
 
-    float m_height = 0.0f;     ///< The initial height of the terrain
-    float m_maxHeight = 1.0f;  ///< The maximum height offset of the terrain
-    float m_minHeight = 0.0f;  ///< The minimum height offset of the terrain
+    /**
+    * Calculates the min/max bounds for the instance
+    */
+    void CalculateBounds(int instance);
+
+    float m_height = 0.0f; ///< The initial height of the terrain
+    float m_maxHeight = 1.0f; ///< The maximum height offset of the terrain
+    float m_minHeight = 0.0f; ///< The minimum height offset of the terrain
+    bool m_requiresTiling = false; ///< Whether to force tiling between edges
     const std::vector<unsigned int>& m_pixels; ///< The pixel of the height map
+    std::vector<glm::vec2> m_minBounds; ///< Minimum bounds for each instance
+    std::vector<glm::vec2> m_maxBounds; ///< Maximum bounds for each instance
 };                                

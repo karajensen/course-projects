@@ -85,6 +85,12 @@
     <ClCompile Include="meshAttributes.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="random_generator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="meshgroup.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -178,6 +184,12 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="meshAttributes.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="random_generator.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="meshgroup.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

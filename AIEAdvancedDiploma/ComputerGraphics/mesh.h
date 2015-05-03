@@ -33,17 +33,17 @@ public:
     void AddToTweaker(Tweaker& tweaker);
 
     /**
-    * Initialises the mesh data buffer containers from file
+    * Initialises the mesh data buffer from an OBJ file
     * @param path The full path to the mesh file
-    * @param requiresUVs Whether this mesh requires UVs for texturing
+    * @param uvScale The scale to apply to mesh UVs
     * @param requiresNormals Whether this mesh requires normals
     * @param requiresTangents Whether this mesh requires tangents/bitangents
     * @return Whether creation was successful
     */
     bool InitialiseFromFile(const std::string& path, 
+                            const glm::vec2& uvScale,
                             bool requiresUVs,
-                            bool requiresNormals, 
-                            bool requiresTangents);
+                            bool requiresNormals);
 
 private:
 
@@ -52,30 +52,4 @@ private:
     */
     Mesh(const Mesh&) = delete;
     Mesh& operator=(const Mesh&) = delete;
-
-    /**
-    * Initialises the mesh data buffer from an OBJ file
-    * @param path The full path to the mesh file
-    * @param requiresUVs Whether this mesh requres UVs for texturing
-    * @param requiresNormals Whether this mesh requires normals
-    * @param requiresTangents Whether this mesh requires tangents/bitangents
-    * @return Whether creation was successful
-    */
-    bool InitialiseFromOBJ(const std::string& path, 
-                           bool requiresUVs,
-                           bool requiresNormals, 
-                           bool requiresTangents);
-
-    /**
-    * Initialises the mesh data buffer from an FBX file
-    * @param path The full path to the mesh file
-    * @param requiresUVs Whether this mesh requres UVs for texturing
-    * @param requiresNormals Whether this mesh requires normals
-    * @param requiresTangents Whether this mesh requires tangents/bitangents
-    * @return Whether creation was successful
-    */
-    bool InitialiseFromFBX(const std::string& path,
-                           bool requiresUVs,
-                           bool requiresNormals, 
-                           bool requiresTangents);
 };

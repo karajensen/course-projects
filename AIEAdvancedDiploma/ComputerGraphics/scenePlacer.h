@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "meshgroup.h"
 #include "glm\glm.hpp"
-#include <vector>
 
 class Tweaker;
 class Terrain;
@@ -105,8 +105,21 @@ private:
 
     /**
     * Assigns foliage and rocks to all the patches
+    * @return whether assignment was successful
     */
-    void GeneratePatchData();
+    bool GeneratePatchData();
+
+    /**
+    * Updates any meshes stored for the patch
+    * @param row/column The position of the patch in the grid
+    */
+    void UpdatePatchMeshes(int row, int column);
+
+    /**
+    * Updates any data stored for the patch
+    * @param row/column The position of the patch in the grid
+    */
+    void UpdatePatchData(int row, int column);
 
     /**
     * Places the assigned foliage on the patch
@@ -121,46 +134,49 @@ private:
     void PlaceEmitters(int instanceID);
 
     /**
-    * Updates any data stored for the patch
+    * Places the assigned rock on the patch
     * @param instance The instance ID to update
     */
-    void UpdatePatchData(int instanceID);
+    void PlaceRock(int instanceID);
 
     /**
     * Determines the approximate height at the given coordinates
-    * @param patchID The ID of the patch to update
-    * @param x,z The coordinates to get the height at
+    * @param patchID The ID of the patch to use
+    * @param x/z The position to get the height at
     */
-    float GetPatchHeight(int instanceID, float x, float z) const;
+    glm::vec3 GetPatchPosition(int patchID, float x, float z);
 
     /**
-    * Key for obtaining the instance assigned to a patch
+    * Resets just the foliage
     */
-    struct InstanceKey
-    {
-        int index = 0;       ///< Scene data ID
-        int instance = 0;    ///< Instance ID
-    };
+    void ResetFoliage();
 
     /**
     * Holds information on what meshes exist inside the patch
     */
     struct Patch
     {
-        glm::vec2 minBounds;                ///< Maximum global coordinates of the patch 
-        glm::vec2 maxBounds;                ///< Minimum global coordinates of the patch
-        std::vector<InstanceKey> foliage;   ///< Data for what foliage to use
+        bool requiresUpdate = false;        ///< When true will update all meshes
+        glm::ivec2 coordinates;             ///< Coordinates of the patch within the grid
+        std::vector<MeshGroup> foliage;     ///< Data for what foliage to use
         std::vector<InstanceKey> emitters;  ///< Data for what emitters to use
+        InstanceKey rock;                   ///< Single assigned rock terrain
     };
-
-    SceneData& m_data;              ///< Data for manipulating the scene
-    Terrain& m_sand;                ///< Main Sand terrain mesh
-    Water& m_ocean;                 ///< Main Ocean terran mesh
-    int m_patchPerRow = 0;          ///< The number of patches per row of the area
-    int m_countRandom = 5;          ///< Instance count to vary for foliage
-    float m_patchSize = 0.0f;       ///< The offset between sand/water patches
-    std::vector<int> m_patches;     ///< The current ordering of the patches; holds the instance ID
-    std::vector<int> m_previous;    ///< Buffer for reorganising the patches; holds the instance ID
-    std::vector<Patch> m_patchData; ///< Holds patch data; key is the instance ID held in m_patches
-    glm::ivec2 m_patchInside;       ///< The patch the camera is currently inside
+                                      
+    SceneData& m_data;                ///< Data for manipulating the scene
+    Terrain& m_sand;                  ///< Main Sand terrain mesh
+    Water& m_ocean;                   ///< Main Ocean terran mesh
+    int m_patchPerRow = 0;            ///< The number of patches per row of the area
+    int m_minClusters = 0;            ///< Minimum foliage clusters per patch
+    int m_maxClusters = 0;            ///< Maximum foliage clusters per patch
+    float m_meshMinScale = 0.0f;      ///< Random mesh scaling amount
+    float m_meshMaxScale = 0.0f;      ///< Random mesh scaling amount
+    float m_patchSize = 0.0f;         ///< The offset between sand/water patches
+    float m_rockOffset = 0.0f;        ///< Random rock offset from the patch center
+    glm::vec3 m_rockMinScale;         ///< Random rock scaling amount
+    glm::vec3 m_rockMaxScale;         ///< Random rock scaling amount
+    std::vector<int> m_patches;       ///< The current ordering of the patches; holds the instance ID
+    std::vector<int> m_previous;      ///< Buffer for reorganising the patches; holds the instance ID
+    std::vector<Patch> m_patchData;   ///< Holds patch data; key is the instance ID held in m_patches
+    glm::ivec2 m_patchInside;         ///< The patch the camera is currently inside
 };

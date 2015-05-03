@@ -13,6 +13,7 @@
 #include "animation.h"
 #include "textureProcedural.h"
 #include "postprocessing.h"
+#include "meshgroup.h"
 
 /**
 * Internal data for the scene
@@ -37,8 +38,8 @@ struct SceneData
     std::vector<std::unique_ptr<Animation>> animation; ///< Managers for animated textures
     std::unique_ptr<PostProcessing> post;              ///< Data for post processing
     std::vector<unsigned int> proceduralTextures;      ///< Indexes for procedural textures
-    std::vector<std::pair<unsigned int, int>> foliage; ///< Scene foliage placed on rocks
-    std::vector<std::pair<unsigned int, int>> rocks;   ///< Scene foliage placed on rocks
+    std::vector<MeshGroup> foliage;                    ///< Available foliage for placing in scene
+    std::vector<InstanceKey> rocks;                    ///< Avaliable rocks for placing in scene
     unsigned int sandIndex = 0;                        ///< Index for the sand terrain
     unsigned int oceanIndex = 0;                       ///< Index for the ocean grid
 };

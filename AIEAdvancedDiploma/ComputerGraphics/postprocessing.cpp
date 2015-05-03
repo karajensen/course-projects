@@ -9,7 +9,7 @@ PostProcessing::PostProcessing()
 {
     SetPostMap(FINAL_MAP);
 
-    m_blurStep = 0.004f;
+    m_blurStep = 0.003f;
     m_depthFar = 1000.0f;
     m_depthNear = 1.0f;
     m_dofStart = 0.99f;
@@ -52,7 +52,7 @@ void PostProcessing::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddFltEntry("Saturation", &m_saturation, 0.01f);
     tweaker.AddFltEntry("Contrast", &m_contrast, 0.01f);
-    tweaker.AddFltEntry("Blur Step", &m_blurStep, 0.01f, 4);
+    tweaker.AddFltEntry("Blur Step", &m_blurStep, 0.0001f, 5);
     tweaker.AddFltEntry("Depth Far", &m_depthFar, 10.0f, 1);
     tweaker.AddFltEntry("Depth Near", &m_depthNear, 1.0f);
     tweaker.AddFltEntry("DOF Start", &m_dofStart, 0.01f);

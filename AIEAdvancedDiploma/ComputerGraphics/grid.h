@@ -24,15 +24,15 @@ public:
          int shaderID);
 
     /**
-    * @return the local height at the given row/column
-    */
-    float GetHeight(int row, int column) const;
-
-    /**
     * @return the size of the grid
     * @note only valid for grids with the same rows/column size
     */
     float Size() const;
+
+    /**
+    * @return the spacing between vertices
+    */
+    float Spacing() const;
 
     /**
     * @return the number of rows of the grid
@@ -74,9 +74,19 @@ protected:
     void ResetGrid();
 
     /**
+    * @return the local position at the given row/column
+    */
+    glm::vec3 GetPosition(int row, int column) const;
+
+    /**
     * Sets the height at the given row/column
     */
     void SetHeight(int row, int column, float height);
+
+    /**
+    * @return the local height at the given row/column
+    */
+    float GetHeight(int row, int column) const;
 
     /**
     * Determines the normals for the grid

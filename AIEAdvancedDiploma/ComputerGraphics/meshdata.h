@@ -163,29 +163,9 @@ public:
     void SetTexture(Slot type, int ID);
 
     /**
-    * Adds an instance for this mesh
-    * @param position The position offset 
-    * @param rotation How much to rotate 
-    * @param scale The size of the mesh
-    */
-    void AddInstance(const glm::vec3& position,
-                     const glm::vec3& rotation,
-                     float scale);
-
-    /**
-    * Adds an instance at the world center with default values
-    */
-    void AddInstance();
-
-    /**
     * Adds instances at the world center with default values
     */
-    void AddInstances(int amount);
-
-    /**
-    * Clears all currently created instances
-    */
-    void ClearInstances();
+    virtual void AddInstances(int amount);
 
     /**
     * Sets an instance for this mesh
@@ -218,6 +198,11 @@ public:
     */
     void SetSkyBox();
 
+    /**
+    * @return the local radius of the mesh
+    */
+    float GetRadius() const;
+
 protected:
 
     /**
@@ -234,6 +219,12 @@ protected:
     * @return whether this mesh renders with specular highlights
     */
     bool UsesSpecular() const;
+
+    /**
+    * @return the world matrix for the given matrix
+    * @note will update the world if pending an update
+    */
+    const glm::mat4& GetWorldInstance(int instance);
 
     int m_vertexComponentCount = 0;     ///< Number of components that make up a vertex
     std::vector<float> m_vertices;      ///< Mesh Vertex information
@@ -261,6 +252,11 @@ private:
     * This is the based on the furthest vertex from the mesh center
     */
     void GenerateRadius();
+
+    /**
+    * Updates the world transforms for the given instance
+    */
+    void UpdateTransforms(Instance& instance);
 
     bool m_backfacecull = true;         ///< Whether backface culling is enabled
     int m_instancesRendered = 0;        ///< Number of instances currently rendered

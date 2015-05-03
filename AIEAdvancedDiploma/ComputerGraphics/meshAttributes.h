@@ -47,12 +47,12 @@ public:
     float Diffuse() const;
 
     /**
-    * Sets the Diffuse light multiplier
+    * Sets the minimum Diffuse light value
     */
     void Diffuse(float value);
 
     /**
-    * @return Specular light multiplier
+    * @return Overall Specular light multiplier
     */
     float Specular() const;
 
@@ -88,6 +88,6 @@ protected:
     float m_causticsScale = 1.0f;  ///< The scale of the caustic texture
     float m_specularity = 1.0f;    ///< Brightness of the specular highlights
     float m_ambience = 1.0f;       ///< Ambient light multiplier
-    float m_specular = 1.0f;       ///< Specular light multiplier
-    float m_diffuse = 1.0f;        ///< Diffuse light multiplier
+    float m_specular = 1.0f;       ///< Overall Specular light multiplier
+    float m_diffuse = 0.0f;        ///< Minimum Diffuse light value
 };

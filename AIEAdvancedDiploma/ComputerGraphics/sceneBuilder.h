@@ -102,23 +102,23 @@ private:
     * Initialises a mesh
     * @param name The name of the mesh
     * @param filename The filename of the mesh
+    * @param uvScale The scale for the UVs
     * @param shaderID The shader to use
-    * @param instances The amount of instances to create
-    * @param isfoliage Whether this is a mesh to place on terrain
     * @return The mesh initialised
     */
     Mesh& InitialiseMesh(const std::string& name,
                          const std::string& filename,
-                         int shaderID,
-                         int intances,
-                         bool isfoliage);
+                         float uScale,
+                         float vScale,
+                         int shaderID);
 
     /**
     * Initialises terrain
     * @param name The name of the mesh
     * @param heightmap The name of the height map
     * @param shaderID The shader to use
-    * @param uvStretch The texture stretch multipliers
+    * @param uvTextureStretch The texture stretch multipliers
+    * @param tiling whether to force edges to match
     * @param height The height the terrain is rendered at
     * @param minHeight The minimum height offset of the terrain
     * @param maxHeight The maximum height offset of the terrain
@@ -129,7 +129,8 @@ private:
     Terrain& InitialiseTerrain(const std::string& name,
                                const std::string& heightmap,
                                int shaderID,
-                               float uvStretch,
+                               float uvTextureStretch,
+                               bool tiling,
                                float height,
                                float minHeight,
                                float maxHeight,
@@ -193,6 +194,15 @@ private:
                            int shaderID,
                            const std::vector<int>& textures,
                            const EmitterData& data);
+
+    /**
+    * Creates new foliage mesh group(s) for the meshes
+    * @param meshes The types of meshes to add to the group
+    * @param instances The number of groups to create
+    * @return whether creation was successful
+    */
+    bool AddFoliage(std::initializer_list<const MeshData*> meshes,
+                    int instances);
 
     SceneData& m_data; ///< The scene to build
 };                     

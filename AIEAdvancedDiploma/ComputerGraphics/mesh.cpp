@@ -43,7 +43,7 @@ void Mesh::AddToTweaker(Tweaker& tweaker)
 }
 
 bool Mesh::InitialiseFromFile(const std::string& path, 
-                              bool requiresUVs,
+                              const glm::vec2& uvScale,
                               bool requiresNormals, 
                               bool requiresTangents)
 {
@@ -53,25 +53,6 @@ bool Mesh::InitialiseFromFile(const std::string& path,
         return false;
     }
 
-    bool success = false;
-
-    if (path.find(".obj") != NO_INDEX)
-    {
-        success = InitialiseFromOBJ(path, requiresUVs, requiresNormals, requiresTangents);
-    }
-    else if (path.find(".fbx") != NO_INDEX)
-    {
-        success = InitialiseFromFBX(path, requiresUVs, requiresNormals, requiresTangents);
-    }
-
-    return success && MeshData::Initialise();
-}
-
-bool Mesh::InitialiseFromOBJ(const std::string& path,
-                             bool requiresUVs,
-                             bool requiresNormals,
-                             bool requiresTangents)
-{
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_CalcTangentSpace|
         aiProcess_Triangulate|aiProcess_JoinIdenticalVertices|aiProcess_SortByPType|
@@ -101,7 +82,7 @@ bool Mesh::InitialiseFromOBJ(const std::string& path,
             LogError(Name() + " requires positions for requested shader");
             return false;
         }
-        if(requiresUVs && !pMesh->HasTextureCoords(0))
+        if(!pMesh->HasTextureCoords(0))
         {
             LogError(Name() + " requires uvs for requested shader");
             return false;
@@ -119,14 +100,9 @@ bool Mesh::InitialiseFromOBJ(const std::string& path,
             m_vertices.push_back(pMesh->mVertices[vert].x);
             m_vertices.push_back(pMesh->mVertices[vert].y);
             m_vertices.push_back(pMesh->mVertices[vert].z);
-            componentCount = 3;
-
-            if (requiresUVs)
-            {
-                m_vertices.push_back(pMesh->mTextureCoords[0][vert].x);
-                m_vertices.push_back(pMesh->mTextureCoords[0][vert].y);
-                componentCount += 2;
-            }
+            m_vertices.push_back(pMesh->mTextureCoords[0][vert].x * uvScale.x);
+            m_vertices.push_back(pMesh->mTextureCoords[0][vert].y * uvScale.y);
+            componentCount = 5;
 
             if (requiresNormals)
             {
@@ -188,108 +164,6 @@ bool Mesh::InitialiseFromOBJ(const std::string& path,
             m_indices.push_back(indexOffset + pFace->mIndices[2]);
         }
     }
-    return true;
-}
 
-bool Mesh::InitialiseFromFBX(const std::string& path,
-                             bool requiresUVs,
-                             bool requiresNormals,
-                             bool requiresTangents)
-{
-    auto fbx = std::make_unique<FBXFile>();
-
-    if (!fbx->load(path.c_str(), FBXFile::UNITS_METER, false, false, false))
-    {
-        LogError("FBX loader failed for " + Name());
-        return false;
-    }
-
-    // For each submesh
-    bool generatedComponentCount = false;
-    for (unsigned int i = 0; i < fbx->getMeshCount(); ++i)
-    {
-        FBXMeshNode* mesh = fbx->getMeshByIndex(i);
-
-        const unsigned int indexOffset = m_vertices.size() / 
-            std::max(1, m_vertexComponentCount);
-
-        // For each vertex
-        int componentCount = 0;
-        for (unsigned int i = 0; i < mesh->m_vertices.size(); ++i)
-        {
-            const auto& vertex = mesh->m_vertices[i];
-            m_vertices.push_back(vertex.position.x);
-            m_vertices.push_back(vertex.position.y);
-            m_vertices.push_back(vertex.position.z);
-            componentCount = 3;
-
-            if (requiresUVs)
-            {
-                m_vertices.push_back(vertex.texCoord1.x);
-                m_vertices.push_back(vertex.texCoord1.y);
-                componentCount += 2;
-            }
-
-            if (requiresNormals)
-            {
-                if (!IsZero(vertex.normal))
-                {
-                    m_vertices.push_back(vertex.normal.x);
-                    m_vertices.push_back(vertex.normal.y);
-                    m_vertices.push_back(vertex.normal.z);
-                    componentCount += 3;
-                }
-                else
-                {
-                    LogError(Name() + " requires normals for requested shader");
-                    return false;
-                }
-            }
-
-            if(requiresTangents)
-            {
-                if (!IsZero(vertex.tangent) && !IsZero(vertex.binormal))
-                {
-                    m_vertices.push_back(vertex.tangent.x);
-                    m_vertices.push_back(vertex.tangent.y);
-                    m_vertices.push_back(vertex.tangent.z);
-                    m_vertices.push_back(vertex.binormal.x);
-                    m_vertices.push_back(vertex.binormal.y);
-                    m_vertices.push_back(vertex.binormal.z);
-                    componentCount += 6;
-                }
-                else
-                {
-                    LogError(Name() + " requires tangents for requested shader");
-                    return false;
-                }
-            }
-        }
-
-        // Make sure vertex layout is consistant between submeshes
-        if(generatedComponentCount)
-        {
-            if(componentCount != m_vertexComponentCount)
-            {
-                LogError("FBX error for mesh " + path + ": " + 
-                    std::to_string(componentCount) + " does not match " +
-                    std::to_string(m_vertexComponentCount));
-                return false;
-            }
-        }
-        else
-        {
-            m_vertexComponentCount = componentCount;
-            generatedComponentCount = true;
-        }
-
-        // Save the indices
-        for (unsigned int i = 0; i < mesh->m_indices.size(); ++i)
-        {
-            m_indices.push_back(indexOffset + mesh->m_indices[i]);
-        }
-    }
-
-    fbx->unload();
-    return true;
+    return MeshData::Initialise();
 }

@@ -19,7 +19,7 @@ public:
     enum Generation
     {
         FROM_FILE,
-        DIAMOND_SQUARE
+        PERLIN_NOISE_ROCK
     };
 
     /**
@@ -43,7 +43,7 @@ public:
     * Adds data for this element to be tweaked by the gui
     * @param tweaker The helper for adding tweakable entries
     */
-    void AddToTweaker(Tweaker& tweaker);
+    virtual void AddToTweaker(Tweaker& tweaker) override;
 
     /**
     * Reloads the texture
@@ -89,9 +89,10 @@ private:
     void MakeFromFile();
 
     /**
-    * Creates a fractal texture using the diamond square algorithm
+    * Creates a texture using perlin noise
+    * Reference: AIE Computer Graphics Tutorial Week 9 Procedural Generation
     */
-    void MakeDiamondSquareFractal();
+    void MakePerlinNoiseRock();
 
     /**
     * Reloads the texture from pixels
@@ -104,6 +105,11 @@ private:
     * @return whether initialisation was successful
     */
     virtual bool InitialiseFromPixels() override;
+
+    /**
+    * @return the colour from the row and column value
+    */
+    float GetAsFlt(int row, int column) const;
 
     /**
     * @return the colour from the row and column value
@@ -179,4 +185,8 @@ private:
     int m_size = 0;                     ///< Dimensions of the texture
     Generation m_generation;            ///< The type of texture to make
     bool m_renderableTexture = false;   ///< Whether this texture is to be rendered
+    float m_scale = 1.0f;               ///< Scale value for generating a texture
+    float m_amplitude = 1.0f;           ///< Amplitude value for generating a texture
+    float m_contrast = 1.0f;            ///< Brightness multiplier of the final texture
+    int m_iterations = 1;               ///< Number of iterations for the algorithm
 };

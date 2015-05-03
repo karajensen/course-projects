@@ -155,6 +155,11 @@ void Grid::ResetGrid()
     }
 }
 
+float Grid::Spacing() const
+{
+    return m_spacing;
+}
+
 unsigned int Grid::GetIndex(int row, int column) const
 {
     return (row * m_columns * m_vertexComponentCount)
@@ -179,6 +184,11 @@ int Grid::Rows() const
 int Grid::Columns() const
 {
     return m_columns;
+}
+
+glm::vec3 Grid::GetPosition(int row, int column) const
+{
+    return GetPosition(GetIndex(row, column));
 }
 
 glm::vec3 Grid::GetPosition(int index) const

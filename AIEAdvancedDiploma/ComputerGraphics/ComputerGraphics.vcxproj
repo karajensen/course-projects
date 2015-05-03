@@ -100,11 +100,13 @@
     <ClInclude Include="mesh.h" />
     <ClInclude Include="meshAttributes.h" />
     <ClInclude Include="meshdata.h" />
+    <ClInclude Include="meshgroup.h" />
     <ClInclude Include="opengl.h" />
     <ClInclude Include="opengl\gl_core_4_4.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="postprocessing.h" />
     <ClInclude Include="quad.h" />
+    <ClInclude Include="random_generator.h" />
     <ClInclude Include="renderdata.h" />
     <ClInclude Include="rendertarget.h" />
     <ClInclude Include="scene.h" />
@@ -133,11 +135,13 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="meshAttributes.cpp" />
     <ClCompile Include="meshdata.cpp" />
+    <ClCompile Include="meshgroup.cpp" />
     <ClCompile Include="opengl.cpp" />
     <ClCompile Include="opengl\gl_core_4_4.c" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="postprocessing.cpp" />
     <ClCompile Include="quad.cpp" />
+    <ClCompile Include="random_generator.cpp" />
     <ClCompile Include="rendertarget.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="sceneBuilder.cpp" />
