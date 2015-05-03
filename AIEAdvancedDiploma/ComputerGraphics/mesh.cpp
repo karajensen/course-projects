@@ -2,7 +2,6 @@
 // Kara Jensen - mail@karajensen.com - mesh.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "fbx/FBXFile.h"
 #include "mesh.h"
 #include "assimp/include/scene.h"
 #include "assimp/include/Importer.hpp"

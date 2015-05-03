@@ -198,11 +198,6 @@ public:
     */
     void SetSkyBox();
 
-    /**
-    * @return the local radius of the mesh
-    */
-    float GetRadius() const;
-
 protected:
 
     /**

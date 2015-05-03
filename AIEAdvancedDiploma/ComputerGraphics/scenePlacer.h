@@ -40,10 +40,10 @@ public:
 
     /**
     * Initialises the scene
-    * @param camera The position of the camera
+    * @param cameraPosition The position of the camera
     * @return whether initialisation was successful
     */
-    bool Initialise(const glm::vec3& camera);
+    bool Initialise(const glm::vec3& cameraPosition);
 
     /**
     * Updates the scene
@@ -52,7 +52,7 @@ public:
     void Update(const glm::vec3& cameraPosition);
 
     /**
-    * Resets the patches including foliage and emitter placement
+    * Resets the assets held by each patch
     */
     void ResetPatches();
 
@@ -147,7 +147,7 @@ private:
     glm::vec3 GetPatchPosition(int patchID, float x, float z);
 
     /**
-    * Resets just the foliage
+    * Resets all assigned foliage and emitters for a patch
     */
     void ResetFoliage();
 
@@ -156,7 +156,7 @@ private:
     */
     struct Patch
     {
-        bool requiresUpdate = false;        ///< When true will update all meshes
+        bool requiresUpdate = false;        ///< Flag for updating the foliage/assets
         glm::ivec2 coordinates;             ///< Coordinates of the patch within the grid
         std::vector<MeshGroup> foliage;     ///< Data for what foliage to use
         std::vector<InstanceKey> emitters;  ///< Data for what emitters to use

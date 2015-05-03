@@ -9,7 +9,7 @@
 class Tweaker;
 
 /**
-* Manages cycling through multiple textures
+* Manager for cycling through multiple textures
 */
 class Animation
 {

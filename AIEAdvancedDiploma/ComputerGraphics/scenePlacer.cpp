@@ -275,7 +275,7 @@ void ScenePlacer::UpdatePatch(int row,
     UpdatePatchData(row, column);
 }
                                
-bool ScenePlacer::Initialise(const glm::vec3& camera)
+bool ScenePlacer::Initialise(const glm::vec3& cameraPosition)
 {
     const float halfPatch = m_patchPerRow / 2.0f;
 
@@ -285,7 +285,7 @@ bool ScenePlacer::Initialise(const glm::vec3& camera)
     m_patchSize = sandSize;
 
     const float offset = (halfPatch * m_patchSize) - (m_patchSize / 2.0f);
-    const glm::vec2 start(camera.x - offset, camera.z - offset);
+    const glm::vec2 start(cameraPosition.x - offset, cameraPosition.z - offset);
 
     int instance = 0;
     glm::vec2 position;
@@ -315,7 +315,7 @@ bool ScenePlacer::Initialise(const glm::vec3& camera)
         }
     }
 
-    m_patchInside = GetPatchInside(camera);
+    m_patchInside = GetPatchInside(cameraPosition);
     if (m_patchInside.x == NO_INDEX || m_patchInside.y == NO_INDEX)
     {
         LogError("Did not start inside recognised patch");
@@ -526,8 +526,7 @@ void ScenePlacer::PlaceFoliage(int instanceID)
             const float x = static_cast<float>(Random::Generate(0, 1) == 0 ? -1 : 1);
             const float z = static_cast<float>(Random::Generate(0, 1) == 0 ? -1 : 1);
             const float offset = Random::Generate(clusterOffset.x, clusterOffset.y) * m_sand.Spacing();
-            const glm::vec2 direction(glm::normalize(glm::vec2(x, z)) * offset);
-            position = clusterCenter + direction;
+            position = clusterCenter + glm::vec2(x, z) * offset;
             withinPatchBounds = position.x > minBounds.x && position.x < maxBounds.x &&
                 position.y > minBounds.y && position.y < maxBounds.y;
         }

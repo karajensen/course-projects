@@ -23,7 +23,7 @@ namespace
     */
     const int PATCH_GRID_VERTICES = 51;
     const int PATCH_ROCK_TYPES = 3;
-    const float PATCH_GRID_SPACING = 8.0f;
+    const float PATCH_GRID_SPACING = 10.0f;
 
     /**
     * Helper function to get an asset by name
@@ -245,7 +245,7 @@ bool SceneBuilder::InitialiseMeshes()
         m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
 
     {
-        auto& mesh = InitialiseMesh("skybox", "skybox.obj", 0.0f, 0.0f, Shader::ID_FLAT);
+        auto& mesh = InitialiseMesh("skybox", "skybox.obj", 1.0f, 1.0f, Shader::ID_FLAT);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "skybox"));
         mesh.BackfaceCull(false);
         mesh.Ambience(0.85f);

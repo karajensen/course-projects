@@ -20,7 +20,7 @@ Camera::Camera() :
     m_initialPos(15.0f, 1.0f, 3.0f),
     m_position(m_initialPos),
     m_target(0.0f, 0.0f, 0.0f),
-    m_heightBounds(-20.0f, 20.0f),
+    m_heightBounds(-20.0f, 60.0f),
     m_rotationSpeed(5.0f),
     m_translateSpeed(20.0f),
     m_forwardSpeed(60.0f),

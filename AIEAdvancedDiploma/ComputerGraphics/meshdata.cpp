@@ -307,8 +307,3 @@ void MeshData::UpdateTransforms(Instance& instance)
         }
     }
 }
-
-float MeshData::GetRadius() const
-{
-    return m_radius;
-}
