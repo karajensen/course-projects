@@ -49,7 +49,7 @@ void ProceduralTexture::AddToTweaker(Tweaker& tweaker)
         tweaker.AddFltEntry("Scale", &m_scale, 0.01f);
         tweaker.AddFltEntry("Amplitude", &m_amplitude, 0.01f);
         tweaker.AddFltEntry("Contrast", &m_contrast, 0.01f);
-        tweaker.AddEntry("Iterations", &m_iterations, TW_TYPE_INT32);
+        tweaker.AddIntEntry("Iterations", &m_iterations, 1, 100);
         tweaker.AddButton("Reload", [this](){ Reload(); });
         tweaker.AddButton("Save", [this](){ Save(); });
     }

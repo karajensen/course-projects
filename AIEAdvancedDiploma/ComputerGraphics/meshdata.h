@@ -36,7 +36,7 @@ public:
     /**
     * Callbacks for rendering a mesh instance
     */
-    typedef std::function<void(const glm::mat4&)> RenderInstance;
+    typedef std::function<void(const glm::mat4&,int)> RenderInstance;
 
     /**
     * Holds information for a single instance of a mesh
@@ -47,6 +47,7 @@ public:
         glm::vec3 position = glm::vec3(0,0,0); ///< Position offset
         glm::vec3 rotation = glm::vec3(0,0,0); ///< Degrees rotated around each axis
         glm::vec3 scale = glm::vec3(1,1,1);    ///< Scaling of the mesh
+        int colour = NO_INDEX;                 ///< ID for the diffuse texture
         bool render = true;                    ///< Whether to draw the mesh
         bool requiresUpdate = false;           ///< Whether to update the world matrix
     };
@@ -262,6 +263,7 @@ private:
     GLuint m_iboID = 0;                 ///< Unique ID for the Index Buffer Object (IBO)
     bool m_initialised = false;         ///< Whether the vertex buffer object is initialised or not
     std::vector<int> m_textureIDs;      ///< IDs for each texture used
+    std::vector<int> m_colourIDs;       ///< Available IDs for colouring instances
     const std::string m_shaderName;     ///< Name of the shader to use
     bool m_skybox = false;              ///< Whether this mesh is a skybox
     float m_radius = 0.0f;              ///< The radius of the sphere surrounding the mesh

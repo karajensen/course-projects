@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "renderdata.h"
 #include "rendertarget.h"
+#include "meshdata.h"
 #include <string>
 #include <fstream>
 
@@ -33,6 +34,9 @@ Shader::Shader(const std::string& name,
     m_fragmentFile(path + FRAGMENT_SHADER),
     m_vertexFile(path + VERTEX_SHADER)
 {
+    const int maxSupportedTextures = 8;
+    m_allocatedSlots.resize(maxSupportedTextures);
+    m_allocatedSlots.assign(maxSupportedTextures, NO_INDEX);
 }
 
 Shader::~Shader()
@@ -483,6 +487,12 @@ void Shader::SendTexture(int slot, GLuint id, bool cubemap)
 
 void Shader::SendTexture(int slot, GLuint id, bool multisample, bool cubemap)
 {
+    if (m_allocatedSlots[slot] == id)
+    {
+        return;
+    }
+
+    m_allocatedSlots[slot] = static_cast<int>(id);
     glActiveTexture(GetTexture(slot));
 
     if (cubemap)
@@ -506,6 +516,7 @@ void Shader::SendTexture(int slot, GLuint id, bool multisample, bool cubemap)
 void Shader::SetActive()
 {
     glUseProgram(m_program);
+    m_allocatedSlots.assign(m_allocatedSlots.size(), NO_INDEX);
 }
 
 bool Shader::HasTextureSlot(int slot)

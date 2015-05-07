@@ -35,7 +35,7 @@ void MeshData::AddToTweaker(Tweaker& tweaker)
     tweaker.AddIntEntry("Instances", [this](){ return m_instances.size(); });
     tweaker.AddEntry("Visible", &m_instancesRendered, TW_TYPE_INT32, true);
     tweaker.AddEntry("Backface Cull", &m_backfacecull, TW_TYPE_BOOLCPP);
-    tweaker.AddFltEntry("Radius", &m_radius);
+    tweaker.AddFltEntry("Radius", &m_radius, 0.1f, 0.1f, FLT_MAX);
 }
 
 bool MeshData::Initialise()
@@ -44,13 +44,7 @@ bool MeshData::Initialise()
     glGenBuffers(1, &m_vboID);
     glGenBuffers(1, &m_iboID);
     m_initialised = true;
-
-    if (Reload())
-    {
-        LogInfo("Mesh: " + m_name + " created");
-        return true;
-    }
-    return false;
+    return Reload();
 }
 
 bool MeshData::Reload()
@@ -133,7 +127,15 @@ void MeshData::SetTexture(Slot type, int ID)
     {
         LogError("Texture ID invalid");
     }
-    m_textureIDs[type] = ID;
+
+    if (type == COLOUR)
+    {
+        m_colourIDs.push_back(ID);
+    }
+    else
+    {
+        m_textureIDs[type] = ID;
+    }
 }
 
 bool MeshData::BackfaceCull() const
@@ -152,7 +154,7 @@ void MeshData::Render(RenderInstance renderInstance) const
     {
         if (instance.render)
         {
-            renderInstance(instance.world);
+            renderInstance(instance.world, instance.colour);
             Render();
         }
     }
@@ -189,9 +191,20 @@ void MeshData::SetInstance(int index,
 
 void MeshData::AddInstances(int amount)
 {
+    if (m_colourIDs.empty())
+    {
+        LogError("No colour textures set for " + Name());
+    }
+
+    const int textures = static_cast<int>(m_colourIDs.size());
     for (int i = 0; i < amount; ++i)
     {
         m_instances.emplace_back();
+
+        // Randomly allocate one of the possible colour textures
+        m_instances[m_instances.size()-1].colour = 
+            textures == 1 ? m_colourIDs[0] :
+            m_colourIDs[Random::Generate(0, textures-1)];
     }
 }
 

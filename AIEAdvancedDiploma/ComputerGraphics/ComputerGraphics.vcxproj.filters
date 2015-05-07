@@ -286,5 +286,17 @@
     <FxCompile Include="Assets\Shaders\bumpcaustics_glsl_vert.fx">
       <Filter>Resources</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\Shaders\specular_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\specular_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bumpspecular_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\bumpspecular_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

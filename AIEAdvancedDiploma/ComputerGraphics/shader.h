@@ -24,18 +24,20 @@ public:
     */
     enum Index
     {
-        ID_FLAT,
-        ID_DIFFUSE,
-        ID_WATER,
-        ID_PARTICLE,
-        ID_BUMP,
-        ID_BUMP_SPEC_CAUSTICS,
-        ID_BUMP_CAUSTICS,
-        ID_DIFFUSE_CAUSTICS,
         ID_POST_PROCESSING,
         ID_PRE_PROCESSING,
         ID_BLUR_HORIZONTAL,
         ID_BLUR_VERTICAL,
+        ID_WATER,
+        ID_PARTICLE,
+        ID_FLAT,
+        ID_DIFFUSE,
+        ID_BUMP,
+        ID_SPECULAR,
+        ID_BUMP_SPEC,
+        ID_BUMP_SPEC_CAUSTICS,
+        ID_BUMP_CAUSTICS,
+        ID_DIFFUSE_CAUSTICS,
         MAX_SHADERS
     };
 
@@ -45,9 +47,10 @@ public:
     enum Component
     {
         NONE = 0,
-        BUMP = 1,
-        SPECULAR = 2,
-        CAUSTICS = 4
+        FLAT = 1,
+        BUMP = 2,
+        SPECULAR = 4,
+        CAUSTICS = 8
     };
 
     /**
@@ -318,6 +321,7 @@ private:
 
     UniformMap m_uniforms;                    ///< Vertex and fragment non-attribute uniform data
     std::vector<int> m_samplers;              ///< Fragment shader sampler locations
+    std::vector<int> m_allocatedSlots;        ///< Textures currently allocated
     std::vector<AttributeData> m_attributes;  ///< Vertex shader input attributes
     GLint m_program = NO_INDEX;               ///< Shader program
     GLint m_vs = NO_INDEX;                    ///< GLSL Vertex Shader

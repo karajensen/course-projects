@@ -21,7 +21,7 @@ ScenePlacer::ScenePlacer(SceneData& data) :
     m_meshMinScale(0.75f),
     m_meshMaxScale(2.0f),
     m_rockOffset(1.0f),
-    m_minClusters(1),
+    m_minClusters(2),
     m_maxClusters(5)
 {
     const int patchAmount = 36;
@@ -45,17 +45,17 @@ ScenePlacer::~ScenePlacer() = default;
 
 void ScenePlacer::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddEntry("Mesh Min Cluster", &m_minClusters, TW_TYPE_INT32);
-    tweaker.AddEntry("Mesh Max Cluster", &m_maxClusters, TW_TYPE_INT32);
-    tweaker.AddFltEntry("Mesh Min Scale", &m_meshMinScale, 0.01f);
-    tweaker.AddFltEntry("Mesh Max Scale", &m_meshMaxScale, 0.01f);
-    tweaker.AddFltEntry("Rock Min Scale X", &m_rockMinScale.x, 0.01f);
-    tweaker.AddFltEntry("Rock Max Scale X", &m_rockMaxScale.x, 0.01f);
-    tweaker.AddFltEntry("Rock Min Scale Y", &m_rockMinScale.y, 0.01f);
-    tweaker.AddFltEntry("Rock Max Scale Y", &m_rockMaxScale.y, 0.01f);
-    tweaker.AddFltEntry("Rock Min Scale Z", &m_rockMinScale.z, 0.01f);
-    tweaker.AddFltEntry("Rock Max Scale Z", &m_rockMaxScale.z, 0.01f);
-    tweaker.AddFltEntry("Rock Offset", &m_rockOffset, 0.01f);
+    tweaker.AddIntEntry("Mesh Min Cluster", &m_minClusters, 1, 10);
+    tweaker.AddIntEntry("Mesh Max Cluster", &m_maxClusters, 1, 10);
+    tweaker.AddFltEntry("Mesh Min Scale", &m_meshMinScale, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Mesh Max Scale", &m_meshMaxScale, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Min Scale X", &m_rockMinScale.x, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Max Scale X", &m_rockMaxScale.x, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Min Scale Y", &m_rockMinScale.y, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Max Scale Y", &m_rockMaxScale.y, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Min Scale Z", &m_rockMinScale.z, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Max Scale Z", &m_rockMaxScale.z, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Rock Offset", &m_rockOffset, 0.01f, 0.01f, FLT_MAX);
     tweaker.AddButton("Reset Foliage", [this](){ ResetFoliage(); });
     tweaker.AddButton("Reset All", [this](){ GeneratePatchData(); });
 }
@@ -507,30 +507,42 @@ void ScenePlacer::PlaceFoliage(int instanceID)
 
     int clusterCounter = 0;
     glm::vec2 clusterCenter;
-    glm::ivec2 clusterOffset(1, 2);
+    std::vector<glm::vec2> allocated;
 
     for (auto& foliage : patchData.foliage)
     {
         if (clusterCounter <= 0)
         {
+            allocated.clear();
             clusterCounter = Random::Generate(m_minClusters, m_maxClusters);
             clusterCenter.x = Random::Generate(minBounds.x, maxBounds.x);
             clusterCenter.y = Random::Generate(minBounds.y, maxBounds.y);
         }
 
         glm::vec2 position;
-        bool withinPatchBounds = false;
-
-        while (!withinPatchBounds)
+        const int maxIterations = 20;
+        for (int i = 0; i < maxIterations; ++i)
         {
             const float x = static_cast<float>(Random::Generate(0, 1) == 0 ? -1 : 1);
             const float z = static_cast<float>(Random::Generate(0, 1) == 0 ? -1 : 1);
-            const float offset = Random::Generate(clusterOffset.x, clusterOffset.y) * m_sand.Spacing();
-            position = clusterCenter + glm::vec2(x, z) * offset;
-            withinPatchBounds = position.x > minBounds.x && position.x < maxBounds.x &&
-                position.y > minBounds.y && position.y < maxBounds.y;
+            position = clusterCenter + glm::vec2(x, z) * m_sand.Spacing();
+
+            const bool withinPatchBounds = 
+                position.x > minBounds.x && 
+                position.x < maxBounds.x &&
+                position.y > minBounds.y && 
+                position.y < maxBounds.y;
+
+            const bool isNew = std::find(allocated.begin(), 
+                allocated.end(), position) == allocated.end();
+
+            if (withinPatchBounds && isNew)
+            {
+                break;
+            }
         }
 
+        allocated.push_back(position);
         const glm::vec3 rotation(0.0f, Random::Generate(0.0f, 360.0f), 0.0f);
         const float scale = Random::Generate(m_meshMinScale, m_meshMaxScale);
 

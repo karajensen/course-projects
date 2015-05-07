@@ -83,6 +83,17 @@ public:
                      std::function<const int(void)> getter);
 
     /**
+    * Creates a new tweakable entry for an int
+    * @param label What to display the entry as
+    * @param entry The address of the entry to add
+    * @param min/max The range the value can be
+    */
+    void AddIntEntry(std::string label,
+                     void* entry, 
+                     int min,
+                     int max);
+
+    /**
     * Creates a new tweakable entry for an value
     * @param label What to display the entry as
     * @param getter Callback to get the value
@@ -105,6 +116,22 @@ public:
     void AddFltEntry(std::string label,
                      void* entry, 
                      float step,
+                     int precision = 0);
+
+    /**
+    * Creates a new tweakable entry
+    * @param label What to display the entry as
+    * @param entry The address of the entry to add
+    * @param type The type of entry it is
+    * @param step The differece between values
+    * @param min/max The range the value can be
+    * @param precision The amount of decimal points to display
+    */
+    void AddFltEntry(std::string label,
+                     void* entry, 
+                     float step,
+                     float min,
+                     float max,
                      int precision = 0);
 
     /**
@@ -230,7 +257,7 @@ private:
     * @param min The minimum value the entry can obtain
     * @param max The maximum value the entry can obtain
     */
-    std::string Definition(std::string label, unsigned int min, unsigned int max) const;
+    std::string Definition(std::string label, int min, int max) const;
 
     /**
     * Helper function to get a definition for a tweakable entry
@@ -239,6 +266,15 @@ private:
     * @param precision The amount of decimal points to display
     */
     std::string Definition(std::string label, float step, int precision) const;
+
+    /**
+    * Helper function to get a definition for a tweakable entry
+    * @param label What to display the entry as
+    * @param step The differece between values
+    * @param min/max The range of values allowed
+    * @param precision The amount of decimal points to display
+    */
+    std::string Definition(std::string label, float step, float min, float max, int precision) const;
 
     /**
     * Helper function to get a definition for a tweakable entry

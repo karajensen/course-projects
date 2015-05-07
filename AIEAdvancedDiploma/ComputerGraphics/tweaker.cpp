@@ -81,7 +81,7 @@ void Tweaker::Update()
     }
 }
 
-std::string Tweaker::Definition(std::string label, unsigned int min, unsigned int max) const
+std::string Tweaker::Definition(std::string label, int min, int max) const
 {
     return " max=" + std::to_string(max) + 
            " min=" + std::to_string(min) + 
@@ -93,6 +93,16 @@ std::string Tweaker::Definition(std::string label, float step, int precision) co
     const int defaultPrecision = 3;
     return " step=" + std::to_string(step) + 
         " precision=" + std::to_string(precision == 0 ? defaultPrecision : precision) + 
+        Definition(label);
+}
+
+std::string Tweaker::Definition(std::string label, float step, float min, float max, int precision) const
+{
+    const int defaultPrecision = 3;
+    return " step=" + std::to_string(step) + 
+        " precision=" + std::to_string(precision == 0 ? defaultPrecision : precision) + 
+        " min=" + std::to_string(min) +
+        " max=" + std::to_string(max) +
         Definition(label);
 }
 
@@ -157,6 +167,19 @@ void Tweaker::AddFltEntry(std::string label,
 }
 
 void Tweaker::AddFltEntry(std::string label, 
+                          void* entry, 
+                          float step, 
+                          float min,
+                          float max,
+                          int precision)
+{
+    TwAddVarRW(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, entry, 
+        Definition(label, step, min, max, precision).c_str());
+
+    LogTweakError();
+}
+
+void Tweaker::AddFltEntry(std::string label, 
                           void* entry,
                           int precision)
 {
@@ -179,6 +202,17 @@ void Tweaker::AddFltEntry(std::string label,
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, SetCallback,
         GetCallback, m_entries[index].get(), Definition(label, step, 0).c_str());
+
+    LogTweakError();
+}
+
+void Tweaker::AddIntEntry(std::string label, 
+                          void* entry, 
+                          int min,
+                          int max)
+{
+    TwAddVarRW(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, entry, 
+        Definition(label, min, max).c_str());
 
     LogTweakError();
 }
@@ -208,8 +242,9 @@ void Tweaker::AddIntEntry(std::string label,
     entry->setter = setter;
     m_entries.emplace_back(std::move(entry));
     
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, SetCallback,
-        GetCallback, m_entries[index].get(), Definition(label, 0, max).c_str());
+    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, 
+        SetCallback, GetCallback, m_entries[index].get(), 
+        Definition(label, 0, static_cast<int>(max)).c_str());
 
     LogTweakError();
 }

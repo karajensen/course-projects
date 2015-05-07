@@ -195,9 +195,9 @@ void OpenGL::RenderMeshes()
         {
             mesh->PreRender();
             EnableSelectedShader();
-            mesh->Render([this](const glm::mat4& world)
+            mesh->Render([this](const glm::mat4& world, int texture)
             { 
-                UpdateShader(world); 
+                UpdateShader(world, texture); 
             });
         }
     }
@@ -211,9 +211,9 @@ void OpenGL::RenderTerrain()
         {
             terrain->PreRender();
             EnableSelectedShader();
-            terrain->Render([this](const glm::mat4& world)
+            terrain->Render([this](const glm::mat4& world, int texture)
             { 
-                UpdateShader(world); 
+                UpdateShader(world, texture); 
             });
         }
     }
@@ -227,9 +227,9 @@ void OpenGL::RenderWater(float timePassed)
         {
             water->PreRender();
             EnableSelectedShader();
-            water->Render([this](const glm::mat4& world)
+            water->Render([this](const glm::mat4& world, int texture)
             { 
-                UpdateShader(world); 
+                UpdateShader(world, texture); 
             });
         }
     }
@@ -355,10 +355,11 @@ void OpenGL::RenderPreEffects()
     preShader.ClearTexture(0, *m_sceneTarget);
 }
 
-void OpenGL::UpdateShader(const glm::mat4& world)
+void OpenGL::UpdateShader(const glm::mat4& world, int texture)
 {
     auto& shader = m_scene.GetShader(m_selectedShader);
     shader.SendUniform("world", world);
+    SendTexture(0, texture);
 }
 
 bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timePassed)
@@ -502,14 +503,13 @@ void OpenGL::SendLights()
 
 void OpenGL::SendTextures(const std::vector<int>& textures)
 {
+    int slot = 1;
     auto& shader = m_scene.GetShader(m_selectedShader);
-    for (unsigned int i = 0, slot = 0; i < textures.size(); ++i)
-    {
-        if (SendTexture(slot, textures[i]))
-        {
-            ++slot;
-        }
-    }
+
+    slot += SendTexture(slot, textures[MeshData::NORMAL]) ? 1 : 0;
+    slot += SendTexture(slot, textures[MeshData::SPECULAR]) ? 1 : 0;
+    slot += SendTexture(slot, textures[MeshData::ENVIRONMENT]) ? 1 : 0;
+    slot += SendTexture(slot, textures[MeshData::CAUSTICS]) ? 1 : 0;
 }
 
 bool OpenGL::SendTexture(int slot, int ID)
