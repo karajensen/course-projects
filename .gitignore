@@ -14,5 +14,4 @@ ipch/
 html/
 AIEAdvancedDiploma/ComputerGraphics/Debug/
 AIEAdvancedDiploma/ComputerGraphics/Release/
-AIEAdvancedDiploma/ComputerGraphics/fbx/FBX_Loader.lib
-AIEAdvancedDiploma/ComputerGraphics/fbx/FBX_Loader_d.lib
+AIEAdvancedDiploma/ComputerGraphics/Assets/Textures/Generated/*.bmp

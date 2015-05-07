@@ -15,7 +15,6 @@ namespace
     const std::string VERTEX_SHADER("_glsl_vert.fx");
     const std::string FRAGMENT_SHADER("_glsl_frag.fx");
     const std::string GLSL_IN_POSITION("in_Position");
-
 }
 
 Shader::ShaderConstants Shader::sm_constants;

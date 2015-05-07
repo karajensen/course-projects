@@ -109,11 +109,6 @@ private:
     /**
     * @return the colour from the row and column value
     */
-    float GetAsFlt(int row, int column) const;
-
-    /**
-    * @return the colour from the row and column value
-    */
     unsigned int Get(int row, int column) const;
 
     /**

@@ -17,6 +17,6 @@ void main(void)
 {
     out_Color[ID_COLOUR].rgb = texture(DiffuseSampler, ex_UVs).rgb;
     out_Color[ID_COLOUR].rgb *= meshAmbience;
-    out_Color[ID_COLOUR].a = ex_Normal.r;
+    out_Color[ID_COLOUR].a = 1.0;
     out_Color[ID_DEPTH] = vec4(ex_Depth, ex_Depth, ex_Depth, 1.0);
 }
