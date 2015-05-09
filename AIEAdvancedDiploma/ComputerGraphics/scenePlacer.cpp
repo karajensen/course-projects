@@ -17,9 +17,9 @@ ScenePlacer::ScenePlacer(SceneData& data) :
     m_ocean(*data.water[data.oceanIndex]),
     m_sand(*data.terrain[data.sandIndex]),
     m_rockMinScale(2.5f, 0.75f, 2.5f),
-    m_rockMaxScale(4.0f, 1.25f, 4.0f),
+    m_rockMaxScale(4.0f, 1.15f, 4.0f),
     m_meshMinScale(0.75f),
-    m_meshMaxScale(1.5f),
+    m_meshMaxScale(2.0f),
     m_rockOffset(1.0f),
     m_minClusters(2),
     m_maxClusters(5)
