@@ -31,11 +31,9 @@ public:
         ID_WATER,
         ID_PARTICLE,
         ID_FLAT,
-        ID_DIFFUSE,
         ID_BUMP,
         ID_SPECULAR,
         ID_BUMP_SPEC,
-        ID_BUMP_SPEC_CAUSTICS,
         ID_BUMP_CAUSTICS,
         ID_DIFFUSE_CAUSTICS,
         MAX_SHADERS

@@ -312,9 +312,9 @@ void MeshData::UpdateTransforms(Instance& instance)
             translate[3][2] = instance.position.z;
 
             glm::mat4 rotateX, rotateY, rotateZ;
-            glm::rotate(rotateX, instance.rotation.x, glm::vec3(1, 0, 0));
-            glm::rotate(rotateY, instance.rotation.y, glm::vec3(0, 1, 0));
-            glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0, 0, 1));
+            rotateX = glm::rotate(rotateX, instance.rotation.x, glm::vec3(1, 0, 0));
+            rotateY = glm::rotate(rotateY, instance.rotation.y, glm::vec3(0, 1, 0));
+            rotateZ = glm::rotate(rotateZ, instance.rotation.z, glm::vec3(0, 0, 1));
 
             instance.world = translate * (rotateZ * rotateX * rotateY) * scale;
         }

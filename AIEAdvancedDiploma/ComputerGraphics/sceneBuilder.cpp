@@ -19,10 +19,12 @@ namespace
     const std::string GENERATED_TEXTURES(TEXTURE_PATH + "Generated//");
 
     /**
-    * Shared values for creating meshes
+    * Shared values for creating patches
+    * requires size of 3060 with fog 
     */
-    const int PATCH_GRID_VERTICES = 51;
+    const int PATCH_GRID_VERTICES = 35; 
     const int PATCH_ROCK_TYPES = 3;
+    const int PATCH_ROCK_INSTANCES = 20;
     const float PATCH_GRID_SPACING = 10.0f;
 
     /**
@@ -128,8 +130,6 @@ bool SceneBuilder::InitialiseShaders()
 
     success &= InitialiseShader(Shader::ID_FLAT, "flat", Shader::FLAT);
 
-    success &= InitialiseShader(Shader::ID_DIFFUSE, "diffuse", Shader::NONE);
-
     success &= InitialiseShader(Shader::ID_BUMP, "bump", Shader::BUMP);
 
     success &= InitialiseShader(Shader::ID_SPECULAR, "specular", Shader::SPECULAR);
@@ -138,11 +138,7 @@ bool SceneBuilder::InitialiseShaders()
 
     success &= InitialiseShader(Shader::ID_DIFFUSE_CAUSTICS, "diffusecaustics", Shader::CAUSTICS);
 
-    success &= InitialiseShader(Shader::ID_BUMP_CAUSTICS, "bumpcaustics", 
-                                Shader::CAUSTICS|Shader::BUMP);
-
-    success &= InitialiseShader(Shader::ID_BUMP_SPEC_CAUSTICS, "bumpspecularcaustics", 
-                                Shader::BUMP|Shader::SPECULAR|Shader::CAUSTICS);
+    success &= InitialiseShader(Shader::ID_BUMP_CAUSTICS, "bumpcaustics", Shader::CAUSTICS|Shader::BUMP);
     return success;
 }
 
@@ -223,10 +219,9 @@ bool SceneBuilder::InitialiseTerrain()
     sand.Ambience(1.0f);
     sand.CausticsAmount(0.2f);
 
-    const int instancesPerType = 10;
     for (int i = 0; i < PATCH_ROCK_TYPES; ++i)
     {
-        for (int j = 0; j < instancesPerType; ++j)
+        for (int j = 0; j < PATCH_ROCK_INSTANCES; ++j)
         {
             const auto index = m_data.rocks.size();
             m_data.rocks.emplace_back();
@@ -241,7 +236,7 @@ bool SceneBuilder::InitialiseTerrain()
         rock.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "rock"));
         rock.SetTexture(MeshData::NORMAL, GetID(m_data.textures, "rock_bump"));
         rock.SetTexture(MeshData::CAUSTICS, causticsTexture);
-        rock.AddInstances(instancesPerType);
+        rock.AddInstances(PATCH_ROCK_INSTANCES);
         rock.Bump(15.0f);
         rock.CausticsAmount(0.8f);
     }
@@ -266,6 +261,8 @@ bool SceneBuilder::InitialiseMeshes()
 {
     bool success = true;
 
+    const int instances = 100;
+
     const int causticsTexture = 
         m_data.animation[Animation::ID_CAUSTICS]->GetFrame();
 
@@ -278,7 +275,6 @@ bool SceneBuilder::InitialiseMeshes()
         mesh.AddInstances(1);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("seaweed1", "seaweed1.obj", 0.25f, 4.0f, Shader::ID_SPECULAR);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "leaf"));
         mesh.SetTexture(MeshData::SPECULAR, GetID(m_data.textures, "leaf_specular"));
@@ -288,7 +284,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("seaweed2", "seaweed2.obj", 0.2f, 8.0f, Shader::ID_SPECULAR);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "leaf"));
         mesh.SetTexture(MeshData::SPECULAR, GetID(m_data.textures, "leaf_specular"));
@@ -299,7 +294,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("seaweed3", "seaweed3.obj", 0.2f, 8.0f, Shader::ID_SPECULAR);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "leaf"));
         mesh.SetTexture(MeshData::SPECULAR, GetID(m_data.textures, "leaf_specular"));
@@ -310,7 +304,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("shell", "shell.obj", 2.0f, 4.0f, Shader::ID_DIFFUSE_CAUSTICS);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "shell1"));
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "shell2"));
@@ -322,7 +315,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("starfish", "starfish.obj", 0.5f, 0.5f, Shader::ID_BUMP);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "starfish1"));
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "starfish2"));
@@ -331,7 +323,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("urchin", "urchin.obj", 1.0f, 1.0f, Shader::ID_BUMP_SPEC);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "urchin1"));
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "urchin2"));
@@ -343,7 +334,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh = InitialiseMesh("coral", "coral.obj", 1.0f, 4.0f, Shader::ID_BUMP_SPEC);
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "coral1"));
         mesh.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "coral2"));
@@ -355,7 +345,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh1 = InitialiseMesh("flower1_top", "flower1_top.obj", 1.0f, 1.0f, Shader::ID_BUMP_SPEC);
         mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flowerA_top1"));
         mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flowerA_top2"));
@@ -375,7 +364,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh1, &mesh2 }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh1 = InitialiseMesh("flower2_top", "flower2_top.obj", 1.0f, 1.0f, Shader::ID_BUMP_SPEC);
         mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flowerB_top1"));
         mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flowerB_top2"));
@@ -396,7 +384,6 @@ bool SceneBuilder::InitialiseMeshes()
         success &= AddFoliage({ &mesh1, &mesh2 }, instances);
     }
     {
-        const int instances = 80;
         auto& mesh1 = InitialiseMesh("flower3_top", "flower3_top.obj", 1.0f, 1.0f, Shader::ID_BUMP_SPEC);
         mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flowerC_top1"));
         mesh1.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "flowerC_top2"));

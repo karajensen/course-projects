@@ -145,6 +145,6 @@ void Water::SetInstance(int index, const glm::vec2& position, bool flippedX, boo
 
 void Water::AddInstance(const glm::vec2& position, bool flippedX, bool flippedZ)
 {
-    m_instances.emplace_back();
+    Water::AddInstances(1);
     SetInstance(static_cast<int>(m_instances.size()-1), position, flippedX, flippedZ);
 }
