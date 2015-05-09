@@ -8,10 +8,10 @@
 *.Debug
 *.Release
 *.idb
-*.exe
 *.fbm/
 ipch/
 html/
+AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/ComputerGraphics.exe
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Debug/
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Release/
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Assets/Textures/Generated/*.bmp
