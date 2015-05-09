@@ -208,9 +208,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="Assets\Shaders\blur_horizontal_glsl_frag.fx">
       <Filter>Resources</Filter>
     </FxCompile>
@@ -286,5 +283,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\.gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\readme.txt" />
   </ItemGroup>
 </Project>
