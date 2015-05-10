@@ -28,7 +28,7 @@ uniform sampler2D NormalSampler;
 void main(void)
 {
     vec4 diffuseTex = texture(DiffuseSampler, ex_UVs);
-    vec4 diffuse = vec4(0.0, 0.0, 0.0, 0.0);
+    vec3 diffuse = vec3(0.0, 0.0, 0.0);
     vec3 normal = normalize(ex_Normal);
 
     vec4 normalTex = texture(NormalSampler, ex_UVs);
@@ -51,7 +51,7 @@ void main(void)
         lightColour *= ((dot(vertToLight, normal) + 1.0) *
             ((1.0 - meshDiffuse) * 0.5)) + meshDiffuse;
 
-        diffuse.rgb += lightColour * attenuation * lightActive[i];
+        diffuse += lightColour * attenuation * lightActive[i];
     }
 
     out_Color[ID_COLOUR].rgb = diffuseTex.rgb * diffuse;
