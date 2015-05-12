@@ -67,23 +67,13 @@ bool SceneBuilder::Initialise()
 bool SceneBuilder::InitialiseLighting()
 {
     m_data.lights.resize(Light::MAX_LIGHTS);
-    
     auto& sun = m_data.lights[Light::ID_SUN];
     sun = std::make_unique<Light>("Sun");
     sun->Position(glm::vec3(0.0, 60.0, 0.0));
     sun->Attenuation(glm::vec3(1.0, 0.0, 0.0));
     sun->Diffuse(glm::vec3(0.85, 0.85, 1.0));
-    sun->Specular(glm::vec3(0.15, 0.15, 0.3));
-    sun->Specularity(20.0f);
-
-    //auto& spot = m_data.lights[Light::ID_SPOT];
-    //spot = std::make_unique<Light>("Spot");
-    //spot->Position(glm::vec3(0.0, 6.0, 0.0));
-    //spot->Attenuation(glm::vec3(0.0, 0.0, 0.08));
-    //spot->Diffuse(glm::vec3(0.0, 1.0, 0.0));
-    //spot->Specular(glm::vec3(1.0, 0.0, 0.0));
-    //spot->Specularity(1.0f);
-
+    sun->Specular(glm::vec3(0.0, 100.0/255.0, 1.0));
+    sun->Specularity(15.0f);
     return true;
 }
 
