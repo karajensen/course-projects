@@ -470,7 +470,7 @@ bool OpenGL::UpdateShader(const Water& water, float timePassed)
         for (unsigned int i = 0; i < waves.size(); ++i)
         {
             shader.SendUniform("waveFrequency", waves[i].amplitude, i);
-            shader.SendUniform("waveAmplitude", waves[i].amplitude, i);
+            shader.SendUniform("waveAmplitude", waves[i].frequency, i);
             shader.SendUniform("wavePhase", waves[i].phase, i);
             shader.SendUniform("waveDirectionX", waves[i].directionX, i);
             shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);

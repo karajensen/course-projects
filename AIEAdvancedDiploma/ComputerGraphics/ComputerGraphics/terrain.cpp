@@ -59,9 +59,9 @@ void Terrain::AddToTweaker(Tweaker& tweaker)
     if (UsesSpecular())
     {
         tweaker.AddFltEntry("Specularity", &m_specularity, 0.1f);
+        tweaker.AddFltEntry("Overall Specular", &m_specular, 0.1f);
     }
 
-    tweaker.AddFltEntry("Overall Specular", &m_specular, 0.1f);
     tweaker.AddFltEntry("Ambience", &m_ambience, 0.1f);
     tweaker.AddFltEntry("Minimum Diffuse", &m_diffuse, 0.1f);
 
