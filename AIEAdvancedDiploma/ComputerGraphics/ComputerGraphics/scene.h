@@ -73,6 +73,11 @@ public:
     virtual const std::vector<std::unique_ptr<Emitter>>& Emitters() const override;
 
     /**
+    * @return the shadows in the scene
+    */
+    virtual const std::unique_ptr<Quad>& Shadows() const override;
+
+    /**
     * @return the data for post processing the scene
     */
     virtual const PostProcessing& Post() const override;

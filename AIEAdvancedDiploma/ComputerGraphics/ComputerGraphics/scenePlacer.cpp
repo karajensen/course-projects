@@ -6,6 +6,7 @@
 #include "sceneData.h"
 #include "tweaker.h"
 #include "common.h"
+#include "quad.h"
 
 namespace
 {
@@ -52,6 +53,8 @@ void ScenePlacer::AddToTweaker(Tweaker& tweaker)
     tweaker.AddFltEntry("Rock Min Scale Z", &m_rockMinScale.z, 0.01f, 0.01f, FLT_MAX);
     tweaker.AddFltEntry("Rock Max Scale Z", &m_rockMaxScale.z, 0.01f, 0.01f, FLT_MAX);
     tweaker.AddFltEntry("Rock Offset", &m_rockOffset, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Shadow Offset", &m_shadowOffset, 0.01f, 0.01f, FLT_MAX);
+    tweaker.AddFltEntry("Shadow Scale", &m_shadowScale, 0.01f, 0.01f, FLT_MAX);
     tweaker.AddButton("Reset Placement", [this](){ ResetFoliage(); });
 }
 
@@ -92,6 +95,16 @@ void ScenePlacer::Update(const glm::vec3& cameraPosition)
     m_data.lights[Light::ID_SUN]->PositionX(cameraPosition.x);
     m_data.lights[Light::ID_SUN]->PositionZ(cameraPosition.z);
 
+    // Any patches flagged for mesh update from last tick
+    // Requires a tick to allow rock transforms to be updated
+    for (int r = 0; r < m_patchPerRow; ++r)
+    {
+        for (int c = 0; c < m_patchPerRow; ++c)
+        {
+            UpdatePatchMeshes(r, c);
+        }
+    }
+
     // Rerrange the patches if the camera has moved out
     if (m_patchInside.x == NO_INDEX || m_patchInside.y == NO_INDEX)
     {
@@ -112,15 +125,6 @@ void ScenePlacer::Update(const glm::vec3& cameraPosition)
         }
 
         m_patchInside = GetPatchInside(cameraPosition);
-    }
-
-    // Any patches flagged for mesh update do after being rearranged
-    for (int r = 0; r < m_patchPerRow; ++r)
-    {
-        for (int c = 0; c < m_patchPerRow; ++c)
-        {
-            UpdatePatchMeshes(r, c);
-        }
     }
 }
 
@@ -403,14 +407,6 @@ void ScenePlacer::ResetPatches()
             UpdatePatchData(r, c);
         }
     }
-
-    for (int r = 0; r < m_patchPerRow; ++r)
-    {
-        for (int c = 0; c < m_patchPerRow; ++c)
-        {
-            UpdatePatchMeshes(r, c);
-        }
-    }
 }
 
 void ScenePlacer::UpdatePatchData(int row, int column)
@@ -437,11 +433,11 @@ void ScenePlacer::UpdatePatchMeshes(int row, int column)
     }
 }
 
-glm::vec3 ScenePlacer::GetPatchPosition(int instanceID, float x, float z)
+glm::vec3 ScenePlacer::GetPatchLocation(int instanceID, float x, float z)
 {
     using namespace std;
-    glm::vec3 position = m_sand.GetAbsolutePosition(instanceID, x, z);
-
+    auto position = m_sand.GetAbsolutePosition(instanceID, x, z);
+    
     auto FindRockHeight = [this, &position](int patchID)
     {
         if (patchID >= 0 && patchID < static_cast<int>(m_patches.size()))
@@ -452,10 +448,11 @@ glm::vec3 ScenePlacer::GetPatchPosition(int instanceID, float x, float z)
                 const auto& rock = m_data.terrain[key.index];
                 const auto& minBounds = rock->GetMinBounds(key.instance);
                 const auto& maxBounds = rock->GetMaxBounds(key.instance);
+
                 if (position.x >= minBounds.x && position.x <= maxBounds.x && 
                     position.z >= minBounds.y && position.z <= maxBounds.y)
                 {
-                    const glm::vec3 rockPosition = 
+                    const auto rockPosition = 
                         rock->GetAbsolutePosition(key.instance, position.x, position.z);
 
                     if (rockPosition.y > position.y)
@@ -493,7 +490,7 @@ void ScenePlacer::PlaceFoliage(int instanceID)
 
     const int minClusters = 2;
     const int maxClusters = 5;
-    const float spacing = m_sand.Spacing();
+    const float spacing = m_sand.Spacing() * 2.0f;
     int clusterCounter = 0;
     glm::vec2 clusterCenter;
     std::vector<glm::vec2> allocated;
@@ -531,15 +528,23 @@ void ScenePlacer::PlaceFoliage(int instanceID)
         }
 
         allocated.push_back(position);
-        const glm::vec3 rotation(0.0f, Random::Generate(0.0f, 360.0f), 0.0f);
+        
+        glm::vec3 location = GetPatchLocation(instanceID, position.x, position.y);
         const float scale = Random::Generate(m_meshMinScale, m_meshMaxScale);
-
+        const glm::vec3 rotation(0.0f, Random::Generate(0.0f, 360.0f), 0.0f);
+        
         for (auto& key : foliage.GetKeys())
         {
             auto& mesh = *m_data.meshes[key.index];
-            mesh.SetInstance(key.instance, 
-                GetPatchPosition(instanceID, position.x, position.y), 
-                rotation, scale);
+            mesh.SetInstance(key.instance, location, rotation, scale);
+        }
+
+        // Not all meshes have shadows
+        if (foliage.GetShadow() != NO_INDEX)
+        {
+            location.y += m_shadowOffset;
+            m_data.shadows->SetInstance(foliage.GetShadow(), 
+                location, glm::vec3(90.0f, 0.0f, 0.0f), m_shadowScale * scale);
         }
 
         --clusterCounter;
@@ -556,8 +561,9 @@ void ScenePlacer::PlaceEmitters(int instanceID)
     {
         const float x = Random::Generate(minBounds.x, maxBounds.x);
         const float z = Random::Generate(minBounds.y, maxBounds.y);
-        const glm::vec3 position(GetPatchPosition(instanceID, x, z));
+        const glm::vec3 position(GetPatchLocation(instanceID, x, z));
         m_data.emitters[emitter.index]->SetInstance(emitter.instance, position);
+        m_data.emitters[emitter.index]->SetEnabled(true);
     }
 }
 

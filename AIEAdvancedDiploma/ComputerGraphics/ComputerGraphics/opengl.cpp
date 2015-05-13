@@ -78,8 +78,6 @@ bool OpenGL::Initialise()
         return false;
     }
 
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-    glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
     glClearColor(0.22f, 0.49f, 0.85f, 0.0f);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glClearDepth(1.0f);
@@ -169,6 +167,10 @@ void OpenGL::RenderSceneMap(Timer& timer, float timePassed)
     RenderTerrain();
     timer.StopSection(Timer::RENDER_TERRAIN);
 
+    timer.StartSection(Timer::RENDER_SHADOWS);
+    RenderShadows();
+    timer.StopSection(Timer::RENDER_SHADOWS);
+
     timer.StartSection(Timer::RENDER_MESHES);
     RenderMeshes();
     timer.StopSection(Timer::RENDER_MESHES);
@@ -235,6 +237,24 @@ void OpenGL::RenderWater(float timePassed)
     }
 }
 
+void OpenGL::RenderShadows()
+{
+    auto& shadows = *m_scene.Shadows();
+    if (UpdateShader(shadows))
+    {
+        EnableDepthWrite(false);
+
+        shadows.PreRender();
+        EnableSelectedShader();
+        shadows.Render([this](const glm::mat4& world, int texture)
+        { 
+            UpdateShader(world, texture);
+        });
+
+        EnableDepthWrite(true);
+    }
+}
+
 void OpenGL::RenderEmitters()
 {
     EnableDepthWrite(false);
@@ -253,13 +273,13 @@ void OpenGL::RenderEmitters()
             emitter->Render(updateParticle, m_camera.Position(), m_camera.Up());
         }
     }
-
+    
     EnableDepthWrite(true);
 }
 
 void OpenGL::RenderPostProcessing()
 {
-    EnableAlphaBlending(false);
+    EnableAlphaBlending(false, false);
     EnableBackfaceCull(false);
 
     SetSelectedShader(Shader::ID_POST_PROCESSING);
@@ -300,7 +320,7 @@ void OpenGL::RenderPostProcessing()
 
 void OpenGL::RenderBlur()
 {
-    EnableAlphaBlending(false);
+    EnableAlphaBlending(false, false);
     EnableBackfaceCull(false);
 
     m_blurTarget->SetActive();
@@ -336,7 +356,7 @@ void OpenGL::RenderBlur()
 void OpenGL::RenderPreEffects()
 {
     EnableBackfaceCull(false);
-    EnableAlphaBlending(false);
+    EnableAlphaBlending(false, false);
 
     SetSelectedShader(Shader::ID_PRE_PROCESSING);
     auto& preShader = m_scene.GetShader(Shader::ID_PRE_PROCESSING);
@@ -353,6 +373,25 @@ void OpenGL::RenderPreEffects()
     m_screenQuad->Render();
 
     preShader.ClearTexture(0, *m_sceneTarget);
+}
+
+bool OpenGL::UpdateShader(const Quad& quad)
+{
+    const int index = quad.ShaderID();
+    if (index != NO_INDEX)
+    {
+        auto& shader = m_scene.GetShader(index);
+        if(index != m_selectedShader)
+        {
+            SetSelectedShader(index);
+            shader.SendUniform("viewProjection", m_camera.ViewProjection());
+        }
+
+        EnableBackfaceCull(false);
+        EnableAlphaBlending(true, true);
+        return true;
+    }
+    return false;
 }
 
 void OpenGL::UpdateShader(const glm::mat4& world, int texture)
@@ -386,7 +425,7 @@ bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timePasse
 
         SendTextures(mesh.TextureIDs());
         EnableBackfaceCull(mesh.BackfaceCull());
-        EnableAlphaBlending(alphaBlend);
+        EnableAlphaBlending(alphaBlend, false);
         return true;
     }
     return false;
@@ -458,7 +497,7 @@ bool OpenGL::UpdateShader(const Emitter& emitter)
         shader.SendUniform("tint", emitter.Tint());
 
         EnableBackfaceCull(false);
-        EnableAlphaBlending(true);
+        EnableAlphaBlending(true, false);
         return true;
     }
     return false;
@@ -524,13 +563,27 @@ bool OpenGL::SendTexture(int slot, int ID)
     return false;
 }
 
-void OpenGL::EnableAlphaBlending(bool enable)
+void OpenGL::EnableAlphaBlending(bool enable, bool multiply)
 {
     if (enable != m_isAlphaBlend)
     {
         m_isAlphaBlend = enable;
         enable ? glEnablei(GL_BLEND, 0) : glDisablei(GL_BLEND, 0);
         enable ? glEnablei(GL_BLEND, 1) : glDisablei(GL_BLEND, 1);
+    }
+    if (multiply != m_isBlendMultiply)
+    {
+        m_isBlendMultiply = multiply;
+        if (multiply)
+        {
+            glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+        }
+        else
+        {
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+        }
     }
 }
 

@@ -51,6 +51,11 @@ const std::vector<std::unique_ptr<Emitter>>& Scene::Emitters() const
     return m_data->emitters;
 }
 
+const std::unique_ptr<Quad>& Scene::Shadows() const
+{
+    return m_data->shadows;
+}
+
 const PostProcessing& Scene::Post() const
 {
     return *m_data->post;
@@ -94,6 +99,7 @@ void Scene::Tick(float deltatime, const Camera& camera)
         water->Tick(position, bounds, causticsTexture);
     }
 
+    m_data->shadows->Tick(position, bounds, causticsTexture);
     m_placer->Update(position);
 }
 

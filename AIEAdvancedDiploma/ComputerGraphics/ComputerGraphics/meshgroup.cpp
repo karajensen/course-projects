@@ -12,6 +12,16 @@ void MeshGroup::AddMesh(int index, int instance)
     m_group[mesh].instance = instance;
 }
 
+void MeshGroup::AddShadow(int shadow)
+{
+    m_shadowID = shadow;
+}
+
+int MeshGroup::GetShadow() const
+{
+    return m_shadowID;
+}
+
 const std::vector<InstanceKey>& MeshGroup::GetKeys() const
 {
     return m_group;

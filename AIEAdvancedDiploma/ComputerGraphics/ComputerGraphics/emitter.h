@@ -119,6 +119,11 @@ public:
     void TogglePaused();
 
     /**
+    * Sets whether the emitter is enabled or not
+    */
+    void SetEnabled(bool enabled);
+
+    /**
     * @return The name of the emitter
     */
     const std::string& Name() const;
@@ -184,4 +189,5 @@ private:
     int m_visibleInstances = 0;          ///< Number of instances currently rendered
     std::string m_name;                  ///< Name of this emitter
     bool m_paused = false;               ///< Whether emission is paused
+    bool m_enabled = false;              ///< Whether emission is enabled
 };

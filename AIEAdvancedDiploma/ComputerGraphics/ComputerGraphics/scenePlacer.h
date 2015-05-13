@@ -140,11 +140,13 @@ private:
     void PlaceRock(int instanceID);
 
     /**
-    * Determines the approximate height at the given coordinates
+    * Determines the approximate location on the terrain at the given coordinates
     * @param patchID The ID of the patch to use
-    * @param x/z The position to get the height at
+    * @param x/z The position on the terrain to query
+    * @return the position of the terrain location adjusted for height
+    * @note will always position on the terrain vertex
     */
-    glm::vec3 GetPatchPosition(int patchID, float x, float z);
+    glm::vec3 GetPatchLocation(int patchID, float x, float z);
 
     /**
     * Resets all assigned foliage and emitters for a patch
@@ -167,6 +169,8 @@ private:
     Terrain& m_sand;                  ///< Main Sand terrain mesh
     Water& m_ocean;                   ///< Main Ocean terran mesh
     int m_patchPerRow = 0;            ///< The number of patches per row of the area
+    float m_shadowOffset = 0.2f;      ///< Height above terrain to place shadows
+    float m_shadowScale = 4.0f;       ///< Scale of shadows in comparison to mesh
     float m_meshMinScale = 0.0f;      ///< Random mesh scaling amount
     float m_meshMaxScale = 0.0f;      ///< Random mesh scaling amount
     float m_patchSize = 0.0f;         ///< The offset between sand/water patches

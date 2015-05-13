@@ -15,6 +15,7 @@ class PostProcessing;
 class Terrain;
 class Water;
 class Emitter;
+class Quad;
 
 /**
 * Allows access to the elements of the scene
@@ -59,6 +60,11 @@ public:
     * @return the water in the scene
     */
     virtual const std::vector<std::unique_ptr<Water>>& Waters() const = 0;
+
+    /**
+    * @return the shadows in the scene
+    */
+    virtual const std::unique_ptr<Quad>& Shadows() const = 0;
 
     /**
     * @return the data for post processing the scene

@@ -280,6 +280,12 @@
     <FxCompile Include="Assets\Shaders\bumpspecular_glsl_vert.fx">
       <Filter>Resources</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\Shaders\shadow_glsl_frag.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\shadow_glsl_vert.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\.gitignore" />

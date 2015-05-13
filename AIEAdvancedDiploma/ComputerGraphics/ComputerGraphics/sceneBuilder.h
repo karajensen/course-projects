@@ -99,6 +99,12 @@ private:
     bool InitialiseTerrain();
 
     /**
+    * Initialises the shadows for the scene
+    * @return Whether the initialization was successful
+    */
+    bool InitialiseShadows();
+
+    /**
     * Initialises a mesh
     * @param name The name of the mesh
     * @param filename The filename of the mesh
@@ -198,10 +204,12 @@ private:
     /**
     * Creates new foliage mesh group(s) for the meshes
     * @param meshes The types of meshes to add to the group
+    * @param hasShadow Whether the foliage requires a shadow
     * @param instances The number of groups to create
     * @return whether creation was successful
     */
     bool AddFoliage(std::initializer_list<const MeshData*> meshes,
+                    bool hasShadow,
                     int instances);
 
     SceneData& m_data; ///< The scene to build

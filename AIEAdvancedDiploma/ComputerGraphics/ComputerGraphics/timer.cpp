@@ -25,6 +25,7 @@ void Timer::AddToTweaker(Tweaker& tweaker)
     tweaker.AddFltEntry("Render Water", &m_sectionTime[RENDER_WATER], precision);
     tweaker.AddFltEntry("Render Terrain", &m_sectionTime[RENDER_TERRAIN], precision);
     tweaker.AddFltEntry("Render Emitters", &m_sectionTime[RENDER_EMITTERS], precision);
+    tweaker.AddFltEntry("Render Emitters", &m_sectionTime[RENDER_SHADOWS], precision);
     tweaker.AddFltEntry("Render Effects", &m_sectionTime[RENDER_EFFECTS], precision);
     tweaker.AddFltEntry("Render Blur", &m_sectionTime[RENDER_BLUR], precision);
     tweaker.AddFltEntry("Render Post", &m_sectionTime[RENDER_POST], precision);

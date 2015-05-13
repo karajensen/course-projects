@@ -135,6 +135,12 @@ private:
     bool UpdateShader(const Emitter& emitter);
 
     /**
+    * Updates and switches to the shader for a quad
+    * @return whether the quad can be rendered to
+    */
+    bool UpdateShader(const Quad& quad);
+
+    /**
     * Updates the shader for a particle per instance
     * @param world The world matrix for the particle
     * @param particle The data for the particle
@@ -198,6 +204,11 @@ private:
     void RenderEmitters();
 
     /**
+    * Renders all shadows
+    */
+    void RenderShadows();
+
+    /**
     * Renders all meshes
     */
     void RenderMeshes();
@@ -215,8 +226,10 @@ private:
 
     /**
     * Sets whether alpha blending is enabled or not
+    * @param enable whether blending is enabled
+    * @param whether to multiply the blend colours
     */
-    void EnableAlphaBlending(bool enable);
+    void EnableAlphaBlending(bool enable, bool multiply);
 
     /**
     * Sets whether values are written to the depth buffer or not
@@ -242,6 +255,7 @@ private:
     bool m_isBackfaceCull = true;    ///< Whether the culling rasterize state is active
     bool m_isWireframe = false;      ///< Whether to render the scene as wireframe
     bool m_isAlphaBlend = false;     ///< Whether alpha blending is currently active
+    bool m_isBlendMultiply = false;  ///< Whether to multiply the blend colours
     bool m_isDepthWrite = true;      ///< Whether writing to the depth buffer is active
     int m_selectedShader = -1;       ///< Currently active shader for rendering
                                      

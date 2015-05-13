@@ -27,6 +27,7 @@ public:
         RENDER_WATER,
         RENDER_TERRAIN,
         RENDER_EMITTERS,
+        RENDER_SHADOWS,
         RENDER_EFFECTS,
         RENDER_BLUR,
         RENDER_POST,

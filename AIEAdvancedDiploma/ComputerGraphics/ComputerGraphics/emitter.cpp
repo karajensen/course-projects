@@ -134,6 +134,11 @@ void Emitter::TogglePaused()
     m_paused = !m_paused;
 }
 
+void Emitter::SetEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}
+
 const std::string& Emitter::Name() const
 {
     return m_name;
@@ -176,7 +181,7 @@ bool Emitter::ShouldRender(const glm::vec3& instancePosition,
 void Emitter::Tick(float deltatime,
                    const BoundingArea& cameraBounds)
 {
-    if (m_paused)
+    if (m_paused || !m_enabled)
     {
         return;
     }

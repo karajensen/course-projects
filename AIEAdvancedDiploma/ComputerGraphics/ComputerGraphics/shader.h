@@ -30,6 +30,7 @@ public:
         ID_BLUR_VERTICAL,
         ID_WATER,
         ID_PARTICLE,
+        ID_SHADOW,
         ID_FLAT,
         ID_BUMP,
         ID_SPECULAR,
