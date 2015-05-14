@@ -13,7 +13,7 @@ BUILD REQUIREMENTS: Windows 7+, Visual Studio 2013 (v120)
 =================================================================
 
 INPUT:
-F1 -> F8   Render a specific layer
+F1 -> F7   Render a specific layer
 WASDQE     Move the camera
 RMC        Rotate the camera
 

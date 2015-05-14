@@ -419,8 +419,6 @@ bool SceneBuilder::InitialiseBubbles()
     data.minAmplitude = 0.5f;
     data.maxFrequency = 1.0f;
     data.minFrequency = 0.5f;
-    data.maxWaveSpeed = 1.0f;
-    data.minWaveSpeed = 1.0f;
     data.maxSpeed = 0.3f;
     data.minSpeed = 0.2f;
     data.minSize = 0.5f;

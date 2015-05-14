@@ -39,8 +39,6 @@ void Emitter::AddToTweaker(Tweaker& tweaker)
     tweaker.AddFltEntry("Max Size", &m_data.maxSize, 0.1f);
     tweaker.AddFltEntry("Min Speed", &m_data.minSpeed, 0.1f);
     tweaker.AddFltEntry("Max Speed", &m_data.maxSpeed, 0.1f);
-    tweaker.AddFltEntry("Min Wave Speed", &m_data.minWaveSpeed, 0.1f);
-    tweaker.AddFltEntry("Max Wave Speed", &m_data.maxWaveSpeed, 0.1f);
     tweaker.AddEntry("Tint Colour", &m_data.tint, TW_TYPE_COLOR4F);
 }
 
@@ -209,7 +207,6 @@ void Emitter::Tick(float deltatime,
                                     m_data.lifeFade,
                                     Random::Generate(m_data.minWaitTime, m_data.maxWaitTime),
                                     Random::Generate(m_data.minSpeed, m_data.maxSpeed),
-                                    Random::Generate(m_data.minWaveSpeed, m_data.maxWaveSpeed),
                                     Random::Generate(m_data.minSize, m_data.maxSize),
                                     Random::Generate(m_data.minAmplitude, m_data.maxAmplitude),
                                     Random::Generate(m_data.minFrequency, m_data.maxFrequency),

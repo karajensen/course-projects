@@ -27,8 +27,6 @@ struct EmitterData
     float maxSize = 1.0f;         ///< The maximum size of the particles
     float minAmplitude = 1.0f;    ///< The minimum height of the particle waves
     float maxAmplitude = 1.0f;    ///< The maximum height of the particle waves
-    float minWaveSpeed = 1.0f;    ///< The minimum speed of the particle wave
-    float maxWaveSpeed = 1.0f;    ///< The maximum speed of the particle wave
     float minFrequency = 1.0f;    ///< The minimum intensity of the waves
     float maxFrequency = 1.0f;    ///< The maximum intensity of the waves
     float lifeTime = 0.0f;        ///< Seconds the particle can live before dying

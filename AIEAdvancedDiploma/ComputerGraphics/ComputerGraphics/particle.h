@@ -57,7 +57,6 @@ public:
     * @param lifeFade Time for fading in/out of life
     * @param waitTime Time for waiting before respawning
     * @param speed How fast the particle moves up
-    * @param waveSpeed How fast the particle moves in waves
     * @param size The scale of the particle
     * @param amplitude How large the waves of the particle are
     * @param frequency How intense are the waves
@@ -68,7 +67,6 @@ public:
                float lifeFade, 
                float waitTime,
                float speed,
-               float waveSpeed, 
                float size, 
                float amplitude, 
                float frequency,
