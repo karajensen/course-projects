@@ -239,20 +239,20 @@ void OpenGL::RenderWater(float timePassed)
 
 void OpenGL::RenderShadows()
 {
+	EnableDepthWrite(false);
+
     auto& shadows = *m_scene.Shadows();
     if (UpdateShader(shadows))
     {
-        EnableDepthWrite(false);
-
         shadows.PreRender();
         EnableSelectedShader();
         shadows.Render([this](const glm::mat4& world, int texture)
         { 
             UpdateShader(world, texture);
         });
-
-        EnableDepthWrite(true);
     }
+
+	EnableDepthWrite(true);
 }
 
 void OpenGL::RenderEmitters()
@@ -304,18 +304,18 @@ void OpenGL::RenderPostProcessing()
     postShader.SendUniform("fogMask", post.Mask(PostProcessing::FOG_MAP));
     postShader.SendUniform("bloomMask", post.Mask(PostProcessing::BLOOM_MAP));
 
-    postShader.SendTexture(0, *m_effectsTarget, RenderTarget::SCENE_ID);
-    postShader.SendTexture(1, *m_blurTarget, RenderTarget::BLUR_ID);
-    postShader.SendTexture(2, *m_sceneTarget, RenderTarget::DEPTH_ID);
+    postShader.SendTexture("SceneSampler", *m_effectsTarget, RenderTarget::SCENE_ID);
+    postShader.SendTexture("BlurSampler", *m_blurTarget, RenderTarget::BLUR_ID);
+    postShader.SendTexture("DepthSampler", *m_sceneTarget, RenderTarget::DEPTH_ID);
 
     m_backBuffer->SetActive();
     m_screenQuad->PreRender();
     postShader.EnableShader();
     m_screenQuad->Render();
 
-    postShader.ClearTexture(0, *m_effectsTarget);
-    postShader.ClearTexture(1, *m_blurTarget);
-    postShader.ClearTexture(2, *m_sceneTarget);
+	postShader.ClearTexture("SceneSampler", *m_effectsTarget);
+	postShader.ClearTexture("BlurSampler", *m_blurTarget);
+	postShader.ClearTexture("DepthSampler", *m_sceneTarget);
 }
 
 void OpenGL::RenderBlur()
@@ -331,26 +331,26 @@ void OpenGL::RenderBlur()
     auto& blurHorizontalShader = m_scene.GetShader(Shader::ID_BLUR_HORIZONTAL);
 
     blurHorizontalShader.SendUniform("blurStep", post.BlurStep());
-    blurHorizontalShader.SendTexture(0, *m_effectsTarget);
+    blurHorizontalShader.SendTexture("SceneSampler", *m_effectsTarget);
 
     m_screenQuad->PreRender();
     blurHorizontalShader.EnableShader();
     m_screenQuad->Render();
 
-    blurHorizontalShader.ClearTexture(0, *m_effectsTarget);
+    blurHorizontalShader.ClearTexture("SceneSampler", *m_effectsTarget);
 
     SetSelectedShader(Shader::ID_BLUR_VERTICAL);
     auto& blurVerticalShader = m_scene.GetShader(Shader::ID_BLUR_VERTICAL);
 
     blurVerticalShader.SendUniform("blurStep", post.BlurStep());
-    blurVerticalShader.SendTexture(0, *m_blurTarget);
+    blurVerticalShader.SendTexture("SceneSampler", *m_blurTarget);
 
     m_blurTarget->SwitchTextures();
     m_screenQuad->PreRender();
     blurVerticalShader.EnableShader();
     m_screenQuad->Render();
 
-    blurVerticalShader.ClearTexture(0, *m_blurTarget);
+    blurVerticalShader.ClearTexture("SceneSampler", *m_blurTarget);
 }
 
 void OpenGL::RenderPreEffects()
@@ -365,14 +365,14 @@ void OpenGL::RenderPreEffects()
     preShader.SendUniform("bloomStart", post.BloomStart());
     preShader.SendUniform("bloomFade", post.BloomFade());
 
-    preShader.SendTexture(0, *m_sceneTarget, RenderTarget::SCENE_ID);
+    preShader.SendTexture("SceneSampler", *m_sceneTarget, RenderTarget::SCENE_ID);
     
     m_effectsTarget->SetActive();
     m_screenQuad->PreRender();
     preShader.EnableShader();
     m_screenQuad->Render();
 
-    preShader.ClearTexture(0, *m_sceneTarget);
+    preShader.ClearTexture("SceneSampler", *m_sceneTarget);
 }
 
 bool OpenGL::UpdateShader(const Quad& quad)
@@ -398,7 +398,7 @@ void OpenGL::UpdateShader(const glm::mat4& world, int texture)
 {
     auto& shader = m_scene.GetShader(m_selectedShader);
     shader.SendUniform("world", world);
-    SendTexture(0, texture);
+    SendTexture("DiffuseSampler", texture);
 }
 
 bool OpenGL::UpdateShader(const MeshData& mesh, bool alphaBlend, float timePassed)
@@ -470,10 +470,10 @@ bool OpenGL::UpdateShader(const Water& water, float timePassed)
         for (unsigned int i = 0; i < waves.size(); ++i)
         {
             shader.SendUniform("waveFrequency", waves[i].amplitude, i);
-            shader.SendUniform("waveAmplitude", waves[i].frequency, i);
-            shader.SendUniform("wavePhase", waves[i].phase, i);
-            shader.SendUniform("waveDirectionX", waves[i].directionX, i);
-            shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
+			shader.SendUniform("waveAmplitude", waves[i].frequency, i);
+			shader.SendUniform("wavePhase", waves[i].phase, i);
+			shader.SendUniform("waveDirectionX", waves[i].directionX, i);
+			shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
         }
 
         return true;
@@ -508,7 +508,7 @@ void OpenGL::UpdateShader(const glm::mat4& world, const Particle& particle)
     auto& shader = m_scene.GetShader(m_selectedShader);
     shader.SendUniform("worldViewProjection", m_camera.ViewProjection() * world);
     shader.SendUniform("alpha", particle.Alpha());
-    SendTexture(0, particle.Texture());
+    SendTexture("DiffuseSampler", particle.Texture());
 }
 
 void OpenGL::SendAttributes(const MeshAttributes& attributes)
@@ -530,7 +530,7 @@ void OpenGL::SendLights()
 
     for (unsigned int i = 0; i < lights.size(); ++i)
     {
-        const int offset = i*3; // Arrays pack tightly
+		const int offset = i * 3;
         shader.SendUniform("lightSpecularity", lights[i]->Specularity(), i);
         shader.SendUniform("lightActive", lights[i]->Active(), i);
         shader.SendUniform("lightAttenuation", lights[i]->Attenuation(), offset);
@@ -542,22 +542,20 @@ void OpenGL::SendLights()
 
 void OpenGL::SendTextures(const std::vector<int>& textures)
 {
-    int slot = 1;
     auto& shader = m_scene.GetShader(m_selectedShader);
-
-    slot += SendTexture(slot, textures[MeshData::NORMAL]) ? 1 : 0;
-    slot += SendTexture(slot, textures[MeshData::SPECULAR]) ? 1 : 0;
-    slot += SendTexture(slot, textures[MeshData::ENVIRONMENT]) ? 1 : 0;
-    slot += SendTexture(slot, textures[MeshData::CAUSTICS]) ? 1 : 0;
+	SendTexture("NormalSampler", textures[MeshData::NORMAL]);
+	SendTexture("SpecularSampler", textures[MeshData::SPECULAR]);
+	SendTexture("EnvironmentSampler", textures[MeshData::ENVIRONMENT]);
+	SendTexture("CausticsSampler", textures[MeshData::CAUSTICS]);
 }
 
-bool OpenGL::SendTexture(int slot, int ID)
+bool OpenGL::SendTexture(const std::string& sampler, int ID)
 {
     auto& shader = m_scene.GetShader(m_selectedShader);
-    if (ID != NO_INDEX && shader.HasTextureSlot(slot))
+    if (ID != NO_INDEX)
     {
         const auto& texture = m_scene.Textures()[ID];
-        shader.SendTexture(slot, texture->GetID(), texture->IsCubeMap());
+		shader.SendTexture(sampler, texture->GetID(), texture->IsCubeMap());
         return true;
     }
     return false;

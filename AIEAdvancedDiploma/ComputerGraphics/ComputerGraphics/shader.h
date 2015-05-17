@@ -131,19 +131,12 @@ public:
     void EnableShader();
 
     /**
-    * Determines whether the texture slot is available for the texture
-    * @param slot The slot to query
-    * @return whether the shader allows the slot to be bound to
-    */
-    bool HasTextureSlot(int slot);
-
-    /**
     * Sends a texture to the shader
     * @param slot The slot to put the texture in
     * @param id The unique id for the opengl texture
     * @param cubemap Whether this texture is a cubemap
     */
-    void SendTexture(int slot, GLuint id, bool cubemap);
+	void SendTexture(const std::string& sampler, GLuint id, bool cubemap);
 
     /**
     * Sends the render target texture to the shader
@@ -151,7 +144,7 @@ public:
     * @param target The render target to send
     * @param ID the id of the target texture to send
     */
-    void SendTexture(int slot, const RenderTarget& target, int ID = 0);
+	void SendTexture(const std::string& sampler, const RenderTarget& target, int ID = 0);
 
     /**
     * Clears the render target texture from the shader
@@ -159,7 +152,7 @@ public:
     * @param target The render target to clear
     * @param ID the id of the target texture to clear
     */
-    void ClearTexture(int slot, const RenderTarget& target);
+	void ClearTexture(const std::string& sampler, const RenderTarget& target);
 
     /**
     * @return the name of the shader
@@ -236,7 +229,7 @@ private:
     * @param multisample Whether this texture is to be multisampled
     * @param cubemap Whether this texture is a cubemap
     */
-    void SendTexture(int slot, GLuint id, bool multisample, bool cubemap);
+    void SendTexture(const std::string& sampler, GLuint id, bool multisample, bool cubemap);
 
     /**
     * Clears the current texture set
@@ -244,7 +237,7 @@ private:
     * @param multisample Whether this texture is to be multisampled
     * @param cubemap Whether this texture is a cubemap
     */
-    void ClearTexture(int slot, bool multisample, bool cubemap);
+	void ClearTexture(const std::string& sampler, bool multisample, bool cubemap);
 
     /**
     * Determines the output fragment attributes and binds them
@@ -316,11 +309,22 @@ private:
         bool updated = false;       ///< Whether the scratch buffer has been updated
     };
 
+	/**
+	* Information for a sampler
+	*/
+	struct SamplerData
+	{
+		int slot = 0;				///< Order of usage in shader
+		int allocated = -1;			///< Currently allocated texture to this slot
+		int location = 0;			///< Unique location within the shader
+		GLenum type = 0;            ///< Whether a texture, cubemap or ms
+	};
+
     typedef std::unordered_map<std::string, UniformData> UniformMap;
+	typedef std::unordered_map<std::string, SamplerData> SamplerMap;
 
     UniformMap m_uniforms;                    ///< Vertex and fragment non-attribute uniform data
-    std::vector<int> m_samplers;              ///< Fragment shader sampler locations
-    std::vector<int> m_allocatedSlots;        ///< Textures currently allocated
+	SamplerMap m_samplers;					  ///< Fragment shader sampler locations
     std::vector<AttributeData> m_attributes;  ///< Vertex shader input attributes
     GLint m_program = NO_INDEX;               ///< Shader program
     GLint m_vs = NO_INDEX;                    ///< GLSL Vertex Shader

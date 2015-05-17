@@ -192,7 +192,7 @@ bool SceneBuilder::InitialiseTerrain()
 
     m_data.sandIndex = m_data.terrain.size();
     Terrain& sand = InitialiseTerrain("sand", "sand_height", 
-        Shader::ID_BUMP_CAUSTICS, 4.0f, true, -45.0f, 
+		Shader::ID_BUMP_CAUSTICS, 4.0f, true, -45.0f,
         0.0f, 5.0f, PATCH_GRID_SPACING, PATCH_GRID_VERTICES);
 
     sand.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "sand"));
@@ -214,7 +214,7 @@ bool SceneBuilder::InitialiseTerrain()
 
         const auto ID(std::to_string(i));
         Terrain& rock = InitialiseTerrain("rock" + ID, "terrain" + ID, 
-            Shader::ID_BUMP_CAUSTICS, 4.0f, false, 0.0f, -5.0f, 40.0f, 5.0f, 30);
+			Shader::ID_BUMP_CAUSTICS, 4.0f, false, 0.0f, -5.0f, 40.0f, 5.0f, 30);
 
         rock.SetTexture(MeshData::COLOUR, GetID(m_data.textures, "rock"));
         rock.SetTexture(MeshData::NORMAL, GetID(m_data.textures, "rock_bump"));
@@ -564,7 +564,8 @@ Terrain& SceneBuilder::InitialiseTerrain(const std::string& name,
     Terrain& terrain = *m_data.terrain[m_data.terrain.size()-1];
 
     if (!terrain.Initialise(uvTextureStretch, minHeight, 
-        maxHeight, height, spacing, size, true, 
+        maxHeight, height, spacing, size,
+		!m_data.shaders[shaderID]->HasComponent(Shader::FLAT),
         m_data.shaders[shaderID]->HasComponent(Shader::BUMP), tiling))
     {
         LogError("Terrain: " + name + " failed initialisation");
