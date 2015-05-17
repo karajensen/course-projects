@@ -1,0 +1,35 @@
+
+Install Qt. I have used the 'Qt 5.3.1 with OpenGL' or qt-opensource-windows-x86-msvc2013-5.3.1.exe installer for this tutorial. Depending on the version of Qt it will require different dlls to be packaged with your executable. If you choose to use a different version you may need to experiment to find which dlls you do or don't need.
+
+Create a new visual studio Win32 empty project. Once done, right mouse click on the project name in the Solution Explorer to go to the Property Pages. Under Configuration Properties and then General change the following settings:
+
+Output Directory:          $(SolutionDir)$(SolutionName)\
+Intermediate Directory:    $(SolutionDir)$(SolutionName)\$(Configuration)\
+Target Name (Debug):       $(ProjectName)D
+Target Name (Release):     $(ProjectName)
+
+Navigate to where Qt is installed. This will be something like: C:\Qt\Qt5.3.1. Navigate to Qt5.3.1\5.3\msvc2013\plugins. Copy the platforms folder and paste it in the same folder as the .vcxproj files for your new project are. Next navigate to Qt5.3.1\5.3\msvc2013\bin. Copy the following .dlls into the same folder as the .vcxproj files:
+
+icudt52.dll
+icuin52.dll
+icuuc52.dll
+libEGL.dll
+libEGLd.dll
+libGLESv2.dll
+libGLESv2d.dll
+Qt5Core.dll
+Qt5Cored.dll
+Qt5Gui.dll
+Qt5Guid.dll
+Qt5Widgets.dll
+Qt5Widgetsd.dll
+
+You may or may not need more .dlls depending on what you choose to include in your Qt GUI. For this tutorial these .dlls are enough.
+
+Go back to the Property Pages for your project. Under C/C++ and then General change the following settings:
+
+Additional Include Directories: C:\Qt\Qt5.3.1\5.3\msvc2013\include
+
+Under Linker and then General change the following settings:
+
+Additional Library Directories: C:\Qt\Qt5.3.1\5.3\msvc2013\lib
