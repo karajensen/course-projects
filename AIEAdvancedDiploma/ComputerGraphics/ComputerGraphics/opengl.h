@@ -170,11 +170,11 @@ private:
 
     /**
     * Sends the given texture to the selected shader
-    * @param slot Which slot in the shader should it go in
+    * @param sampler Name of the shader texture sampler to use
     * @param ID The texture ID
     * @return whether sending was successful
     */
-	bool SendTexture(const std::string& sampler, int ID);
+    bool SendTexture(const std::string& sampler, int ID);
 
     /**
     * Renders the scene

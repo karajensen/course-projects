@@ -313,9 +313,9 @@ void OpenGL::RenderPostProcessing()
     postShader.EnableShader();
     m_screenQuad->Render();
 
-	postShader.ClearTexture("SceneSampler", *m_effectsTarget);
-	postShader.ClearTexture("BlurSampler", *m_blurTarget);
-	postShader.ClearTexture("DepthSampler", *m_sceneTarget);
+    postShader.ClearTexture("SceneSampler", *m_effectsTarget);
+    postShader.ClearTexture("BlurSampler", *m_blurTarget);
+    postShader.ClearTexture("DepthSampler", *m_sceneTarget);
 }
 
 void OpenGL::RenderBlur()
@@ -470,10 +470,10 @@ bool OpenGL::UpdateShader(const Water& water, float timePassed)
         for (unsigned int i = 0; i < waves.size(); ++i)
         {
             shader.SendUniform("waveFrequency", waves[i].amplitude, i);
-			shader.SendUniform("waveAmplitude", waves[i].frequency, i);
-			shader.SendUniform("wavePhase", waves[i].phase, i);
-			shader.SendUniform("waveDirectionX", waves[i].directionX, i);
-			shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
+            shader.SendUniform("waveAmplitude", waves[i].frequency, i);
+            shader.SendUniform("wavePhase", waves[i].phase, i);
+            shader.SendUniform("waveDirectionX", waves[i].directionX, i);
+            shader.SendUniform("waveDirectionZ", waves[i].directionZ, i);
         }
 
         return true;
@@ -530,7 +530,7 @@ void OpenGL::SendLights()
 
     for (unsigned int i = 0; i < lights.size(); ++i)
     {
-		const int offset = i * 3;
+        const int offset = i * 3;
         shader.SendUniform("lightSpecularity", lights[i]->Specularity(), i);
         shader.SendUniform("lightActive", lights[i]->Active(), i);
         shader.SendUniform("lightAttenuation", lights[i]->Attenuation(), offset);
@@ -543,10 +543,10 @@ void OpenGL::SendLights()
 void OpenGL::SendTextures(const std::vector<int>& textures)
 {
     auto& shader = m_scene.GetShader(m_selectedShader);
-	SendTexture("NormalSampler", textures[MeshData::NORMAL]);
-	SendTexture("SpecularSampler", textures[MeshData::SPECULAR]);
-	SendTexture("EnvironmentSampler", textures[MeshData::ENVIRONMENT]);
-	SendTexture("CausticsSampler", textures[MeshData::CAUSTICS]);
+    SendTexture("NormalSampler", textures[MeshData::NORMAL]);
+    SendTexture("SpecularSampler", textures[MeshData::SPECULAR]);
+    SendTexture("EnvironmentSampler", textures[MeshData::ENVIRONMENT]);
+    SendTexture("CausticsSampler", textures[MeshData::CAUSTICS]);
 }
 
 bool OpenGL::SendTexture(const std::string& sampler, int ID)
@@ -555,7 +555,7 @@ bool OpenGL::SendTexture(const std::string& sampler, int ID)
     if (ID != NO_INDEX)
     {
         const auto& texture = m_scene.Textures()[ID];
-		shader.SendTexture(sampler, texture->GetID(), texture->IsCubeMap());
+        shader.SendTexture(sampler, texture->GetID(), texture->IsCubeMap());
         return true;
     }
     return false;

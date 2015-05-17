@@ -259,7 +259,7 @@ bool Shader::FindShaderUniforms()
         return false;
     }
 
-	int samplerSlot = 0;
+    int samplerSlot = 0;
     for (int i = 0; i < uniformCount; ++i)
     {
         int size;
@@ -267,12 +267,12 @@ bool Shader::FindShaderUniforms()
         std::string name(maxLength,'\0');
         glGetActiveUniform(m_program, i, maxLength, 0, &size, &type, &name[0]);
         
-		name = std::string(name.begin(), name.begin() + name.find('\0'));
-		const int index = name.find("[");
-		if (index != NO_INDEX)
-		{
-			name = std::string(name.begin(), name.begin() + index);
-		}
+        name = std::string(name.begin(), name.begin() + name.find('\0'));
+        const int index = name.find("[");
+        if (index != NO_INDEX)
+        {
+            name = std::string(name.begin(), name.begin() + index);
+        }
 
         if(HasCallFailed())
         {
@@ -289,10 +289,10 @@ bool Shader::FindShaderUniforms()
         
         if(type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_MULTISAMPLE || type == GL_SAMPLER_CUBE)
         {
-			m_samplers[name].location = location;
-			m_samplers[name].type = type;
-			m_samplers[name].slot = samplerSlot;
-			++samplerSlot;
+            m_samplers[name].location = location;
+            m_samplers[name].type = type;
+            m_samplers[name].slot = samplerSlot;
+            ++samplerSlot;
         }
         else
         {   
@@ -457,80 +457,80 @@ void Shader::EnableShader()
 
 void Shader::ClearTexture(const std::string& sampler, bool multisample, bool cubemap)
 {
-	auto samplerItr = m_samplers.find(sampler);
-	if (samplerItr != m_samplers.end())
-	{
-		glActiveTexture(GetTexture(samplerItr->second.slot));
+    auto samplerItr = m_samplers.find(sampler);
+    if (samplerItr != m_samplers.end())
+    {
+        glActiveTexture(GetTexture(samplerItr->second.slot));
 
-		if (cubemap)
-		{
-			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-		}
-		else
-		{
-			glBindTexture(!multisample ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE, 0);
-		}
+        if (cubemap)
+        {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
+        else
+        {
+            glBindTexture(!multisample ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE, 0);
+        }
 
-		if (HasCallFailed())
-		{
-			LogShader("Could not clear texture");
-		}
-	}
+        if (HasCallFailed())
+        {
+            LogShader("Could not clear texture");
+        }
+    }
 }
 
 void Shader::SendTexture(const std::string& sampler, const RenderTarget& target, int ID)
 {
-	SendTexture(sampler, target.GetTexture(ID), target.IsMultisampled(), false);
+    SendTexture(sampler, target.GetTexture(ID), target.IsMultisampled(), false);
 }
 
 void Shader::ClearTexture(const std::string& sampler, const RenderTarget& target)
 {
-	ClearTexture(sampler, target.IsMultisampled(), false);
+    ClearTexture(sampler, target.IsMultisampled(), false);
 }
 
 void Shader::SendTexture(const std::string& sampler, GLuint id, bool cubemap)
 {
-	SendTexture(sampler, id, false, cubemap);
+    SendTexture(sampler, id, false, cubemap);
 }
 
 void Shader::SendTexture(const std::string& sampler, GLuint id, bool multisample, bool cubemap)
 {
-	auto samplerItr = m_samplers.find(sampler);
-	if (samplerItr != m_samplers.end())
-	{
-		if (samplerItr->second.allocated != id)
-		{
-			samplerItr->second.allocated = id;
+    auto samplerItr = m_samplers.find(sampler);
+    if (samplerItr != m_samplers.end())
+    {
+        if (samplerItr->second.allocated != id)
+        {
+            samplerItr->second.allocated = id;
 
-			glActiveTexture(GetTexture(samplerItr->second.slot));
+            glActiveTexture(GetTexture(samplerItr->second.slot));
 
-			if (cubemap)
-			{
-				glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-			}
-			else
-			{
-				glBindTexture(!multisample ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE, id);
-			}
+            if (cubemap)
+            {
+                glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+            }
+            else
+            {
+                glBindTexture(!multisample ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE, id);
+            }
 
-			glUniform1i(samplerItr->second.location, samplerItr->second.slot);
+            glUniform1i(samplerItr->second.location, samplerItr->second.slot);
 
-			if (HasCallFailed())
-			{
-				LogShader("Could not send texture");
-			}
-		}
-	}
+            if (HasCallFailed())
+            {
+                LogShader("Could not send texture");
+            }
+        }
+    }
 }
 
 void Shader::SetActive()
 {
     glUseProgram(m_program);
 
-	for (auto& sampler : m_samplers)
-	{
-		sampler.second.allocated = NO_INDEX;
-	}
+    for (auto& sampler : m_samplers)
+    {
+        sampler.second.allocated = NO_INDEX;
+    }
 }
 
 unsigned int Shader::GetTexture(int slot)
