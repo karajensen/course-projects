@@ -33,3 +33,11 @@ Additional Include Directories: C:\Qt\Qt5.3.1\5.3\msvc2013\include
 Under Linker and then General change the following settings:
 
 Additional Library Directories: C:\Qt\Qt5.3.1\5.3\msvc2013\lib
+
+Under Linker and then Input change the following settings:
+
+Additional Dependencies: Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;qtmaind.lib
+
+Make sure you change the settings for the Release Configuration too. 
+
+Create a new .cpp file and call it main. This will hold the main loop for both the application and GUI.
