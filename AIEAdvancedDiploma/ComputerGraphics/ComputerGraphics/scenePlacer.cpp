@@ -55,7 +55,7 @@ void ScenePlacer::AddToTweaker(Tweaker& tweaker)
     tweaker.AddFltEntry("Rock Offset", &m_rockOffset, 0.01f, 0.01f, FLT_MAX);
     tweaker.AddFltEntry("Shadow Offset", &m_shadowOffset, 0.01f, 0.01f, FLT_MAX);
     tweaker.AddFltEntry("Shadow Scale", &m_shadowScale, 0.01f, 0.01f, FLT_MAX);
-    tweaker.AddButton("Reset Placement", [this](){ ResetFoliage(); });
+    tweaker.AddButton("Reset Placement", [this](){ ResetPatches(); });
 }
 
 int ScenePlacer::Index(int row, int column) const

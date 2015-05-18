@@ -15,7 +15,16 @@ namespace
 {
     const std::string VERTEX_SHADER("_glsl_vert.fx");
     const std::string FRAGMENT_SHADER("_glsl_frag.fx");
-    const std::string GLSL_IN_POSITION("in_Position");
+
+    const int IN_POSITION_ID = 0;
+    std::vector<std::string> ATTRIBUTE_MAP =
+    {
+        "in_Position",
+        "in_UVs",
+        "in_Normal",
+        "in_Tangent",
+        "in_Bitangent",
+    };
 }
 
 Shader::ShaderConstants Shader::sm_constants;
@@ -192,56 +201,6 @@ bool Shader::BindFragmentAttributes()
         return false;
     }
 
-    return true;
-}
-
-bool Shader::BindVertexAttributes()
-{
-    int maxLength;
-    glGetProgramiv(m_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
-
-    int attributeCount;
-    glGetProgramiv(m_program, GL_ACTIVE_ATTRIBUTES, &attributeCount);
-    
-    if(HasCallFailed())
-    {
-        LogShader("Could not get attribute count");
-        return false;
-    }
-
-    m_stride = 0;
-    for (int i = 0; i < attributeCount; ++i)
-    {
-        int size;
-        GLenum type;
-        std::string name(maxLength,'\0');
-        glGetActiveAttrib(m_program, i, maxLength, 0, &size, &type, &name[0]);
-        name = std::string(name.begin(), name.begin() + name.find('\0'));
-        
-        if(HasCallFailed())
-        {
-            LogShader("Could not get attribute " + std::to_string(i));
-            return false;
-        }
-
-        m_attributes.emplace_back();
-        m_attributes[i].location = i;
-        m_attributes[i].name = name;
-
-        // Pass position as a vec3 into a vec4 slot to use the optimization
-        // where the 'w' component is automatically set as 1.0
-        const bool isPosition = IsStrEqual(m_attributes[i].name, GLSL_IN_POSITION);
-        m_attributes[i].components = GetComponents(isPosition ? GL_FLOAT_VEC3 : type);
-
-        m_stride += m_attributes[i].components;
-        glBindAttribLocation(m_program, i, name.c_str());
-
-        if(HasCallFailed())
-        {
-            LogShader("Failed to bind attribute " + name);
-            return false;
-        }
-    }
     return true;
 }
 
@@ -427,6 +386,84 @@ void Shader::SendUniformFloat(const std::string& name, const float* value, int c
         SendUniformFloat(name, value, itr->second.location, 
             itr->second.size, itr->second.type);
     }
+}
+
+bool Shader::BindVertexAttributes()
+{
+    int maxLength;
+    glGetProgramiv(m_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
+
+    int attributeCount;
+    glGetProgramiv(m_program, GL_ACTIVE_ATTRIBUTES, &attributeCount);
+
+    if (HasCallFailed())
+    {
+        LogShader("Could not get attribute count");
+        return false;
+    }
+
+    m_stride = 0;
+    for (int i = 0; i < attributeCount; ++i)
+    {
+        int size;
+        GLenum type;
+        std::string name(maxLength, '\0');
+
+        // Note attributes can be given in any order
+        glGetActiveAttrib(m_program, i, maxLength, 0, &size, &type, &name[0]);
+        name = std::string(name.begin(), name.begin() + name.find('\0'));
+
+        if (HasCallFailed())
+        {
+            LogShader("Could not get attribute " + std::to_string(i));
+            return false;
+        }
+
+        int location = NO_INDEX;
+        for (int j = 0; j < static_cast<int>(ATTRIBUTE_MAP.size()); ++j)
+        {
+            if (ATTRIBUTE_MAP[j] == name)
+            {
+                location = j;
+                break;
+            }
+        }
+
+        if (location == NO_INDEX)
+        {
+            LogError("Unknown attribute name " + name);
+            return false;
+        }
+
+        m_attributes.emplace_back();
+        m_attributes[i].location = location;
+        m_attributes[i].name = name;
+
+        // Pass position as a vec3 into a vec4 slot to use the optimization
+        // where the 'w' component is automatically set as 1.0
+        const bool isPosition = IsStrEqual(m_attributes[i].name, ATTRIBUTE_MAP[IN_POSITION_ID]);
+        m_attributes[i].components = GetComponents(isPosition ? GL_FLOAT_VEC3 : type);
+
+        m_stride += m_attributes[i].components;
+    }
+
+    std::sort(m_attributes.begin(), m_attributes.end(), [](const AttributeData& d1, const AttributeData& d2)
+    {
+        return d1.location < d2.location;
+    });
+
+    for (const AttributeData& attr : m_attributes)
+    {
+        glBindAttribLocation(m_program, attr.location, attr.name.c_str());
+
+        if (HasCallFailed())
+        {
+            LogShader("Failed to bind attribute " + attr.name);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void Shader::EnableShader()
