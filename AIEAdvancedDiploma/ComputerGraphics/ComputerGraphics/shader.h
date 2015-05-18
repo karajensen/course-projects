@@ -132,7 +132,7 @@ public:
 
     /**
     * Sends a texture to the shader
-    * @param slot The slot to put the texture in
+    * @param sampler Name of the shader texture sampler to use
     * @param id The unique id for the opengl texture
     * @param cubemap Whether this texture is a cubemap
     */
@@ -140,7 +140,7 @@ public:
 
     /**
     * Sends the render target texture to the shader
-    * @param slot The slot to put the texture in
+    * @param sampler Name of the shader texture sampler to use
     * @param target The render target to send
     * @param ID the id of the target texture to send
     */
@@ -148,7 +148,7 @@ public:
 
     /**
     * Clears the render target texture from the shader
-    * @param slot The slot to put the texture in
+    * @param sampler Name of the shader texture sampler to use
     * @param target The render target to clear
     * @param ID the id of the target texture to clear
     */
@@ -224,7 +224,7 @@ private:
 
     /**
     * Sends a texture to the shader
-    * @param slot The slot to put the texture in
+    * @param sampler Name of the shader texture sampler to use
     * @param id The unique id for the opengl texture
     * @param multisample Whether this texture is to be multisampled
     * @param cubemap Whether this texture is a cubemap
@@ -233,7 +233,7 @@ private:
 
     /**
     * Clears the current texture set
-    * @param slot The slot to put the texture in
+    * @param sampler Name of the shader texture sampler to use
     * @param multisample Whether this texture is to be multisampled
     * @param cubemap Whether this texture is a cubemap
     */
