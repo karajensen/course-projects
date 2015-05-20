@@ -83,6 +83,11 @@ On the top menu bar go to Build and then Run qmake. Then go to Build and Build A
 4. Enter the command: uic.exe qt/form.ui -o qt/ui_form.h
 5. The ui_form.h file should now be generated in the qt folder next to the .pro file
 
+Go to qt/debug and copy the moc_form.cpp and ui_form.h to the qt folder (same folder the .pro lives in). If you had to do the steps above to generate the ui_form.h it will already be in the correct folder. Any time you update your GUI using the designer and click build (and run uic.exe if needed) a new moc_form.cpp and ui_form.h will be generated. Make sure you replace the versions in the qt folder with the newest generated versions. You can do this manually, set up build events in the designer or write a small script to copy them for you.
+
+
+
+
 
 
 
