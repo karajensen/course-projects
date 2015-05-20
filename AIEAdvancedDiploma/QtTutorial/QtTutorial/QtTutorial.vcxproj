@@ -92,9 +92,6 @@
   <ItemGroup>
     <Text Include="tutorial.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="cache.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

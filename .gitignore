@@ -21,3 +21,8 @@ AIEAdvancedDiploma/QtTutorial/QtTutorial/QtTutorial.exe
 AIEAdvancedDiploma/QtTutorial/QtTutorial/QtTutorialD.exe
 AIEAdvancedDiploma/QtTutorial/QtTutorial/Debug/
 AIEAdvancedDiploma/QtTutorial/QtTutorial/Release/
+AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/debug/
+AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/release/
+AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/Makefile.Debug
+AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/Makefile.Release
+AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/Makefile

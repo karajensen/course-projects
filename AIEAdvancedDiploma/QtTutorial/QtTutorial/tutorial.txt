@@ -40,4 +40,52 @@ Additional Dependencies: Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;qtmaind.lib
 
 Make sure you change the settings for the Release Configuration too. 
 
-Create a new .cpp file and call it main. This will hold the main loop for both the application and GUI.
+Create a new .cpp file and call it main. This will hold the main loop for both the application and GUI. 
+
+Open up the Qt Creator and click New Project. Select Other Project and then Empty Project. Set the name to 'qt' and the location to the path where the visual studio .vcxproj files are for your project. Click Next.
+
+Make sure the box is ticked on the next screen and then click Next again. Change Add to Version Control to none for now and click Finish. Check the folder that has the .vcxproj files. You should have newly created qt folder and inside two .pro and .pro.user files. To edit your GUI in the future simply open the .pro file and make changes.
+
+Right mouse click the top entry in the tree hierarchy (this will be the name of your .pro file) and select Add New. Select Qt and then Qt Designer Form Class. Select Widget and click Next. Choose a name for your GUI and click Next. Change Add to Version Control to none for now and click Finish. Click Edit on the toolbar on the far left to see your hierarchy tree. There should now be three new files, a .h, .cpp and .ui.
+
+Click on Projects on the far left toolbar. Change the Build directory to the same folder your .pro files is in. Select Release and make the same changes.
+
+Click Edit on the far left toolbar. Double click on the .pro file in the tree hierarchy. Add the following to the top of the file:
+
+QT += core gui
+QT += widgets
+INCLUDEPATH += C:\Qt\Qt5.3.1\5.3\msvc2013\include\
+
+Go to your .h file. Change the #include <QtWidget> to #include <QtWidgets/QWidget>. 
+
+Double click the .ui file in the tree hierarchy. You will see a canvas area with available Qt widgets to the left of it. Drag and drop two buttons and a double spin box onto the canvas. Rearrange them and given them useful and unique names.
+
+Right mouse click the top entry in the tree hierarchy and select new. Choose C++ and then C++ Source File. Name this file main and click Next. Click Finish. Main.cpp should now be added to the Sources folder in the tree hierarchy. Double click on it to start editing. This main function will not be called by your Visual Studio application. It will only serve to allow the GUI to run standalone in the Qt Creator. Add the following code to main.cpp:
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+#include <QApplication>
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    return app.exec();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+On the top menu bar go to Build and then Run qmake. Then go to Build and Build All. Your project should build successfully. If it complains about missing an ui_form.h file, do the following:
+
+1. Go to C:\Qt\Qt5.3.1\5.3\msvc2013\bin
+2. Copy uic.exe into the same folder as the visual studio .vcxproj files
+3. Open a command window in that same folder
+4. Enter the command: uic.exe qt/form.ui -o qt/ui_form.h
+5. The ui_form.h file should now be generated in the qt folder next to the .pro file
+
+
+
+
+
+
+
