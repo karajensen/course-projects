@@ -23,7 +23,6 @@ QT_BEGIN_NAMESPACE
 class Ui_Form
 {
 public:
-    QPushButton *exitApplication;
     QPushButton *testButton;
     QDoubleSpinBox *testSpinBox;
 
@@ -32,15 +31,12 @@ public:
         if (Form->objectName().isEmpty())
             Form->setObjectName(QStringLiteral("Form"));
         Form->resize(329, 312);
-        exitApplication = new QPushButton(Form);
-        exitApplication->setObjectName(QStringLiteral("exitApplication"));
-        exitApplication->setGeometry(QRect(100, 70, 121, 28));
         testButton = new QPushButton(Form);
         testButton->setObjectName(QStringLiteral("testButton"));
-        testButton->setGeometry(QRect(110, 150, 93, 28));
+        testButton->setGeometry(QRect(120, 100, 93, 28));
         testSpinBox = new QDoubleSpinBox(Form);
         testSpinBox->setObjectName(QStringLiteral("testSpinBox"));
-        testSpinBox->setGeometry(QRect(120, 230, 62, 22));
+        testSpinBox->setGeometry(QRect(130, 160, 62, 22));
 
         retranslateUi(Form);
 
@@ -50,7 +46,6 @@ public:
     void retranslateUi(QWidget *Form)
     {
         Form->setWindowTitle(QApplication::translate("Form", "Form", 0));
-        exitApplication->setText(QApplication::translate("Form", "Exit Application", 0));
         testButton->setText(QApplication::translate("Form", "Test Button", 0));
     } // retranslateUi
 

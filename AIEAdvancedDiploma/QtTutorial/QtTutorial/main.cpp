@@ -4,67 +4,10 @@
 
 #include <thread>
 #include <memory>
-#include <mutex>
 #include <iostream>
+#include "qt/form.h"
 #include "QtWidgets/qapplication.h"
-
-/**
-* Cache item able to be locked across threads
-*/
-template <typename T> class Lockable
-{
-public:
-
-    /**
-    * Constructor
-    */
-    Lockable() :
-        m_data(T())
-    {
-    }
-
-    /**
-    * Destructor
-    */
-    virtual ~Lockable()
-    {
-    }
-
-    /**
-    * Locks the thread to set the data
-    * @param data The data to set
-    */
-    void Set(const T& data)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_data = data;
-    }
-
-    /**
-    * Locks the thread to get the data
-    * @return a copy of the data
-    */
-    T Get() const
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return m_data;
-    }
-
-private:
-
-    mutable std::mutex m_mutex;   ///< Mutex for access
-    T m_data;                     ///< Internal data
-};
-
-/**
-* Manages information sending between the gui and application
-*/
-struct Cache
-{
-    Lockable<bool> ApplicationRunning;
-    Lockable<bool> ExampleButton;
-    Lockable<float> ExampleSpinBox;
-};
+#include "cache.h"
 
 /**
 * Runs Qt on a seperate thread to the main application
@@ -72,13 +15,21 @@ struct Cache
 void qtmain(int argc, char *argv[], std::shared_ptr<Cache> cache)
 {
     QApplication app(argc, argv);
+    Form form(cache);
+    form.show();
 
     // Qt GUI loop is here
     while(cache->ApplicationRunning.Get())
     {
         app.processEvents();
-    }
 
+        // When the form is closed exit the application
+        if (!form.isVisible())
+        {
+            cache->ApplicationRunning.Set(false);
+        }
+    }
+    
     app.exit();
 }
 
@@ -97,9 +48,10 @@ int main(int argc, char *argv[])
     // Application loop is here
     while (cache->ApplicationRunning.Get())
     {
+        // When the button is pressed display the spin box value
         if (cache->ExampleButton.Get())
         {
-            std::cout << "Example Button was pressed!" << std::endl;
+            std::cout << cache->ExampleSpinBox.Get() << std::endl;
             cache->ExampleButton.Set(false);
         }
     }

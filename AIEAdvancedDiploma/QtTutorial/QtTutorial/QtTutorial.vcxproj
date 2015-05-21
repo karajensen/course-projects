@@ -60,7 +60,7 @@
       <AdditionalIncludeDirectories>C:\Qt\Qt5.3.1\5.3\msvc2013\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Qt\Qt5.3.1\5.3\msvc2013\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;qtmaind.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -78,7 +78,7 @@
       <AdditionalIncludeDirectories>C:\Qt\Qt5.3.1\5.3\msvc2013\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
@@ -88,9 +88,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="qt\form.cpp" />
+    <ClCompile Include="qt\moc\moc_form.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="tutorial.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cache.h" />
+    <ClInclude Include="qt\form.h" />
+    <ClInclude Include="qt\ui_form.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

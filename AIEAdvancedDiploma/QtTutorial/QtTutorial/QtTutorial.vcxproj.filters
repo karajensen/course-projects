@@ -5,5 +5,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="qt\form.cpp" />
+    <ClCompile Include="qt\moc\moc_form.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cache.h" />
+    <ClInclude Include="qt\form.h" />
+    <ClInclude Include="qt\ui_form.h" />
   </ItemGroup>
 </Project>

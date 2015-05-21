@@ -1,7 +1,7 @@
 
 Install Qt. I have used the 'Qt 5.3.1 with OpenGL' or qt-opensource-windows-x86-msvc2013-5.3.1.exe installer for this tutorial. Depending on the version of Qt it will require different dlls to be packaged with your executable. If you choose to use a different version you may need to experiment to find which dlls you do or don't need.
 
-Create a new visual studio Win32 empty project. Once done, right mouse click on the project name in the Solution Explorer to go to the Property Pages. Under Configuration Properties and then General change the following settings:
+Create a new visual studio Win32 console application project. Once done, right mouse click on the project name in the Solution Explorer to go to the Property Pages. Under Configuration Properties and then General change the following settings:
 
 Output Directory:          $(SolutionDir)$(SolutionName)\
 Intermediate Directory:    $(SolutionDir)$(SolutionName)\$(Configuration)\
@@ -40,7 +40,182 @@ Additional Dependencies: Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;qtmaind.lib
 
 Make sure you change the settings for the Release Configuration too. 
 
-Create a new .cpp file and call it main. This will hold the main loop for both the application and GUI. 
+Create a new .cpp file and call it main. This will hold the main loop for both the application and GUI. Add the following code to main.cpp:
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+#include <memory>
+#include <thread>
+#include <iostream>
+#include "QtWidgets/qapplication.h"
+
+/**
+* Runs Qt on a seperate thread to the main application
+*/
+void qtmain(int argc, char *argv[], std::shared_ptr<bool> runApplication)
+{
+    QApplication app(argc, argv);
+
+    // Qt GUI loop is here
+    while(*runApplication)
+    {
+        app.processEvents();
+    }
+
+    app.exit();
+}
+
+/**
+* Application entry point
+*/
+int main(int argc, char *argv[])
+{
+    auto runApplication = std::make_shared<bool>(true);
+
+    // GUI will run on a seperate thread
+    std::thread thread(&qtmain, argc, argv, runApplication);
+
+    // Application loop is here
+    while (*runApplication)
+    {
+        std::string line;
+        std::getline(std::cin, line);
+        *runApplication = line.find("exit") == -1;
+    }
+
+    thread.join();
+    return 0;
+}
+/////////////////////////////////////////////////////////////////////////////////////
+
+If you build and run this you will only see an empty console window you can type in. What you don't see is Qt working on a separate thread which is not blocking you from entering text. If you type exit, both Qt and the application will exit. However as we are using a seperate thread we need more than just a shared bool. Create a new header file called cache.h and add the following changes to the above code:
+
+/////////////////////////////////////////////////////////////////////////////////////
+cache.h
+
+#include <mutex>
+
+/**
+* Cache item able to be locked across threads
+*/
+template <typename T> class Lockable
+{
+public:
+
+    /**
+    * Constructor
+    */
+    Lockable() :
+        m_data(T())
+    {
+    }
+
+    /**
+    * Destructor
+    */
+    virtual ~Lockable()
+    {
+    }
+
+    /**
+    * Locks the thread to set the data
+    * @param data The data to set
+    */
+    void Set(const T& data)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_data = data;
+    }
+
+    /**
+    * Locks the thread to get the data
+    * @return a copy of the data
+    */
+    T Get() const
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_data;
+    }
+
+private:
+
+    mutable std::mutex m_mutex;   ///< Mutex for access
+    T m_data;                     ///< Internal data
+};
+
+/**
+* Manages information sending between the gui and application
+*/
+struct Cache
+{
+    Lockable<bool> ApplicationRunning;
+    Lockable<bool> ExampleButton;
+    Lockable<float> ExampleSpinBox;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
+main.cpp
+
+#include <thread>
+#include <memory>
+#include <iostream>
+#include "QtWidgets/qapplication.h"
+#include "cache.h"
+
+/**
+* Runs Qt on a seperate thread to the main application
+*/
+void qtmain(int argc, char *argv[], std::shared_ptr<Cache> cache)
+{
+    QApplication app(argc, argv);
+
+    // Qt GUI loop is here
+    while(cache->ApplicationRunning.Get())
+    {
+        app.processEvents();
+    }
+
+    app.exit();
+}
+
+/**
+* Application entry point
+*/
+int main(int argc, char *argv[])
+{
+    // Initialise the shared cache between the GUI and application
+    auto cache = std::make_shared<Cache>();
+    cache->ApplicationRunning.Set(true);
+
+    // GUI will run on a seperate thread
+    std::thread thread(&qtmain, argc, argv, cache);
+
+    // Application loop is here
+    while (cache->ApplicationRunning.Get())
+    {
+        // When the button is pressed display the spin box value
+        if (cache->ExampleButton.Get())
+        {
+            std::cout << cache->ExampleSpinBox.Get() << std::endl;
+            cache->ExampleButton.Set(false);
+        }
+
+        // Temporary allow the user to exit until hooking up GUI
+        std::string line;
+        std::getline(std::cin, line);
+        if (line.find("exit") != -1)
+        {
+            cache->ApplicationRunning.Set(false);
+        }
+    }
+
+    thread.join();
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+The application now has a simple cache which, when a member is set or retrieved, a mutex is locked. This means that if one thread is writing to the value the other one must wait until the first is finished before reading it. This is one simple way of sharing data across threads. Next we need to create the actual GUI which will render.
 
 Open up the Qt Creator and click New Project. Select Other Project and then Empty Project. Set the name to 'qt' and the location to the path where the visual studio .vcxproj files are for your project. Click Next.
 
@@ -58,7 +233,7 @@ INCLUDEPATH += C:\Qt\Qt5.3.1\5.3\msvc2013\include\
 
 Go to your .h file. Change the #include <QtWidget> to #include <QtWidgets/QWidget>. 
 
-Double click the .ui file in the tree hierarchy. You will see a canvas area with available Qt widgets to the left of it. Drag and drop two buttons and a double spin box onto the canvas. Rearrange them and given them useful and unique names.
+Double click the .ui file in the tree hierarchy. You will see a canvas area with available Qt widgets to the left of it. Drag and drop a button and a double spin box onto the canvas. Rearrange them and given them useful and unique names.
 
 Right mouse click the top entry in the tree hierarchy and select new. Choose C++ and then C++ Source File. Name this file main and click Next. Click Finish. Main.cpp should now be added to the Sources folder in the tree hierarchy. Double click on it to start editing. This main function will not be called by your Visual Studio application. It will only serve to allow the GUI to run standalone in the Qt Creator. Add the following code to main.cpp:
 
@@ -83,14 +258,214 @@ On the top menu bar go to Build and then Run qmake. Then go to Build and Build A
 4. Enter the command: uic.exe qt/form.ui -o qt/ui_form.h
 5. The ui_form.h file should now be generated in the qt folder next to the .pro file
 
-Go to qt/debug and copy the moc_form.cpp and ui_form.h to the qt folder (same folder the .pro lives in). If you had to do the steps above to generate the ui_form.h it will already be in the correct folder. Any time you update your GUI using the designer and click build (and run uic.exe if needed) a new moc_form.cpp and ui_form.h will be generated. Make sure you replace the versions in the qt folder with the newest generated versions. You can do this manually, set up build events in the designer or write a small script to copy them for you.
+Go to qt/debug and copy the moc_form.cpp and ui_form.h to the qt folder (same folder the .pro lives in). If you had to do the steps above to generate the ui_form.h it will already be in the correct folder. Create a new folder inside the qt folder called moc. Place the moc file in here. Any time you update your GUI using the designer and click build (and run uic.exe if needed) a new moc_form.cpp and ui_form.h will be generated. Make sure you replace the versions in the qt/moc folders with the newest generated versions. You can do this manually, set up build events in the designer or write a small script to copy them for you.
+
+Next we need to expose the GUI a little bit so it can be shown and updated. Change your form header and source files to the following:
+
+/////////////////////////////////////////////////////////////////////////////////////
+form.h
+
+#ifndef FORM_H
+#define FORM_H
+
+#include <QtWidgets/QWidget>
+#include <memory>
+
+struct Cache;
+
+namespace Ui
+{
+    class Form;
+}
+
+class Form : public QWidget
+{
+    Q_OBJECT
+
+public:
+
+    /**
+    * Constructor for the Qt application
+    */
+    Form();
+
+    /**
+    * Constructor for the VS application
+    * @param cache Shared cache with the application
+    */
+    Form(std::shared_ptr<Cache> cache);
+
+    /**
+    * Destructor
+    */
+    ~Form();
+
+private slots:
+
+    /**
+    * Called on release of the example button
+    */
+    void OnExampleButtonRelease();
+
+    /**
+    * Called on change of value of the spin box
+    */
+    void OnExampleSpinBoxChange(double value);
+
+private:
+
+    std::shared_ptr<Cache> m_cache; ///< Shared cache with the application
+    std::unique_ptr<Ui::Form> m_ui; ///< The user interface
+};
+
+#endif // FORM_H
+
+/////////////////////////////////////////////////////////////////////////////////////
+form.cpp
+
+#include "form.h"
+#include "ui_form.h"
+#include "../cache.h"
+#include <QtCore/QObject>
+#include <QtWidgets/QPushbutton.h>
+#include <QtWidgets/QDoubleSpinBox>
+
+Form::Form() :
+    QWidget(nullptr),
+    m_ui(std::make_unique<Ui::Form>())
+{
+    m_ui->setupUi(this);
+}
+
+Form::~Form()
+{
+}
+
+Form::Form(std::shared_ptr<Cache> cache) :
+    QWidget(nullptr),
+    m_ui(std::make_unique<Ui::Form>()),
+    m_cache(cache)
+{
+    m_ui->setupUi(this);
+    m_ui->testSpinBox->setValue(0.0);
+
+    connect(m_ui->testButton, SIGNAL(released(void)),
+        this, SLOT(OnExampleButtonRelease(void)));
+
+    connect(m_ui->testSpinBox, SIGNAL(valueChanged(double)),
+        this, SLOT(OnExampleSpinBoxChange(double)));
+}
+
+void Form::OnExampleButtonRelease()
+{
+    m_cache->ExampleButton.Set(true);
+}
+
+void Form::OnExampleSpinBoxChange(double value)
+{
+    m_cache->ExampleSpinBox.Set(value);
+}
+/////////////////////////////////////////////////////////////////////////////////////
+
+Add an object of your form to the qt main function
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+#include <QApplication>
+#include "form.h"
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    Form form;
+    form.show();
+
+    return app.exec();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+Run QMake again before building as we have added in a private slots section. Any time you change functions in private slots it is a good idea to do this. The private slots allow callbacks to be registered so when the qt button and spin box are interacted with the value can be updated in the shared cache. After building go to Build and then Run. You can use Run to view the design of your form outside the Visual Studio application. Remember once you are happy with the design to update the ui_form.h and moc_form.cpp in the qt folder as these are what the Visual Studio application will use.
+
+Go back to Visual Studio and add the following files in the qt folder to your project:
+
+form.h
+form.cpp
+ui_form.h
+
+Add the following from the qt/moc folder to your project:
+
+moc_form.cpp
+
+Make sure you don't add the main.cpp. That particular main.cpp is only for the Qt Designer to use. 
+
+Make some final changes to main.cpp in Visual Studio:
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+#include <thread>
+#include <memory>
+#include <iostream>
+#include "qt/form.h"
+#include "QtWidgets/qapplication.h"
+#include "cache.h"
+
+/**
+* Runs Qt on a seperate thread to the main application
+*/
+void qtmain(int argc, char *argv[], std::shared_ptr<Cache> cache)
+{
+    QApplication app(argc, argv);
+    Form form(cache);
+    form.show();
+
+    // Qt GUI loop is here
+    while(cache->ApplicationRunning.Get())
+    {
+        app.processEvents();
+
+        // When the form is closed exit the application
+        if (!form.isVisible())
+        {
+            cache->ApplicationRunning.Set(false);
+        }
+    }
+    
+    app.exit();
+}
+
+/**
+* Application entry point
+*/
+int main(int argc, char *argv[])
+{
+    // Initialise the shared cache between the GUI and application
+    auto cache = std::make_shared<Cache>();
+    cache->ApplicationRunning.Set(true);
+
+    // GUI will run on a seperate thread
+    std::thread thread(&qtmain, argc, argv, cache);
+
+    // Application loop is here
+    while (cache->ApplicationRunning.Get())
+    {
+        // When the button is pressed display the spin box value
+        if (cache->ExampleButton.Get())
+        {
+            std::cout << cache->ExampleSpinBox.Get() << std::endl;
+            cache->ExampleButton.Set(false);
+        }
+    }
+
+    thread.join();
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+Now when you run the Visual Studio application you will see a console and the Qt Form. Closing the Qt form will close the application. You can close both windows anytime by setting ApplicationRunning to false. If you press the button the callbacks will fire and update the cache. The main application thread will read the cache value, notice the button was pressed and output the value to the console. 
 
 
-
-
-
-
-
-
-
+You can add more widgets to the GUI and more callbacks depending on what you want to show and how you want to interact with your application.
 
