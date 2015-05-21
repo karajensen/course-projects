@@ -92,9 +92,6 @@
     <ClCompile Include="qt\moc\moc_form.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="tutorial.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="cache.h" />
     <ClInclude Include="qt\form.h" />
     <ClInclude Include="qt\ui_form.h" />
