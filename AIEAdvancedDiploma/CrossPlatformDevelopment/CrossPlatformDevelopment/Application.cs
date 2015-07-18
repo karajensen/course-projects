@@ -19,6 +19,7 @@ namespace CrossPlatformDevelopment
         GraphicsDeviceManager m_graphics;
         SpriteBatch m_spriteBatch;
 
+        Texture2D m_sampleTexture;
         SpriteFont m_calibri_14;
         SpriteFont m_calibri_18;
         SpriteFont m_calibri_22;
@@ -30,6 +31,9 @@ namespace CrossPlatformDevelopment
             : base()
         {
             m_graphics = new GraphicsDeviceManager(this);
+            m_graphics.PreferredBackBufferWidth = Shared.WINDOW_WIDTH;
+            m_graphics.PreferredBackBufferHeight = Shared.WINDOW_HEIGHT;
+
             Content.RootDirectory = "Content";
         }
 
@@ -51,6 +55,8 @@ namespace CrossPlatformDevelopment
             m_calibri_14 = Content.Load<SpriteFont>("Calibri_14");
             m_calibri_18 = Content.Load<SpriteFont>("Calibri_18");
             m_calibri_22 = Content.Load<SpriteFont>("Calibri_22");
+
+            m_sampleTexture = Content.Load<Texture2D>("texture");
         }
 
         /// <summary>
@@ -84,6 +90,11 @@ namespace CrossPlatformDevelopment
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             m_spriteBatch.Begin();
+
+            m_spriteBatch.Draw(m_sampleTexture,
+                new Rectangle(0, 0, 200, 200),
+                null, Color.White, 0.0f, Vector2.Zero,
+                SpriteEffects.FlipHorizontally, 0);
 
             float yPos = 10;
             float xPos = 10;
