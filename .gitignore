@@ -8,6 +8,7 @@
 *.Debug
 *.Release
 *.idb
+*.manifest
 *.fbm/
 ipch/
 html/
@@ -17,6 +18,8 @@ AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Debug/
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Release/
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Assets/Textures/Generated/*.bmp
 AIEAdvancedDiploma/ComputerGraphics/Release/Assets/Textures/Generated/*.bmp
+AIEAdvancedDiploma/CrossPlatformDevelopment/CrossPlatformDevelopment/obj/
+AIEAdvancedDiploma/CrossPlatformDevelopment/CrossPlatformDevelopment/*.exe
 AIEAdvancedDiploma/QtTutorial/QtTutorial/QtTutorial.exe
 AIEAdvancedDiploma/QtTutorial/QtTutorial/QtTutorialD.exe
 AIEAdvancedDiploma/QtTutorial/QtTutorial/Debug/
