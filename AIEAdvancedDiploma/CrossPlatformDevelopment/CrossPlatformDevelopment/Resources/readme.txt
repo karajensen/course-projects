@@ -1,4 +1,11 @@
 
+- Depth sorting for text/sprites
+- Show cursor
+- Move text/sprite to containers
+- Add instances to text/sprites
+- Create menu/game state switching
+- Add sound
+
 =================================================================
 AIE Advanced Diploma - Cross Platform Development Unit
 =================================================================

@@ -39,6 +39,8 @@
     <Compile Include="Common.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sprite.cs" />
+    <Compile Include="Text.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK">
@@ -58,7 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\Icon.ico" />
-    <Content Include="readme.txt" />
+    <Content Include="Resources\readme.txt" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

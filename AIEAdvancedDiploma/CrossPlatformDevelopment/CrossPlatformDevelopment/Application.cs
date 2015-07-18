@@ -16,13 +16,23 @@ namespace CrossPlatformDevelopment
     /// </summary>
     public class Application : Game
     {
-        GraphicsDeviceManager m_graphics;
-        SpriteBatch m_spriteBatch;
+        /// <summary>
+        /// The current state of the game
+        /// </summary>
+        enum GameState
+        {
+            MENU,
+            GAME,
+            HIGH_SCORE,
+            GAME_OVER
+        };
 
-        Texture2D m_sampleTexture;
-        SpriteFont m_calibri_14;
-        SpriteFont m_calibri_18;
-        SpriteFont m_calibri_22;
+        GameState m_gameState = GameState.MENU;   ///< The current state of the game
+        GraphicsDeviceManager m_graphics;         ///< Manages graphics for the game
+        SpriteBatch m_spriteBatch;                ///< Allows rendering of 2D objects
+
+        Sprite m_sampleSprite;
+        Text m_sampleText;
 
         /// <summary>
         /// Constructor
@@ -33,7 +43,6 @@ namespace CrossPlatformDevelopment
             m_graphics = new GraphicsDeviceManager(this);
             m_graphics.PreferredBackBufferWidth = Shared.WINDOW_WIDTH;
             m_graphics.PreferredBackBufferHeight = Shared.WINDOW_HEIGHT;
-
             Content.RootDirectory = "Content";
         }
 
@@ -52,11 +61,16 @@ namespace CrossPlatformDevelopment
         {
             m_spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            m_calibri_14 = Content.Load<SpriteFont>("Calibri_14");
-            m_calibri_18 = Content.Load<SpriteFont>("Calibri_18");
-            m_calibri_22 = Content.Load<SpriteFont>("Calibri_22");
+            m_sampleText = new Text();
+            m_sampleText.Load(m_spriteBatch, Content, "Calibri_14");
+            m_sampleText.SetText("Hello!");
+            m_sampleText.SetColour(Color.Red);
+            m_sampleText.SetDepth(0.0f);
 
-            m_sampleTexture = Content.Load<Texture2D>("texture");
+            m_sampleSprite = new Sprite();
+            m_sampleSprite.Load(m_spriteBatch, Content, "player");
+            m_sampleSprite.SetSize(100, 100);
+            m_sampleSprite.SetDepth(1.0f);
         }
 
         /// <summary>
@@ -87,25 +101,13 @@ namespace CrossPlatformDevelopment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 0.0f, 0);
             m_spriteBatch.Begin();
 
-            m_spriteBatch.Draw(m_sampleTexture,
-                new Rectangle(0, 0, 200, 200),
-                null, Color.White, 0.0f, Vector2.Zero,
-                SpriteEffects.FlipHorizontally, 0);
-
-            float yPos = 10;
-            float xPos = 10;
-            m_spriteBatch.DrawString(m_calibri_14, "Size 14: Calibri", new Vector2(xPos, yPos), Color.White);
-            yPos += m_calibri_14.LineSpacing;
-            m_spriteBatch.DrawString(m_calibri_18, "Size 18: Calibri", new Vector2(xPos, yPos), Color.White);
-            yPos += m_calibri_18.LineSpacing;
-            m_spriteBatch.DrawString(m_calibri_22, "Size 22: Calibri", new Vector2(xPos, yPos), Color.White);
+            m_sampleText.Render(gameTime);
+            m_sampleSprite.Render(gameTime);
 
             m_spriteBatch.End();
-
             base.Draw(gameTime);
         }
     }
