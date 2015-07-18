@@ -1,10 +1,8 @@
 
-- Depth sorting for text/sprites
-- Show cursor
-- Move text/sprite to containers
-- Add instances to text/sprites
-- Create menu/game state switching
-- Add sound
+- Create menu/game state switching with fade
+- Add sound with fade
+- Add highscores read from file
+- Test sample on andriod
 
 =================================================================
 AIE Advanced Diploma - Cross Platform Development Unit
