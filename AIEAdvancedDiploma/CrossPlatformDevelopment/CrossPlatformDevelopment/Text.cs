@@ -27,7 +27,7 @@ namespace CrossPlatformDevelopment
             public String Text = "";                              ///< Text to render
             public Vector2 Position = new Vector2();              ///< The position of the text
             public SpriteEffects FlipState = SpriteEffects.None;  ///< Whether flipped or normal
-            public Color Colour = Color.White;                    ///< The colour of the text
+            public Color Colour = new Color(Color.White, 1.0f);   ///< The colour of the text
             public float Depth = 0.0f;                            ///< The depth of the text from 0-1
             public bool Visible = true;                           ///< Whether to render the text
         }
@@ -73,7 +73,9 @@ namespace CrossPlatformDevelopment
         /// </summary>
         public void SetColour(Color colour, int ID = 0)
         {
-            m_instances[ID].Colour = colour;
+            m_instances[ID].Colour.R = colour.R;
+            m_instances[ID].Colour.G = colour.G;
+            m_instances[ID].Colour.B = colour.B;
         }
 
         /// <summary>
@@ -98,6 +100,14 @@ namespace CrossPlatformDevelopment
         public void SetVisible(bool visible, int ID = 0)
         {
             m_instances[ID].Visible = visible;
+        }
+
+        /// <summary>
+        /// Sets the transparency of the text
+        /// </summary>
+        public void SetTransparency(float value, int ID = 0)
+        {
+            m_instances[ID].Colour.A = (byte)Math.Max(Math.Min(255, (int)value * 255), 0);
         }
 
         /// <summary>

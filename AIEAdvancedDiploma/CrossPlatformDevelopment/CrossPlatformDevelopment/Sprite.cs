@@ -27,6 +27,7 @@ namespace CrossPlatformDevelopment
             public SpriteEffects FlipState = SpriteEffects.None;  ///< Whether flipped or normal
             public Rectangle Rectangle = new Rectangle();         ///< The dimension of the sprite   
             public float Depth = 0.0f;                            ///< The depth of the sprite from 0-1
+            public Color Colour = new Color(Color.White, 1.0f);   ///< Colour to render the sprite
             public bool Visible = true;                           ///< Whether to render the sprite
         }
 
@@ -102,6 +103,14 @@ namespace CrossPlatformDevelopment
         }
 
         /// <summary>
+        /// Sets the transparency of the sprite
+        /// </summary>
+        public void SetTransparency(float value, int ID = 0)
+        {
+            m_instances[ID].Colour.A = (byte)Math.Max(Math.Min(255, (int)value * 255), 0);
+        }
+
+        /// <summary>
         /// Renders the sprite
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
@@ -112,7 +121,7 @@ namespace CrossPlatformDevelopment
                 if (instance.Visible)
                 {
                     m_renderer.Draw(m_texture, instance.Rectangle, null,
-                        Color.White, 0.0f, Vector2.Zero, instance.FlipState, instance.Depth);
+                        instance.Colour, 0.0f, Vector2.Zero, instance.FlipState, instance.Depth);
                 }
             });
         }

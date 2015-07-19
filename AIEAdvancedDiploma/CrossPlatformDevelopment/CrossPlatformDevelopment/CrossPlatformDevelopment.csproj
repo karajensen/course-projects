@@ -36,8 +36,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="GameBuilder.cs" />
     <Compile Include="GameData.cs" />
     <Compile Include="GamePlay.cs" />
+    <Compile Include="InputHandler.cs" />
     <Compile Include="Menu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

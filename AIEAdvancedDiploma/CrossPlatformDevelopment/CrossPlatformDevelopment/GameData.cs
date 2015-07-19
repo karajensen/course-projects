@@ -27,11 +27,27 @@ namespace CrossPlatformDevelopment
     };
 
     /// <summary>
+    /// States the game can enter
+    /// </summary>
+    public enum GameState
+    {
+        NONE,
+        MENU,
+        GAME,
+        HIGH_SCORE,
+        GAME_OVER
+    };
+
+    /// <summary>
     /// Holds objects from the game
     /// </summary>
     public class GameData
     {
+        public GameState CurrentState = GameState.MENU;    ///< The current state of the game
+        public GameState NextState = GameState.NONE;       ///< The desired state of the game
+        public Action<GameState> ChangeState = null;       ///< Callback for switching the game state
+
         public List<Sprite> Sprites = new List<Sprite>();  ///< Container of all sprites to draw
-        public List<Text> Text = new List<Text>();         ///< Container of all text to draw
+        public List<Text> Text = new List<Text>();         ///< Container of all text to draw///
     }
 }

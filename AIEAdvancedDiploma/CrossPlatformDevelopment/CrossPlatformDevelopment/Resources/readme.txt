@@ -1,12 +1,12 @@
 
 - Design doc, technical doc + schedule write
 
-- Create game builder
-- Create input class
-- State switching fade
-- Add sound with fade
+- Menu interaction
+- State switching/fade
+- Add sound/fade
 - Add highscores read from file
-- Player moves with touch/mouse
+
+- Player moves with touch
 - Test sample on andriod/emulator
 
 =================================================================
