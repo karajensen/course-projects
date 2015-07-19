@@ -28,18 +28,20 @@ namespace CrossPlatformDevelopment
             GAME_OVER
         };
 
-        GameState m_gameState = GameState.MENU;       ///< The current state of the game
-        GraphicsDeviceManager m_graphics;             ///< Manages graphics for the game
-        SpriteBatch m_spriteBatch;                    ///< Allows rendering of 2D objects
-
-        List<Sprite> m_sprites = new List<Sprite>();  ///< Container of all sprites to draw
-        List<Text> m_text = new List<Text>();         ///< Container of all text to draw
+        GameState m_gameState = GameState.MENU;  ///< The current state of the game
+        GameData m_data = new GameData();        ///< Holds objects from the game
+        GraphicsDeviceManager m_graphics;        ///< Manages graphics for the game
+        SpriteBatch m_spriteBatch;               ///< Allows rendering of 2D objects
+        Menu m_menu;                             ///< Manages menu logic
+        GamePlay m_game;                         ///< Manages game logic
 
         /// <summary>
         /// Constructor
         /// </summary>
         public Application()
         {
+            m_game = new GamePlay(m_data);
+            m_menu = new Menu(m_data);
             m_graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -62,41 +64,33 @@ namespace CrossPlatformDevelopment
 
             for(int i = 0; i < ID.MAX_SPRITES; ++i)
             {
-                m_sprites.Insert(i, new Sprite());
+                m_data.Sprites.Insert(i, new Sprite());
             }
 
             for (int i = 0; i < ID.MAX_TEXT; ++i)
             {
-                m_text.Insert(i, new Text());
+                m_data.Text.Insert(i, new Text());
             }
 
-            m_sprites[ID.MENU_BACKDROP].Load(m_spriteBatch, Content, "menu");
-            m_sprites[ID.MENU_BACKDROP].SetSize(800, 600);
+            m_data.Sprites[ID.MENU_BACKDROP].Load(m_spriteBatch, Content, "menu");
+            m_data.Sprites[ID.MENU_BACKDROP].SetSize(800, 600);
 
-            m_sprites[ID.GAME_BACKDROP].Load(m_spriteBatch, Content, "game");
-            m_sprites[ID.GAME_BACKDROP].SetSize(800, 600);
+            m_data.Sprites[ID.GAME_BACKDROP].Load(m_spriteBatch, Content, "game");
+            m_data.Sprites[ID.GAME_BACKDROP].SetSize(800, 600);
 
-            m_sprites[ID.HIGH_SCORE_BACKDROP].Load(m_spriteBatch, Content, "highscore");
-            m_sprites[ID.HIGH_SCORE_BACKDROP].SetSize(800, 600);
-            
-            m_sprites[ID.PLAYER].Load(m_spriteBatch, Content, "player");
-            m_sprites[ID.PLAYER].SetSize(100, 100);
+            m_data.Sprites[ID.HIGH_SCORE_BACKDROP].Load(m_spriteBatch, Content, "highscore");
+            m_data.Sprites[ID.HIGH_SCORE_BACKDROP].SetSize(800, 600);
 
-            m_sprites[ID.ENEMY].Load(m_spriteBatch, Content, "enemy");
-            m_sprites[ID.ENEMY].SetSize(100, 100);
+            m_data.Sprites[ID.PLAYER].Load(m_spriteBatch, Content, "player");
+            m_data.Sprites[ID.PLAYER].SetSize(100, 100);
 
-            m_text[ID.SCORE].Load(m_spriteBatch, Content, "Calibri_14");
-            m_text[ID.SCORE].SetText("HELLO!");
+            m_data.Sprites[ID.ENEMY].Load(m_spriteBatch, Content, "enemy");
+            m_data.Sprites[ID.ENEMY].SetSize(100, 100);
+
+            m_data.Text[ID.SCORE].Load(m_spriteBatch, Content, "Calibri_14");
+            m_data.Text[ID.SCORE].SetText("HELLO!");
 
             ChangeState(GameState.GAME);
-        }
-
-        /// <summary>
-        /// Resets to a new game
-        /// </summary>
-        private void ResetGame()
-        {
-            m_sprites[ID.PLAYER].SetCenter(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         }
 
         /// <summary>
@@ -105,48 +99,17 @@ namespace CrossPlatformDevelopment
         private void ChangeState(GameState state)
         {
             m_gameState = state;
+            m_data.Sprites.ForEach(sprite => sprite.SetVisible(false));
 
-            m_sprites.ForEach(sprite => sprite.SetVisible(false));
-
-            if(m_gameState == GameState.MENU)
+            switch (m_gameState)
             {
-                m_sprites[ID.MENU_BACKDROP].SetVisible(true);
+            case GameState.MENU:
+                m_menu.Load();
+                break;
+            case GameState.GAME:
+                m_game.Load(Window);
+                break;
             }
-            else if(m_gameState == GameState.HIGH_SCORE)
-            {
-                m_sprites[ID.HIGH_SCORE_BACKDROP].SetVisible(true);
-            }
-            else if (m_gameState == GameState.GAME_OVER)
-            {
-            }
-            else /*GameState.GAME*/
-            {
-                m_sprites[ID.GAME_BACKDROP].SetVisible(true);
-                m_sprites[ID.PLAYER].SetVisible(true);
-                m_sprites[ID.ENEMY].SetVisible(true);
-                ResetGame();
-            }
-        }
-
-        /// <summary>
-        /// Updates the menu
-        /// </summary>
-        private void UpdateMenu()
-        {
-        }
-
-        /// <summary>
-        /// Updates the game
-        /// </summary>
-        private void UpdateGame()
-        {
-        }
-
-        /// <summary>
-        /// Updates the high score
-        /// </summary>
-        private void UpdateHighScore()
-        {
         }
 
         /// <summary>
@@ -155,6 +118,8 @@ namespace CrossPlatformDevelopment
         /// <param name="gameTime">Provides a snapshot of timing values</param>
         protected override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
@@ -173,17 +138,12 @@ namespace CrossPlatformDevelopment
             switch(m_gameState)
             {
             case GameState.MENU:
-                UpdateMenu();
+                m_menu.Update();
                 break;
             case GameState.GAME:
-                UpdateGame();
-                break;
-            case GameState.HIGH_SCORE:
-                UpdateHighScore();
+                m_game.Update();
                 break;
             }
-
-            base.Update(gameTime);
         }
 
         /// <summary>
@@ -195,8 +155,8 @@ namespace CrossPlatformDevelopment
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 0.0f, 0);
             m_spriteBatch.Begin();
 
-            m_sprites.ForEach(sprite => sprite.Render(gameTime));
-            m_text.ForEach(text => text.Render(gameTime));
+            m_data.Sprites.ForEach(sprite => sprite.Render(gameTime));
+            m_data.Text.ForEach(text => text.Render(gameTime));
 
             m_spriteBatch.End();
             base.Draw(gameTime);

@@ -1,8 +1,12 @@
 
 - Design doc, technical doc + schedule write
-- Create menu/game state switching with fade
+
+- Create game builder
+- Create input class
+- State switching fade
 - Add sound with fade
 - Add highscores read from file
+- Player moves with touch/mouse
 - Test sample on andriod/emulator
 
 =================================================================
