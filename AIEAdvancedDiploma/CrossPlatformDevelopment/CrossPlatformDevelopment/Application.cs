@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
 
 namespace CrossPlatformDevelopment
 {
@@ -37,8 +38,7 @@ namespace CrossPlatformDevelopment
         /// <summary>
         /// Constructor
         /// </summary>
-        public Application() 
-            : base()
+        public Application()
         {
             m_graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -46,7 +46,7 @@ namespace CrossPlatformDevelopment
         }
 
         /// <summary>
-        /// Game logic initialistaion
+        /// Initialistaion once on application startup
         /// </summary>
         protected override void Initialize()
         {
@@ -159,6 +159,15 @@ namespace CrossPlatformDevelopment
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 Exit();
+            }
+
+            TouchCollection touches = TouchPanel.GetState();
+            foreach (TouchLocation touch in touches)
+            {
+                if (touch.State == TouchLocationState.Pressed)
+                {
+                    ChangeState(GameState.MENU);
+                }
             }
 
             switch(m_gameState)
