@@ -36,6 +36,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="Collision.cs" />
+    <Compile Include="Fader.cs" />
     <Compile Include="GameBuilder.cs" />
     <Compile Include="GameData.cs" />
     <Compile Include="GamePlay.cs" />

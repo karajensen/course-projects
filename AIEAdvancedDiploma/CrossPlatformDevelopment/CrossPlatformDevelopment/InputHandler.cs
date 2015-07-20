@@ -45,7 +45,16 @@ namespace CrossPlatformDevelopment
         public bool IsMouseClicked
         {
             get;
-            set;
+            private set;
+        }
+
+        /// <summary>
+        /// Mouse screen space position
+        /// </summary>
+        public Point MousePosition
+        {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -54,7 +63,7 @@ namespace CrossPlatformDevelopment
         public bool IsMouseDown
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
@@ -82,17 +91,18 @@ namespace CrossPlatformDevelopment
         public void Update()
         {
             bool isMouseDown = Mouse.GetState().LeftButton == ButtonState.Pressed;
-            IsMouseClicked = IsMouseDown && !isMouseDown;
-            IsMouseDown = isMouseDown;
+            IsMouseClicked = !InputPaused ? IsMouseDown && !isMouseDown : false;
+            IsMouseDown = !InputPaused ? isMouseDown : false;
+            MousePosition = Mouse.GetState().Position;
 
             foreach (var pair in m_keyCallbacks)
             {
                 bool isKeyDown = Keyboard.GetState().IsKeyDown(pair.Key);
-                if (pair.Value.IsKeyDown && !isKeyDown)
+                if (!InputPaused && pair.Value.IsKeyDown && !isKeyDown)
                 {
                     pair.Value.ActionCallback();
                 }
-                pair.Value.IsKeyDown = isKeyDown;
+                pair.Value.IsKeyDown = !InputPaused ? isKeyDown : false;
             }
         }
     }

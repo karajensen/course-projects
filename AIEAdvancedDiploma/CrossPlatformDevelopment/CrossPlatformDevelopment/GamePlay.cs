@@ -27,21 +27,20 @@ namespace CrossPlatformDevelopment
         /// <summary>
         /// Loads the game
         /// </summary>
-        public void Load(GameWindow window)
+        public void Load()
         {
             m_data.Sprites[ID.GAME_BACKDROP].SetVisible(true);
             m_data.Sprites[ID.PLAYER].SetVisible(true);
             m_data.Sprites[ID.ENEMY].SetVisible(true);
 
             m_data.Sprites[ID.PLAYER].SetCenter(
-                window.ClientBounds.Width / 2,
-                window.ClientBounds.Height / 2);            
+                m_data.Width / 2, m_data.Height / 2);            
         }
 
         /// <summary>
         /// Updates the game
         /// </summary>
-        public void Update()
+        public void Update(float deltatime)
         {
         }
     }

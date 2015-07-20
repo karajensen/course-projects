@@ -1,11 +1,10 @@
 
 - Design doc, technical doc + schedule write
 
-- Menu interaction
-- State switching/fade
+- Diagnostic class
+- Highscore/game over states
 - Add sound/fade
 - Add highscores read from file
-
 - Player moves with touch
 - Test sample on andriod/emulator
 

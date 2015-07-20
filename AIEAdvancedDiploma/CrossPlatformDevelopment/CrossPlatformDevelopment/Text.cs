@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -63,58 +64,73 @@ namespace CrossPlatformDevelopment
         /// <summary>
         /// Sets the position of the text
         /// </summary>
-        public void SetPosition(int x, int y, int ID = 0)
+        public void SetPosition(int x, int y)
         {
-            m_instances[ID].Position = new Vector2(x, y);
+            m_instances.ForEach(i => i.Position = new Vector2(x, y));
         }
 
         /// <summary>
         /// Sets the colour of the text
         /// </summary>
-        public void SetColour(Color colour, int ID = 0)
+        public void SetColour(Color colour)
         {
-            m_instances[ID].Colour.R = colour.R;
-            m_instances[ID].Colour.G = colour.G;
-            m_instances[ID].Colour.B = colour.B;
+            m_instances.ForEach(i => i.Colour.R = colour.R);
+            m_instances.ForEach(i => i.Colour.G = colour.G);
+            m_instances.ForEach(i => i.Colour.B = colour.B);
         }
 
         /// <summary>
         /// Sets what the text should render
         /// </summary>
-        public void SetText(String text, int ID = 0)
+        public void SetText(String text)
         {
-            m_instances[ID].Text = text;
+            m_instances.ForEach(i => i.Text = text);
         }
 
         /// <summary>
         /// Sets the depth of the sprite
         /// </summary>
-        public void SetDepth(float depth, int ID = 0)
+        public void SetDepth(float depth)
         {
-            m_instances[ID].Depth = depth;
+            m_instances.ForEach(i => i.Depth = depth);
         }
 
         /// <summary>
         /// Sets whether the text is visible
         /// </summary>
-        public void SetVisible(bool visible, int ID = 0)
+        public void SetVisible(bool visible)
         {
-            m_instances[ID].Visible = visible;
+            m_instances.ForEach(i => i.Visible = visible);
+        }
+
+        /// <summary>
+        /// Toggles whether the text is visible
+        /// </summary>
+        public void ToggleVisible()
+        {
+            m_instances.ForEach(i => i.Visible = !i.Visible);
+        }
+
+        /// <summary>
+        /// Gets whether the text is visible
+        /// </summary>
+        public bool IsVisible()
+        {
+            return m_instances.Count(i => i.Visible) > 0;
         }
 
         /// <summary>
         /// Sets the transparency of the text
         /// </summary>
-        public void SetTransparency(float value, int ID = 0)
+        public void SetTransparency(float value)
         {
-            m_instances[ID].Colour.A = (byte)Math.Max(Math.Min(255, (int)value * 255), 0);
+            m_instances.ForEach(i => i.Colour.A = (byte)Math.Max(Math.Min(255, (int)(value * 255.0f)), 0));
         }
 
         /// <summary>
         /// Renders the text
         /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void Render(GameTime gameTime)
+        public void Render()
         {
             m_instances.ForEach(instance =>
             {

@@ -62,59 +62,66 @@ namespace CrossPlatformDevelopment
         /// <summary>
         /// Sets the size of the sprite
         /// </summary>
-        public void SetSize(int width, int height, int ID = 0)
+        public void SetSize(int width, int height)
         {
-            m_instances[ID].Rectangle.Width = width;
-            m_instances[ID].Rectangle.Height = height;
+            m_instances.ForEach(i => i.Rectangle.Width = width);
+            m_instances.ForEach(i => i.Rectangle.Height = height);
         }
 
         /// <summary>
         /// Sets the position of the sprite from the top left corner
         /// </summary>
-        public void SetPosition(int x, int y, int ID = 0)
+        public void SetPosition(int x, int y)
         {
-            m_instances[ID].Rectangle.X = x;
-            m_instances[ID].Rectangle.Y = y;
+            m_instances.ForEach(i => i.Rectangle.X = x);
+            m_instances.ForEach(i => i.Rectangle.Y = y);
         }
 
         /// <summary>
         /// Sets the position of the sprite from its center
         /// </summary>
-        public void SetCenter(int x, int y, int ID = 0)
+        public void SetCenter(int x, int y)
         {
-            m_instances[ID].Rectangle.X = x - m_instances[ID].Rectangle.Width / 2;
-            m_instances[ID].Rectangle.Y = y - m_instances[ID].Rectangle.Height;
+            m_instances.ForEach(i => i.Rectangle.X = x - i.Rectangle.Width / 2);
+            m_instances.ForEach(i => i.Rectangle.Y = y -i.Rectangle.Height);
         }
 
         /// <summary>
         /// Sets the depth of the sprite
         /// </summary>
-        public void SetDepth(float depth, int ID = 0)
+        public void SetDepth(float depth)
         {
-            m_instances[ID].Depth = depth;
+            m_instances.ForEach(i => i.Depth = depth);
         }
 
         /// <summary>
         /// Sets whether the sprite is visible
         /// </summary>
-        public void SetVisible(bool visible, int ID = 0)
+        public void SetVisible(bool visible)
         {
-            m_instances[ID].Visible = visible;
+            m_instances.ForEach(i => i.Visible = visible);
         }
 
         /// <summary>
         /// Sets the transparency of the sprite
         /// </summary>
-        public void SetTransparency(float value, int ID = 0)
+        public void SetTransparency(float value)
         {
-            m_instances[ID].Colour.A = (byte)Math.Max(Math.Min(255, (int)value * 255), 0);
+            m_instances.ForEach(i => i.Colour.A = (byte)Math.Max(Math.Min(255, (int)(value * 255.0f)), 0));
+        }
+
+        /// <summary>
+        /// Gets the rectangle of the sprite
+        /// </summary>
+        public Rectangle GetRectangle(int ID = 0)
+        {
+            return m_instances[ID].Rectangle;
         }
 
         /// <summary>
         /// Renders the sprite
         /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void Render(GameTime gameTime)
+        public void Render()
         {
             m_instances.ForEach(instance =>
             {
