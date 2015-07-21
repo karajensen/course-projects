@@ -25,8 +25,7 @@ namespace CrossPlatformDevelopment
         /// <summary>
         /// Text IDs
         /// </summary>
-        public const int DIAGNOSTICS = 0;
-        public const int MAX_TEXT = 1;
+        public const int MAX_TEXT = 0;
     };
 
     /// <summary>
@@ -48,9 +47,6 @@ namespace CrossPlatformDevelopment
     {
         public Action<GameState> ChangeState = null;       ///< Callback for switching the game state
         public Action QuitGame = null;                     ///< Callback for ending the game
-
-        public GameState CurrentState = GameState.MENU;    ///< The current state of the game
-        public GameState NextState = GameState.NONE;       ///< The desired state of the game
 
         public int Width = 0;                              ///< Width of the game window
         public int Height = 0;                             ///< Height of the game window

@@ -61,10 +61,6 @@ namespace CrossPlatformDevelopment
             data.Sprites[ID.ENEMY].Load(spriteBatch, content, "enemy");
             data.Sprites[ID.ENEMY].SetSize(100, 100);
             data.Sprites[ID.ENEMY].SetDepth(0.4f);
-
-            data.Text[ID.DIAGNOSTICS].Load(spriteBatch, content, "Calibri_14");
-            data.Text[ID.DIAGNOSTICS].SetDepth(1.0f);
-            data.Text[ID.DIAGNOSTICS].SetColour(Color.Black);
         }
     }
 }

@@ -17,13 +17,16 @@ namespace CrossPlatformDevelopment
     /// </summary>
     public class Application : Game
     {
-        GameData m_data;                    ///< Holds objects from the game
-        InputHandler m_input;               ///< Handles user input
-        GraphicsDeviceManager m_graphics;   ///< Manages graphics for the game
-        SpriteBatch m_spriteBatch;          ///< Allows rendering of 2D objects
-        Menu m_menu;                        ///< Manages menu logic
-        GamePlay m_game;                    ///< Manages game logic
-        Fader m_stateFader;                 ///< Transitions the fade in/out of a new state
+        GameData m_data;                           ///< Holds objects from the game
+        GameState m_currentState = GameState.NONE; ///< The current state of the game
+        GameState m_nextState = GameState.NONE;    ///< The desired state of the game
+        InputHandler m_input;                      ///< Handles user input
+        GraphicsDeviceManager m_graphics;          ///< Manages graphics for the game
+        SpriteBatch m_spriteBatch;                 ///< Allows rendering of 2D objects
+        Menu m_menu;                               ///< Manages menu logic
+        GamePlay m_game;                           ///< Manages game logic
+        Fader m_stateFader;                        ///< Transitions the fade in/out of a new state
+        Diagnostics m_diagnostics;                 ///< Diagnostic renderer
                                                    
         /// <summary>
         /// Constructor
@@ -34,6 +37,7 @@ namespace CrossPlatformDevelopment
             m_data.ChangeState = state => ChangeState(state);
             m_data.QuitGame = () => Exit();
 
+            m_diagnostics = new Diagnostics();
             m_stateFader = new Fader();
             m_input = new InputHandler();
             m_game = new GamePlay(m_data);
@@ -53,11 +57,13 @@ namespace CrossPlatformDevelopment
         protected override void LoadContent()
         {
             m_spriteBatch = new SpriteBatch(GraphicsDevice);
+            m_diagnostics.Load(m_spriteBatch, Content);
+
             GameBuilder.Build(m_spriteBatch, Content, m_data);
             ChangeState(GameState.MENU);
 
             m_input.AddCallback(Keys.Escape, () => Exit());
-            m_input.AddCallback(Keys.D, () => m_data.Text[ID.DIAGNOSTICS].ToggleVisible());
+            m_input.AddCallback(Keys.D, () => m_diagnostics.Toggle());
         }
 
         /// <summary>
@@ -65,9 +71,9 @@ namespace CrossPlatformDevelopment
         /// </summary>
         private void ChangeState(GameState state)
         {
-            if(m_data.NextState == GameState.NONE)
+            if(m_nextState == GameState.NONE)
             {
-                m_data.NextState = state;
+                m_nextState = state;
                 m_stateFader.State = Fader.FadeState.FADE_OUT;
                 m_input.InputPaused = true;
             }
@@ -90,11 +96,11 @@ namespace CrossPlatformDevelopment
                 {
                     m_input.InputPaused = false;
                     m_stateFader.State = Fader.FadeState.FADE_IN;
-                    m_data.CurrentState = m_data.NextState;
-                    m_data.NextState = GameState.NONE;
+                    m_currentState = m_nextState;
+                    m_nextState = GameState.NONE;
                     m_data.Sprites.ForEach(sprite => sprite.SetVisible(false));
 
-                    switch (m_data.CurrentState)
+                    switch (m_currentState)
                     {
                         case GameState.MENU:
                             m_menu.Load();
@@ -112,15 +118,13 @@ namespace CrossPlatformDevelopment
         /// </summary>
         private void UpdateDiagnostics(float deltatime)
         {
-            if(m_data.Text[ID.DIAGNOSTICS].IsVisible())
+            if(m_diagnostics.IsVisible())
             {
                 int x = m_input.MousePosition.X;
                 int y = m_input.MousePosition.Y;
-
-                m_data.Text[ID.DIAGNOSTICS].SetText(
-                    "Deltatime: " + deltatime.ToString() + "\n" +
-                    "Mouse Pos: " + x.ToString() + ", " + y.ToString() + "\n" +
-                    "Mouse Down: " + m_input.IsMouseDown.ToString() + "\n");
+                Diagnostics.AddText("Deltatime", deltatime.ToString());
+                Diagnostics.AddText("Mouse Pos", x.ToString() + ", " + y.ToString());
+                Diagnostics.AddText("Mouse Down", m_input.IsMouseDown.ToString());
             }
         }
 
@@ -133,11 +137,13 @@ namespace CrossPlatformDevelopment
             float deltatime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             base.Update(gameTime);
+            m_diagnostics.Clear();
             m_input.Update();
+
             UpdateState(deltatime);
             UpdateDiagnostics(deltatime);
 
-            switch (m_data.CurrentState)
+            switch (m_currentState)
             {
             case GameState.MENU:
                 m_menu.Update(deltatime, m_input);
@@ -159,6 +165,7 @@ namespace CrossPlatformDevelopment
 
             m_data.Sprites.ForEach(sprite => sprite.Render());
             m_data.Text.ForEach(text => text.Render());
+            m_diagnostics.Render();
 
             m_spriteBatch.End();
             base.Draw(gameTime);
