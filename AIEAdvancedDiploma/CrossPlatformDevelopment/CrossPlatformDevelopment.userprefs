@@ -1,0 +1,15 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\SoundManager.cs">
+    <Files>
+      <File FileName="Assets\SoundManager.cs" Line="141" Column="34" />
+      <File FileName="Assets\Utilities.cs" Line="43" Column="6" />
+      <File FileName="Assets\MenuLoader.cs" Line="27" Column="1" />
+      <File FileName="Assets\SceneFader.cs" Line="15" Column="21" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
