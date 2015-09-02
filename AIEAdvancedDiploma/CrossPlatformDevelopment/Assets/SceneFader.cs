@@ -5,10 +5,10 @@
 using UnityEngine;
 using System.Collections;
 
-/**
-* Cross-scene fading to black
-* Note: Must be on top of all other sprites but not on GUI components
-*/
+/// <summary>
+/// Cross-scene fading to black
+/// Note: Must be on top of all other sprites but not on GUI components
+/// </summary>
 public class SceneFader : MonoBehaviour 
 {
     static GameObject sm_fadeSprite = null;            // Image to fade in/out
@@ -16,9 +16,9 @@ public class SceneFader : MonoBehaviour
     static float sm_alpha = 0.0f;                      // Alpha for the fade sprite
     float m_fadeSpeed = 0.75f;                         // Speed for fading
 
-    /**
-    * Initialises the fader
-    */
+    /// <summary>
+    /// Initialises the fader
+    /// </summary>
     void Start () 
     {
         if(sm_fadeSprite == null)
@@ -30,49 +30,49 @@ public class SceneFader : MonoBehaviour
         }
     }
 
-    /**
-    * Returns the UI image for the fader
-    */
+    /// <summary>
+    /// Returns the UI image for the fader
+    /// </summary>
     UnityEngine.UI.Image GetSprite()
     {
         return sm_fadeSprite.GetComponent<UnityEngine.UI.Image> ();
     }
 
-    /**
-    * Fades into black
-    */
+    /// <summary>
+    /// Fades into black
+    /// </summary>
     public void FadeIn()
     {
         sm_fadeState = FadeState.FADE_IN;
     }
 
-    /**
-    * Fades out of black
-    */
+    /// <summary>
+    /// Fades out of black
+    /// </summary>
     public void FadeOut()
     {
         sm_fadeState = FadeState.FADE_OUT;
     }
 
-    /**
-    * Whether the scene is fully visible
-    */
+    /// <summary>
+    /// Whether the scene is fully visible
+    /// </summary>
     public bool IsFadedOut()
     {
         return GetSprite().color.a <= 0.0f;
     }
 
-    /**
-    * Whether the scene is fully occluded
-    */
+    /// <summary>
+    /// Whether the scene is fully occluded
+    /// </summary>
     public bool IsFadedIn()
     {
         return GetSprite().color.a >= 1.0f;
     }
 
-    /**
-    * Fades the sprite in/out
-    */
+    /// <summary>
+    /// Fades the sprite in/out
+    /// </summary>
     void Update () 
     {
         if(sm_fadeState != FadeState.NO_FADE)
@@ -91,9 +91,9 @@ public class SceneFader : MonoBehaviour
         }
     }
     
-    /**
-    * Gets the SceneFader from the scene
-    */
+    /// <summary>
+    /// Gets the SceneFader from the scene
+    /// </summary>
     public static SceneFader Get()
     {
         var obj = FindObjectOfType<SceneFader>();

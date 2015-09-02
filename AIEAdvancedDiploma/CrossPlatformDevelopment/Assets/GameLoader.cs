@@ -4,9 +4,9 @@
 
 using UnityEngine;
 
-/**
-* Initialises/exits the scene
-*/
+/// <summary>
+/// Initialises/exits the scene
+/// </summary>
 public class GameLoader : MonoBehaviour 
 {
     bool m_initialised = false;         // Whether the scene has been initialised
@@ -14,9 +14,9 @@ public class GameLoader : MonoBehaviour
     SceneFader m_sceneFader = null;     // Shared scene fader
     SoundManager m_soundManager = null; // Shared sound manager
 
-    /**
-    * Updates the loader
-    */
+    /// <summary>
+    /// Updates the loader
+    /// </summary>
     void Update()
     {
         if(!m_initialised)
@@ -41,9 +41,9 @@ public class GameLoader : MonoBehaviour
         }
     }
 
-    /**
-    * Exits the scene
-    */
+    /// <summary>
+    /// Exits the scene
+    /// </summary>
     public void ExitScene()
     {
         if(!m_exitRequest)
@@ -54,9 +54,9 @@ public class GameLoader : MonoBehaviour
         }
     }
 
-    /**
-    * Gets the Loader from the scene
-    */
+    /// <summary>
+    /// Gets the Loader from the scene
+    /// </summary>
     public static GameLoader Get()
     {
         var obj = FindObjectOfType<GameLoader>();
