@@ -5,6 +5,8 @@
 *.vcxproj.user
 *.ilk
 *.pdb
+*.iobj
+*.ipdb
 *.Debug
 *.Release
 *.idb
