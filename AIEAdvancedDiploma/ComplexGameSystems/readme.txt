@@ -1,4 +1,9 @@
 
+- Update proposal brief
+- Make GUI multithreaded
+- Render loaded image via render target
+- Render video with OpenCV
+
 =================================================================
 AIE Advanced Diploma - Complex Game Systems Unit
 =================================================================

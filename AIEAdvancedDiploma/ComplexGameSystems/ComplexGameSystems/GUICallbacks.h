@@ -6,15 +6,13 @@
 #include <Windows.h>
 #include <functional>
 
-typedef std::function<void(void)> VoidFn;
-
 /**
 * Callbacks for use in the GUI
 */
 struct GuiCallbacks
 {
-    VoidFn testButton;
-    VoidFn quitFn;
+    std::function<void(int)> setVectorizationAmount = nullptr;
+    std::function<void(void)> quitFn = nullptr;
 };
 
 /**
@@ -22,6 +20,6 @@ struct GuiCallbacks
 */
 struct WindowHandle
 {
-    HWND handle;
-    HINSTANCE instance;
+    HWND handle = nullptr;
+    HINSTANCE instance = nullptr;
 };

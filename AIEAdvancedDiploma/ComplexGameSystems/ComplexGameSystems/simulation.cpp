@@ -54,8 +54,8 @@ void Simulation::Update()
 
 void Simulation::LoadGuiCallbacks(GuiCallbacks* callbacks)
 {
-    using namespace std::placeholders;
-    callbacks->testButton = []() { ShowMessageBox("Test"); };
+    callbacks->setVectorizationAmount = 
+        [](int amount) { ShowMessageBox(std::to_string(amount)); };
 }
 
 bool Simulation::CreateSimulation(HINSTANCE hInstance, HWND hWnd, LPDIRECT3DDEVICE9 d3ddev) 

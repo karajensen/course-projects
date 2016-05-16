@@ -31,7 +31,6 @@ namespace GUI
         {
             InitializeComponent();
             CreateSimulationForm();
-            CreateButtons();
         }
 
         /**
@@ -128,86 +127,19 @@ namespace GUI
         }
 
         /**
-        * Creates and adds a button to the gui
-        * @param button A tracker reference to the button control 
-        * @param image The image filename for the button icon 
-        * @param tip A tooltip description for the button 
-        * @param index The index for the button, used to determine positioning 
-        * @param callback The method to call when the button is clicked 
-        */
-        void CreateButton(Button^% button, 
-                          String^ image, 
-                          String^ tip, 
-                          int index, 
-                          EventHandler^ callback)
-        {
-            button = gcnew Button();
-            button->Click += callback;
-            CreateControl(button, image, tip, index);
-        }
-
-        /**
         * On GUI Close Event
         */
-        System::Void GUIFormClosed(System::Object^ sender, FormClosedEventArgs^ e) 
+        System::Void GUIForm_FormClosed(System::Object^ sender, FormClosedEventArgs^ e)
         {
             m_callbacks->quitFn();
         }
 
         /**
-        * On Test Button Press
+        * On Track bar value change
         */
-        System::Void TestClick(System::Object^ sender, System::EventArgs^ e)
+        System::Void TrackBarValueChanged(System::Object^  sender, System::EventArgs^  e) 
         {
-            m_callbacks->testButton();
-        }
-
-        /**
-        * Creates the gui buttons
-        */
-        void CreateButtons()
-        {
-            int index = 0;
-            String^ path = "Resources//Sprites//";
-            m_pressedColor = Color::DarkGray;
-            m_unpressedColor = Color::FromArgb(230, 230, 230);
-
-            CreateButton(m_testButton, path + "resetcam.png", "Reset the camera",
-                index++, gcnew System::EventHandler(this, &GUIForm::TestClick));
-        }
-
-        /**
-        * Creates a gui control
-        * @param control The control to add to the gui 
-        * @param image The image filename for the control icon 
-        * @param tip A tooltip description for the control 
-        * @param index The index for the control, used to determine positioning    
-        */        
-        void CreateControl(ButtonBase^ control, String^ image, String^ tip, int index)
-        {
-            const int buttonSize = 32;
-            const int border = 2;
-
-            m_guiPanel->Controls->Add(control);
-            control->TabIndex = 0;
-            control->TabStop = false;
-            control->UseVisualStyleBackColor = false;
-            control->BackgroundImage = Image::FromFile(image);
-            control->Cursor = System::Windows::Forms::Cursors::Hand;
-            control->Location = System::Drawing::Point(border, (index*buttonSize)+border);
-            control->Margin = System::Windows::Forms::Padding(0);
-            control->MaximumSize = System::Drawing::Size(buttonSize, buttonSize);
-            control->MinimumSize = System::Drawing::Size(buttonSize, buttonSize);
-            control->Size = System::Drawing::Size(buttonSize, buttonSize);
-            control->FlatAppearance->BorderSize = 0;
-            control->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-            control->FlatAppearance->CheckedBackColor = m_pressedColor;
-            control->FlatAppearance->MouseDownBackColor = m_pressedColor;
-            control->FlatAppearance->MouseOverBackColor = Color::FromArgb(150, 150, 240);
-            control->BackColor = m_unpressedColor;
-
-            ToolTip^ tooltip = gcnew ToolTip();
-            tooltip->SetToolTip(control, tip);
+            m_callbacks->setVectorizationAmount(m_trackBar->Value);
         }
 
         /**
@@ -217,39 +149,56 @@ namespace GUI
         void InitializeComponent(void)
         {
             this->m_mainPanel = (gcnew System::Windows::Forms::Panel());
-            this->m_guiPanel = (gcnew System::Windows::Forms::Panel());
+            this->m_trackBarPanel = (gcnew System::Windows::Forms::Panel());
+            this->m_trackBar = (gcnew System::Windows::Forms::TrackBar());
             this->m_mainPanel->SuspendLayout();
+            this->m_trackBarPanel->SuspendLayout();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->m_trackBar))->BeginInit();
             this->SuspendLayout();
             // 
             // m_mainPanel
             // 
-            this->m_mainPanel->Controls->Add(this->m_guiPanel);
+            this->m_mainPanel->Controls->Add(this->m_trackBarPanel);
             this->m_mainPanel->Location = System::Drawing::Point(0, 0);
             this->m_mainPanel->Name = L"m_mainPanel";
-            this->m_mainPanel->Size = System::Drawing::Size(800, 600);
+            this->m_mainPanel->Size = System::Drawing::Size(624, 441);
             this->m_mainPanel->TabIndex = 0;
             // 
-            // m_guiPanel
+            // m_trackBarPanel
             // 
-            this->m_guiPanel->BackColor = System::Drawing::Color::Gray;
-            this->m_guiPanel->Location = System::Drawing::Point(12, 12);
-            this->m_guiPanel->Name = L"m_guiPanel";
-            this->m_guiPanel->Size = System::Drawing::Size(36, 484);
-            this->m_guiPanel->TabIndex = 14;
+            this->m_trackBarPanel->Controls->Add(this->m_trackBar);
+            this->m_trackBarPanel->Location = System::Drawing::Point(6, 394);
+            this->m_trackBarPanel->Name = L"m_trackBarPanel";
+            this->m_trackBarPanel->Size = System::Drawing::Size(114, 40);
+            this->m_trackBarPanel->TabIndex = 1;
+            // 
+            // m_trackBar
+            // 
+            this->m_trackBar->AutoSize = false;
+            this->m_trackBar->BackColor = System::Drawing::SystemColors::AppWorkspace;
+            this->m_trackBar->LargeChange = 1;
+            this->m_trackBar->Location = System::Drawing::Point(5, 5);
+            this->m_trackBar->Name = L"m_trackBar";
+            this->m_trackBar->Size = System::Drawing::Size(104, 30);
+            this->m_trackBar->TabIndex = 0;
+            this->m_trackBar->TabStop = false;
+            this->m_trackBar->ValueChanged += gcnew System::EventHandler(this, &GUIForm::TrackBarValueChanged);
             // 
             // GUIForm
             // 
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::None;
             this->BackColor = System::Drawing::Color::DimGray;
-            this->ClientSize = System::Drawing::Size(788, 588);
+            this->ClientSize = System::Drawing::Size(624, 441);
             this->Controls->Add(this->m_mainPanel);
             this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
-            this->MaximumSize = System::Drawing::Size(806, 633);
-            this->MinimumSize = System::Drawing::Size(806, 633);
+            this->MaximumSize = System::Drawing::Size(640, 480);
+            this->MinimumSize = System::Drawing::Size(640, 480);
             this->Name = L"GUIForm";
             this->Text = L"Complex Game Systems";
-            this->FormClosed += gcnew FormClosedEventHandler(this, &GUIForm::GUIFormClosed);
+            this->FormClosed += gcnew System::Windows::Forms::FormClosedEventHandler(this, &GUIForm::GUIForm_FormClosed);
             this->m_mainPanel->ResumeLayout(false);
+            this->m_trackBarPanel->ResumeLayout(false);
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->m_trackBar))->EndInit();
             this->ResumeLayout(false);
 
         }
@@ -257,15 +206,13 @@ namespace GUI
         
         GuiCallbacks* m_callbacks;      ///< Callbacks for the gui
         gcroot<Form^>* m_pinnedSimForm; ///< pinned as native needs window handle
-        Color m_unpressedColor;         ///< Color of buttons when unpressed
-        Color m_pressedColor;           ///< Color of buttons when pressed
-        Button^ m_testButton;           ///< Button for resetting the camera
 
         /**
         * Designer specific components
         */
-        System::ComponentModel::Container^ components;  ///< Auto-Required designer variable.
-        System::Windows::Forms::Panel^ m_mainPanel;     ///< Panel for holding main simulation form
-        System::Windows::Forms::Panel^ m_guiPanel;      ///< Panel for gui buttons        
+        System::ComponentModel::Container^ components;
+        System::Windows::Forms::TrackBar^ m_trackBar;
+        System::Windows::Forms::Panel^ m_trackBarPanel;
+        System::Windows::Forms::Panel^ m_mainPanel;
     };
 }
