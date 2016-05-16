@@ -9,6 +9,8 @@
 *.Release
 *.idb
 *.manifest
+*.metagen
+*.exp
 *.fbm/
 ipch/
 html/
@@ -27,3 +29,12 @@ AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/release/
 AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/Makefile.Debug
 AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/Makefile.Release
 AIEAdvancedDiploma/QtTutorial/QtTutorial/qt/Makefile
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/Debug/
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/Release/
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/GuiDebug/
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/GuiRelease/
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/ComplexGameSystems.exe
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/ComplexGameSystemsGUI.lib
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/ComplexGameSystemsGUID.lib
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/ComplexGameSystemsGUI.dll
+AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/ComplexGameSystemsGUID.dll
