@@ -89,7 +89,7 @@
     <ClCompile Include="GUIWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GUICallbacks.h" />
+    <ClInclude Include="GUITypes.h" />
     <ClInclude Include="GUIForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>

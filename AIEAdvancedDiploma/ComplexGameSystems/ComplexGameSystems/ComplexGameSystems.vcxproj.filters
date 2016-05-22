@@ -8,14 +8,11 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{3fdc3cc0-a697-4e71-bb85-d5d9f1c8a5e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DirectX">
+      <UniqueIdentifier>{0f7687a1-725d-4b5c-9f12-de8a44be62b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="simulation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,15 +22,18 @@
     <ClCompile Include="matrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="directxengine.cpp">
+      <Filter>DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="directxtarget.cpp">
+      <Filter>DirectX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="timer.h">
@@ -41,6 +41,21 @@
     </ClInclude>
     <ClInclude Include="matrix.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lockable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="directxcommon.h">
+      <Filter>DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="directxengine.h">
+      <Filter>DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="directxtarget.h">
+      <Filter>DirectX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

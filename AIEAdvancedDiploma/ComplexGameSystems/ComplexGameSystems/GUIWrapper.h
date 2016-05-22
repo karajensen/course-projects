@@ -3,7 +3,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "GUICallbacks.h"
+#include "GUITypes.h"
+#include <memory>
 
 #ifdef EXPORTAPI
 #define GUIINTAPI __declspec(dllexport)
@@ -24,10 +25,10 @@ namespace GUI
         ~GuiWrapper();
 
         /**
-        * Sets the native callbacks for the GUI
-        * @param callbacks A struct of all callbacks
+        * Initializes the GUI
+        * @note pointer to callbacks send as mutex/thread not supported in C++/CLI
         */
-        void SetCallbacks(GuiCallbacks* callbacks);
+        void Initialize(GuiRequestCallbacks* requestCallbacks);
 
         /**
         * Ticks the GUI

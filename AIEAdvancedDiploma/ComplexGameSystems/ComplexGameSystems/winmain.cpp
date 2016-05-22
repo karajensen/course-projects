@@ -3,130 +3,100 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "common.h"
-#include "simulation.h"
+#include "application.h"
+#include "GUITypes.h"
 #include "GUIWrapper.h"
-#include "GUICallbacks.h"
+#include "lockable.h"
+#include <thread>
+#include <mutex>
 
-HWND hWnd = nullptr;                     ///< Handle to the window
-LPDIRECT3DDEVICE9 d3ddev = nullptr;      ///< DirectX device
-LPDIRECT3D9 d3d = nullptr;               ///< DirectX interface
-LPDIRECT3DSURFACE9 backBuffer = nullptr; ///< Back buffer
-
-bool runSimulation = true;               ///< Whether simulation can be run or not
-std::unique_ptr<Simulation> simulation;  ///< Main simulation object
-std::unique_ptr<GUI::GuiWrapper> gui;    ///< Interface for .NET GUI
-GuiCallbacks callbacks;                  ///< Callback list for the GUI
-
-bool InitialiseGUI();
-bool InitialiseDirectX();
-bool InitialiseWindow(HINSTANCE* hInst);
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int cmdShow)
+/**
+* Data shared between threads which needs to be synchronized
+*/
+struct SharedData
 {
-    gui.reset(new GUI::GuiWrapper());
-    simulation.reset(new Simulation());
-
-    runSimulation = 
-        InitialiseWindow(&hInstance) && 
-        InitialiseDirectX() &&  
-        simulation->CreateSimulation(hInstance, hWnd, d3ddev) &&
-        InitialiseGUI();
-
-    while(runSimulation && gui->Update())
+    SharedData() :
+        guiRequest(NONE),
+        runApplication(true),
+        guiRequestValue(0)
     {
-        simulation->Update();
-        simulation->Render();
     }
 
-    d3ddev->Release();
-    d3d->Release();
-    backBuffer->Release();
+    BlockingLockable<WindowHandle> handle;
+    Lockable<bool> runApplication;
+    Lockable<GuiRequestType> guiRequest;
+    Lockable<int> guiRequestValue;
+};
+
+/**
+* Runs GUI on a seperate thread to the main application
+*/
+void GuiMain(SharedData* data)
+{
+    auto gui = std::make_shared<GUI::GuiWrapper>();
+    data->handle.Set(gui->GetWindowHandle());
+
+    GuiRequestCallbacks requests;
+    requests.sendRequest = [data](GuiRequestType type)
+    {
+        data->guiRequest.Set(type);
+    };
+    requests.sendValueRequest = [data](GuiRequestType type, int value)
+    {
+        data->guiRequest.Set(type);
+        data->guiRequestValue.Set(value);
+    };
+    requests.closeApplication = [data]()
+    {
+        data->runApplication.Set(false);
+    };
+
+    gui->Initialize(&requests);
+    gui->Show();
+
+    while (data->runApplication.Get())
+    {
+        gui->Update();
+    }
+}
+
+/**
+* Main application entry point
+*/
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int cmdShow)
+{
+    auto data = std::make_unique<SharedData>();
+
+    std::thread thread(&GuiMain, data.get());
+
+    auto application = std::make_unique<Application>();
+    if (!application->Initialize(data->handle.Get().handle))
+    {
+        return EXIT_FAILURE;
+    }
+    
+    while(data->runApplication.Get())
+    {
+        switch (data->guiRequest.Swap(NONE))
+        {
+        case PAUSE:
+            application->TogglePause();
+            break;
+        case SAVE:
+            application->Save();
+            break;
+        case VECTORIZATION:
+            application->SetVectorizationAmount(data->guiRequestValue.Get());
+            break;
+        }
+        application->Render();
+    }
+
+    thread.join();
 
     #ifdef _DEBUG
     OutputDebugString("Exiting Simulation\n");
     #endif
-}
 
-bool InitialiseGUI()
-{
-    callbacks.quitFn = [](){ runSimulation = false; };
-    simulation->LoadGuiCallbacks(&callbacks);
-    gui->SetCallbacks(&callbacks);
-    gui->Show();
-    return true;
-}
-
-bool InitialiseWindow(HINSTANCE* hInst)
-{
-    auto windowHandles = gui->GetWindowHandle();
-    hWnd = windowHandles.handle;
-    *hInst = windowHandles.instance;
-    return true;
-}
-
-bool InitialiseDirectX()
-{
-    const D3DFORMAT backBufferFormat = D3DFMT_D16;
-    const D3DFORMAT textureFormat = D3DFMT_A8R8G8B8;
-
-    if(FAILED(d3d = Direct3DCreate9(D3D_SDK_VERSION)))
-    {
-        ShowMessageBox("Direct3D interface creation has failed");
-        return false;
-    }
-
-    // Build present params
-    D3DPRESENT_PARAMETERS d3dpp;
-    ZeroMemory(&d3dpp, sizeof(d3dpp));
-
-    D3DMULTISAMPLE_TYPE antiAliasingLvl;
-    bool antiAliasing = false;
-    if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, 
-        D3DDEVTYPE_HAL, textureFormat, true, D3DMULTISAMPLE_2_SAMPLES, nullptr)))
-    {
-        d3dpp.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES;
-        antiAliasingLvl = D3DMULTISAMPLE_2_SAMPLES;
-        antiAliasing = true;
-    }
-
-    d3dpp.hDeviceWindow = hWnd;
-    d3dpp.Windowed = true;
-    d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    d3dpp.BackBufferFormat = textureFormat;
-    d3dpp.BackBufferWidth = WINDOW_WIDTH; 
-    d3dpp.BackBufferHeight = WINDOW_HEIGHT;
-    d3dpp.EnableAutoDepthStencil = TRUE;
-    d3dpp.AutoDepthStencilFormat = backBufferFormat; 
-
-    if(FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, 
-        D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3ddev)))
-    {
-        ShowMessageBox("Direct3D interface creation has failed");
-        return false;
-    }
-
-    // Create Z-buffer
-    if(FAILED(d3ddev->CreateDepthStencilSurface(WINDOW_WIDTH, WINDOW_HEIGHT, backBufferFormat,
-        antiAliasing ? antiAliasingLvl : D3DMULTISAMPLE_NONE, NULL, TRUE, &backBuffer, NULL)))
-    {
-        ShowMessageBox("Z-buffer creation has failed");
-        return false;
-    }
-    d3ddev->SetRenderTarget(0,backBuffer);
-
-    // Set render states
-    d3ddev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasing);
-
-    // Check shader capabilities
-    D3DCAPS9 caps;
-    d3ddev->GetDeviceCaps(&caps);
-
-    // Check for vertex shader version 2.0 support.
-    if(caps.VertexShaderVersion < D3DVS_VERSION(2, 0)) 
-    {
-        ShowMessageBox("Shader model 2.0 or higher is required");
-        return false;
-    }
-
-    return true;
+    return EXIT_SUCCESS;
 }

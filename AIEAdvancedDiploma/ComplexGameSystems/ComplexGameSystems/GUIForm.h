@@ -4,7 +4,7 @@
 
 #pragma once
 #include <vcclr.h>
-#include "GUICallbacks.h"
+#include "GUITypes.h"
 
 namespace GUI
 {
@@ -25,8 +25,7 @@ namespace GUI
         /**
         * Constructor 
         */
-        GUIForm(void) :
-            m_callbacks(nullptr),
+        GUIForm() :
             m_pinnedSimForm(nullptr)
         {
             InitializeComponent();
@@ -52,12 +51,11 @@ namespace GUI
         }
 
         /**
-        * Recieves the native callbacks and fills in the spinbox values 
-        * @param callbacks The callbacks from the native application
+        * Initializes the GUI
         */
-        void SetCallbacks(GuiCallbacks* callbacks)
+        void Initialize(GuiRequestCallbacks* requestCallbacks)
         {
-            m_callbacks = callbacks;
+            m_requestCallbacks = requestCallbacks;
         }
 
     protected:
@@ -131,15 +129,31 @@ namespace GUI
         */
         System::Void GUIForm_FormClosed(System::Object^ sender, FormClosedEventArgs^ e)
         {
-            m_callbacks->quitFn();
+            m_requestCallbacks->closeApplication();
         }
 
         /**
         * On Track bar value change
         */
-        System::Void TrackBarValueChanged(System::Object^  sender, System::EventArgs^  e) 
+        System::Void TrackBarValueChanged(System::Object^ sender, System::EventArgs^ e) 
         {
-            m_callbacks->setVectorizationAmount(m_trackBar->Value);
+            m_requestCallbacks->sendValueRequest(VECTORIZATION, m_trackBar->Value);
+        }
+
+        /**
+        * On Pause button click
+        */
+        System::Void PauseButtonClick(System::Object^ sender, System::EventArgs^ e) 
+        {
+            m_requestCallbacks->sendRequest(PAUSE);
+        }
+
+        /**
+        * On Save button click
+        */
+        System::Void SaveButtonClick(System::Object^ sender, System::EventArgs^ e)
+        {
+            m_requestCallbacks->sendRequest(SAVE);
         }
 
         /**
@@ -150,6 +164,8 @@ namespace GUI
         {
             this->m_mainPanel = (gcnew System::Windows::Forms::Panel());
             this->m_trackBarPanel = (gcnew System::Windows::Forms::Panel());
+            this->m_saveButton = (gcnew System::Windows::Forms::Button());
+            this->m_pauseButton = (gcnew System::Windows::Forms::Button());
             this->m_trackBar = (gcnew System::Windows::Forms::TrackBar());
             this->m_mainPanel->SuspendLayout();
             this->m_trackBarPanel->SuspendLayout();
@@ -166,18 +182,59 @@ namespace GUI
             // 
             // m_trackBarPanel
             // 
+            this->m_trackBarPanel->BackColor = System::Drawing::Color::Transparent;
+            this->m_trackBarPanel->Controls->Add(this->m_saveButton);
+            this->m_trackBarPanel->Controls->Add(this->m_pauseButton);
             this->m_trackBarPanel->Controls->Add(this->m_trackBar);
-            this->m_trackBarPanel->Location = System::Drawing::Point(6, 394);
+            this->m_trackBarPanel->Location = System::Drawing::Point(6, 391);
             this->m_trackBarPanel->Name = L"m_trackBarPanel";
-            this->m_trackBarPanel->Size = System::Drawing::Size(114, 40);
+            this->m_trackBarPanel->Size = System::Drawing::Size(194, 44);
             this->m_trackBarPanel->TabIndex = 1;
+            // 
+            // m_saveButton
+            // 
+            this->m_saveButton->TabIndex = 0;
+            this->m_saveButton->TabStop = false;
+            this->m_saveButton->UseVisualStyleBackColor = false;
+            this->m_saveButton->BackgroundImage = Image::FromFile(".//Resources//save.png");
+            this->m_saveButton->Cursor = System::Windows::Forms::Cursors::Hand;
+            this->m_saveButton->Location = System::Drawing::Point(44, 7);
+            this->m_saveButton->Margin = System::Windows::Forms::Padding(0);
+            this->m_saveButton->Size = System::Drawing::Size(32, 32);
+            this->m_saveButton->FlatAppearance->BorderSize = 0;
+            this->m_saveButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->m_saveButton->FlatAppearance->CheckedBackColor = System::Drawing::Color::Gray;
+            this->m_saveButton->FlatAppearance->MouseDownBackColor = System::Drawing::Color::Gray;
+            this->m_saveButton->FlatAppearance->MouseOverBackColor = System::Drawing::Color::DarkGray;
+            this->m_saveButton->BackColor = System::Drawing::Color::FromArgb(230, 230, 230);
+            this->m_saveButton->Click += gcnew System::EventHandler(this, &GUIForm::SaveButtonClick);
+            this->m_saveButton->Name = L"m_saveButton";
+            // 
+            // m_pauseButton
+            // 
+            this->m_pauseButton->TabIndex = 0;
+            this->m_pauseButton->TabStop = false;
+            this->m_pauseButton->UseVisualStyleBackColor = false;
+            this->m_pauseButton->BackgroundImage = Image::FromFile(".//Resources//pause.png");
+            this->m_pauseButton->Cursor = System::Windows::Forms::Cursors::Hand;
+            this->m_pauseButton->Location = System::Drawing::Point(6, 7);
+            this->m_pauseButton->Margin = System::Windows::Forms::Padding(0);
+            this->m_pauseButton->Size = System::Drawing::Size(32, 32);
+            this->m_pauseButton->FlatAppearance->BorderSize = 0;
+            this->m_pauseButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->m_pauseButton->FlatAppearance->CheckedBackColor = System::Drawing::Color::Gray;
+            this->m_pauseButton->FlatAppearance->MouseDownBackColor = System::Drawing::Color::Gray;
+            this->m_pauseButton->FlatAppearance->MouseOverBackColor = System::Drawing::Color::DarkGray;
+            this->m_pauseButton->BackColor = System::Drawing::Color::FromArgb(230, 230, 230);
+            this->m_pauseButton->Click += gcnew System::EventHandler(this, &GUIForm::PauseButtonClick);
+            this->m_pauseButton->Name = L"m_pauseButton";
             // 
             // m_trackBar
             // 
             this->m_trackBar->AutoSize = false;
             this->m_trackBar->BackColor = System::Drawing::SystemColors::AppWorkspace;
             this->m_trackBar->LargeChange = 1;
-            this->m_trackBar->Location = System::Drawing::Point(5, 5);
+            this->m_trackBar->Location = System::Drawing::Point(82, 8);
             this->m_trackBar->Name = L"m_trackBar";
             this->m_trackBar->Size = System::Drawing::Size(104, 30);
             this->m_trackBar->TabIndex = 0;
@@ -204,8 +261,8 @@ namespace GUI
         }
         #pragma endregion
         
-        GuiCallbacks* m_callbacks;      ///< Callbacks for the gui
-        gcroot<Form^>* m_pinnedSimForm; ///< pinned as native needs window handle
+        GuiRequestCallbacks* m_requestCallbacks;   ///< Allows sending a GUI request
+        gcroot<Form^>* m_pinnedSimForm;            ///< pinned as native needs window handle
 
         /**
         * Designer specific components
@@ -213,6 +270,9 @@ namespace GUI
         System::ComponentModel::Container^ components;
         System::Windows::Forms::TrackBar^ m_trackBar;
         System::Windows::Forms::Panel^ m_trackBarPanel;
+        System::Windows::Forms::Button^  m_pauseButton;
+        System::Windows::Forms::Button^  m_saveButton;
         System::Windows::Forms::Panel^ m_mainPanel;
+
     };
 }

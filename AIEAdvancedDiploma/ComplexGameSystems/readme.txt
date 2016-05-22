@@ -1,8 +1,8 @@
 
-- Update proposal brief
-- Make GUI multithreaded
-- Render loaded image via render target
+- Set up render pipeline with targets+
 - Render video with OpenCV
+- Vectorization algorithm on cpu
+- Vecotrization algorithm as compute shader
 
 =================================================================
 AIE Advanced Diploma - Complex Game Systems Unit

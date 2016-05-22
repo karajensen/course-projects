@@ -6,6 +6,7 @@
 #include "GUIWrapper.h"
 #include "GUIForm.h"
 #include <vcclr.h>
+#include <Windows.h>
 
 namespace GUI
 {
@@ -35,10 +36,10 @@ namespace GUI
         }
     }
 
-    void GuiWrapper::SetCallbacks(GuiCallbacks* callbacks)
+    void GuiWrapper::Initialize(GuiRequestCallbacks* requestCallbacks)
     {
         GuiPtr ptr = reinterpret_cast<GuiPtr>(m_guiForm);
-        ((GUIForm^)*ptr)->SetCallbacks(callbacks);
+        ((GUIForm^)*ptr)->Initialize(requestCallbacks);
     }
 
     bool GuiWrapper::Update()
