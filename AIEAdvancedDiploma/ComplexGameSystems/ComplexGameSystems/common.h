@@ -13,8 +13,8 @@
 #include <string>
 
 static const int NO_INDEX = -1;
-static const int WINDOW_WIDTH = 800;
-static const int WINDOW_HEIGHT = 600;
+static const int WINDOW_WIDTH = 640;
+static const int WINDOW_HEIGHT = 480;
 
 /**
 * Shows a popup message

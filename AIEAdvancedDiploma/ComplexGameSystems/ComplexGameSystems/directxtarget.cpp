@@ -267,7 +267,7 @@ void DxRenderTarget::ClearTarget(ID3D11DeviceContext* context)
 
     for (unsigned int i = 0; i < m_targets.size(); ++i)
     {
-        context->ClearRenderTargetView(m_targets[i], D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+        context->ClearRenderTargetView(m_targets[i], D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
     }
 }
 

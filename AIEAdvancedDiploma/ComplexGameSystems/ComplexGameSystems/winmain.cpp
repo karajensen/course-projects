@@ -22,11 +22,50 @@ struct SharedData
     {
     }
 
-    BlockingLockable<WindowHandle> handle;
+    BlockingLockable<WindowHandle> guiHandle;
     Lockable<bool> runApplication;
     Lockable<GuiRequestType> guiRequest;
     Lockable<int> guiRequestValue;
 };
+
+/**
+* Main application window message handler
+* Exit is handled through the GUI thread
+*/
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+/**
+* Initialises the main window
+*/
+HWND InitializeWindow(HINSTANCE& hInstance, HWND& parent)
+{
+    WNDCLASSEX wc;
+    ZeroMemory(&wc, sizeof(WNDCLASSEX));
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = (WNDPROC)WindowProc;
+    wc.hInstance = hInstance;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.lpszClassName = "ComplexGameSystems";
+    RegisterClassEx(&wc);
+
+    HWND handle = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
+        "ComplexGameSystems", TEXT("ComplexGameSystems"),
+        WS_CHILD, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+        parent, nullptr, hInstance, nullptr);
+
+    if (handle == nullptr)
+    {
+        ShowMessageBox("Failed to create application window");
+    }
+
+    ShowWindow(handle, SW_SHOWDEFAULT);
+
+    return handle;
+}
 
 /**
 * Runs GUI on a seperate thread to the main application
@@ -34,7 +73,7 @@ struct SharedData
 void GuiMain(SharedData* data)
 {
     auto gui = std::make_shared<GUI::GuiWrapper>();
-    data->handle.Set(gui->GetWindowHandle());
+    data->guiHandle.Set(gui->GetWindowHandle());
 
     GuiRequestCallbacks requests;
     requests.sendRequest = [data](GuiRequestType type)
@@ -69,29 +108,42 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     std::thread thread(&GuiMain, data.get());
 
+    HWND guiHandle = data->guiHandle.Get().handle;
+    HWND appHandle = InitializeWindow(hInstance, guiHandle);
+    
     auto application = std::make_unique<Application>();
-    if (!application->Initialize(data->handle.Get().handle))
+    if (!application->Initialize(appHandle))
     {
         return EXIT_FAILURE;
     }
     
     while(data->runApplication.Get())
     {
-        switch (data->guiRequest.Swap(NONE))
+        MSG msg;
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
-        case PAUSE:
-            application->TogglePause();
-            break;
-        case SAVE:
-            application->Save();
-            break;
-        case VECTORIZATION:
-            application->SetVectorizationAmount(data->guiRequestValue.Get());
-            break;
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
         }
-        application->Render();
+        else
+        {
+            switch (data->guiRequest.Swap(NONE))
+            {
+            case PAUSE:
+                application->TogglePause();
+                break;
+            case SAVE:
+                application->Save();
+                break;
+            case VECTORIZATION:
+                application->SetVectorizationAmount(data->guiRequestValue.Get());
+                break;
+            }
+            application->Render();
+        }
     }
 
+    SetParent(appHandle, 0);
     thread.join();
 
     #ifdef _DEBUG
