@@ -1,8 +1,8 @@
 
-- Set up render pipeline with targets+
 - Render video with OpenCV
-- Vectorization algorithm on cpu
-- Vecotrization algorithm as compute shader
+- Compute shader with gui slider setting colour level on video
+- Save/Pause button
+- Vecotrization algorithm
 
 =================================================================
 AIE Advanced Diploma - Complex Game Systems Unit

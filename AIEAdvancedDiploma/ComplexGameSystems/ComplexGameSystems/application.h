@@ -8,6 +8,7 @@
 
 class Timer;
 class DirectxEngine;
+class OpenCV;
 
 /**
 * Main Application Class
@@ -66,4 +67,5 @@ private:
     bool m_paused = false;
     std::unique_ptr<Timer> m_timer; 
     std::unique_ptr<DirectxEngine> m_engine;
+    std::unique_ptr<OpenCV> m_openCV;
 };

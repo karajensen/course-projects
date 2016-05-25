@@ -63,11 +63,11 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUID.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUID.lib;opencv_highgui2413d.lib;opencv_calib3d2413d.lib;opencv_contrib2413d.lib;opencv_core2413d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)$(ProjectName)\opencv\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)\$(SolutionName)\opencv\x86\vc12\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,14 +89,15 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUI.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)$(ProjectName)\opencv\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUI.lib;opencv_highgui2413.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)$(ProjectName)\opencv\lib;$(SolutionDir)\$(SolutionName)\opencv\x86\vc12\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="directxengine.cpp" />
     <ClCompile Include="directxtarget.cpp" />
     <ClCompile Include="matrix.cpp" />
+    <ClCompile Include="opencv.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="winmain.cpp" />
@@ -108,6 +109,7 @@
     <ClInclude Include="lockable.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="application.h" />
+    <ClInclude Include="opencv.h" />
     <ClInclude Include="shareddata.h" />
     <ClInclude Include="timer.h" />
   </ItemGroup>

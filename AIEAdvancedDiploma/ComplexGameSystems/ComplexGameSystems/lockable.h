@@ -44,6 +44,12 @@ public:
 
 private:
 
+    /**
+    * Prevent copying
+    */
+    Lockable(const Lockable&) = delete;
+    Lockable& operator=(const Lockable&) = delete;
+
     T m_data;                  
     mutable std::mutex m_mutex;  
 };
@@ -88,6 +94,12 @@ public:
     }
 
 private:
+
+    /**
+    * Prevent copying
+    */
+    BlockingLockable(const BlockingLockable&) = delete;
+    BlockingLockable& operator=(const BlockingLockable&) = delete;
 
     T m_data;
     std::condition_variable m_cv;

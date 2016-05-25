@@ -5,6 +5,7 @@
 #include "application.h"
 #include "directxengine.h"
 #include "timer.h"
+#include "opencv.h"
 
 Application::Application()
 {
@@ -32,6 +33,12 @@ bool Application::Initialize(HWND hWnd, const POINT& size)
 
     m_engine = std::make_unique<DirectxEngine>();
     if (!m_engine->Initialize(hWnd, size))
+    {
+        return false;
+    }
+
+    m_openCV = std::make_unique<OpenCV>();
+    if (!m_openCV->Initialize())
     {
         return false;
     }
