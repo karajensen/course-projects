@@ -37,11 +37,6 @@ namespace GUI
         bool Update();
 
         /**
-        * @return the handle to the simulation window
-        */
-        WindowHandle GetWindowHandle();
-
-        /**
         * Shows the GUI Window
         */
         void Show();

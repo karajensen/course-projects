@@ -65,7 +65,7 @@ DirectxEngine::~DirectxEngine()
 {
 }
 
-bool DirectxEngine::Initialize(HWND hWnd)
+bool DirectxEngine::Initialize(HWND hWnd, const POINT& size)
 {
     m_hwnd = hWnd;
 
@@ -77,8 +77,8 @@ bool DirectxEngine::Initialize(HWND hWnd)
     scd.OutputWindow = m_hwnd;
     scd.SampleDesc.Count = MULTISAMPLING_COUNT;
     scd.Windowed = TRUE;
-    scd.BufferDesc.Width = WINDOW_WIDTH;
-    scd.BufferDesc.Height = WINDOW_HEIGHT;
+    scd.BufferDesc.Width = size.x;
+    scd.BufferDesc.Height = size.y;
 
 #ifdef _DEBUG
     unsigned int deviceFlags = D3D11_CREATE_DEVICE_DEBUG;
@@ -90,7 +90,7 @@ bool DirectxEngine::Initialize(HWND hWnd)
         nullptr, deviceFlags, nullptr, 0, D3D11_SDK_VERSION, &scd,
         &m_data->swapchain, &m_data->device, nullptr, &m_data->context)))
     {
-        ShowMessageBox("DirectX: Device creation failed");
+        MessageBox(0, "DirectX: Device creation failed", "ERROR", MB_OK);
         return false;
     }
 
@@ -106,16 +106,18 @@ bool DirectxEngine::Initialize(HWND hWnd)
     ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-    viewport.Width = WINDOW_WIDTH;
-    viewport.Height = WINDOW_HEIGHT;
+    viewport.Width = static_cast<FLOAT>(size.x);
+    viewport.Height = static_cast<FLOAT>(size.y);
     viewport.MinDepth = 0.0;
     viewport.MaxDepth = 1.0;
     m_data->context->RSSetViewports(1, &viewport);
 
+    const float ratio = size.x / static_cast<float>(size.y);
+
     D3DXMatrixIdentity(&m_data->view);
     D3DXMatrixPerspectiveFovLH(&m_data->projection,
         (FLOAT)D3DXToRadian(FIELD_OF_VIEW),
-        RATIO, CAMERA_NEAR, CAMERA_FAR);
+        ratio, CAMERA_NEAR, CAMERA_FAR);
 
     SetDebugName(m_data->device, "Device");
     SetDebugName(m_data->context, "Context");

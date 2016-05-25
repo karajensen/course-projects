@@ -29,9 +29,10 @@ public:
     /**
     * Initialises the application
     * @param hWnd The handle to the window
+    * @param size The size of the window
     * @return whether initialisation succeeded
     */
-    bool Initialize( HWND hWnd);
+    bool Initialize(HWND hWnd, const POINT& size);
 
     /**
     * Renders the application

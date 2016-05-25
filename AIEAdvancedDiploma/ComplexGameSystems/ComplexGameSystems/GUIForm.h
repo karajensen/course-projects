@@ -33,21 +33,32 @@ namespace GUI
         }
 
         /**
-        * Determines and returns the window/instance handles of the gui
-        * @return The handles to the simulation window/instance
+        * Determines and returns the window instance of the gui
         */
-        WindowHandle GetWindowHandle()
+        HINSTANCE GetWindowInstance()
         {
             Form^ simForm = (Form^)*m_pinnedSimForm;
-            WindowHandle window;
-
-            IntPtr handle = simForm->Handle;
             IntPtr instance = System::Runtime::InteropServices::Marshal::GetHINSTANCE(
                 System::Reflection::Assembly::GetExecutingAssembly()->GetModules()[0]);
+            return static_cast<HINSTANCE>(instance.ToPointer());
+        }
 
-            window.handle = static_cast<HWND>(handle.ToPointer());
-            window.instance = static_cast<HINSTANCE>(instance.ToPointer());
-            return window;
+        /**
+        * Determines and returns the window handle of the gui
+        */
+        HWND GetWindowHandle()
+        {
+            Form^ simForm = (Form^)*m_pinnedSimForm;
+            IntPtr handle = simForm->Handle;
+            return static_cast<HWND>(handle.ToPointer());
+        }
+
+        /**
+        * @return the size of the window
+        */
+        System::Drawing::Size GetWindowSize()
+        {
+            return ClientSize;
         }
 
         /**
@@ -245,7 +256,7 @@ namespace GUI
             // 
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::None;
             this->BackColor = System::Drawing::Color::DimGray;
-            this->ClientSize = System::Drawing::Size(624, 441);
+            this->ClientSize = System::Drawing::Size(640, 480);
             this->Controls->Add(this->m_mainPanel);
             this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
             this->MaximumSize = System::Drawing::Size(640, 480);
@@ -257,7 +268,6 @@ namespace GUI
             this->m_trackBarPanel->ResumeLayout(false);
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->m_trackBar))->EndInit();
             this->ResumeLayout(false);
-
         }
         #pragma endregion
         

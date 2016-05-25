@@ -32,7 +32,7 @@ public:
     * Sets up the graphics engine for rendering
     * @return whether initialization succeeded
     */
-    bool Initialize(HWND hWnd);
+    bool Initialize(HWND hWnd, const POINT& size);
 
     /**
     * Renders the 3D scene

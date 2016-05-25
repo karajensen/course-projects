@@ -8,7 +8,7 @@
 #include <functional>
 
 /**
-* GUI requests
+* GUI request type
 */
 enum GuiRequestType
 {
@@ -26,18 +26,6 @@ struct GuiRequestCallbacks
     std::function<void(GuiRequestType, int)> sendValueRequest;
     std::function<void(GuiRequestType)> sendRequest;
     std::function<void(void)> closeApplication;
-};
-
-/**9
-* GUI window information
-*/
-struct WindowHandle
-{
-    bool IsInitialized() const
-    {
-        return handle != nullptr && instance != nullptr;
-    }
-
-    HWND handle = nullptr;
-    HINSTANCE instance = nullptr;
+    std::function<void(HWND, HINSTANCE)> sendWindowHandle;
+    std::function<void(int, int)> sendWindowSize;
 };

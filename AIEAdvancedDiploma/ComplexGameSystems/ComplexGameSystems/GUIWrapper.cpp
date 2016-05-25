@@ -39,7 +39,16 @@ namespace GUI
     void GuiWrapper::Initialize(GuiRequestCallbacks* requestCallbacks)
     {
         GuiPtr ptr = reinterpret_cast<GuiPtr>(m_guiForm);
-        ((GUIForm^)*ptr)->Initialize(requestCallbacks);
+        GUIForm^ form = ((GUIForm^)*ptr);
+
+        System::Drawing::Size size = form->GetWindowSize();
+        HWND hwnd = form->GetWindowHandle();
+        HINSTANCE hinstance = form->GetWindowInstance();
+
+        requestCallbacks->sendWindowHandle(hwnd, hinstance);
+        requestCallbacks->sendWindowSize(size.Width, size.Height);
+
+        form->Initialize(requestCallbacks);
     }
 
     bool GuiWrapper::Update()
@@ -52,11 +61,5 @@ namespace GUI
     {
         GuiPtr ptr = reinterpret_cast<GuiPtr>(m_guiForm);
         ((GUIForm^)*ptr)->Show();
-    }
-
-    WindowHandle GuiWrapper::GetWindowHandle()
-    {
-        GuiPtr ptr = reinterpret_cast<GuiPtr>(m_guiForm);
-        return ((GUIForm^)*ptr)->GetWindowHandle();
     }
 }

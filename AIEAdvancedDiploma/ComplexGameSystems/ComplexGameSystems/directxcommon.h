@@ -5,17 +5,16 @@
 #pragma once
 
 #pragma warning (disable : 4005) // For DX10
+#include <string>
 #include "directx/include/d3d11.h"
 #include "directx/include/d3dx11.h"
 #include "directx/include/d3dx10.h"
-#include "common.h"
 
 const float CAMERA_FAR = 1000.0f;
 const float CAMERA_NEAR = 1.0f;
 const int MULTISAMPLING_COUNT = 4;
 const int MAX_ANISOTROPY = 16;
 const float FIELD_OF_VIEW = 60.0f;
-const float RATIO = WINDOW_WIDTH / static_cast<float>(WINDOW_HEIGHT);
 
 /**
 * Sets the name of the directx object for debugging

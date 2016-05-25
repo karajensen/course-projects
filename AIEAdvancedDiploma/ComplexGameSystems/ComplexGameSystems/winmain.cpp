@@ -2,31 +2,14 @@
 // Kara Jensen - mail@karajensen.com - winmain.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "common.h"
-#include "application.h"
-#include "GUITypes.h"
-#include "GUIWrapper.h"
-#include "lockable.h"
+#define WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
+#include <windowsx.h>
 #include <thread>
-#include <mutex>
-
-/**
-* Data shared between threads which needs to be synchronized
-*/
-struct SharedData
-{
-    SharedData() :
-        guiRequest(NONE),
-        runApplication(true),
-        guiRequestValue(0)
-    {
-    }
-
-    BlockingLockable<WindowHandle> guiHandle;
-    Lockable<bool> runApplication;
-    Lockable<GuiRequestType> guiRequest;
-    Lockable<int> guiRequestValue;
-};
+#include "application.h"
+#include "GUIWrapper.h"
+#include "shareddata.h"
 
 /**
 * Main application window message handler
@@ -40,7 +23,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 /**
 * Initialises the main window
 */
-HWND InitializeWindow(HINSTANCE& hInstance, HWND& parent)
+HWND InitializeWindow(HINSTANCE& hInstance, HWND& parent, const POINT& size)
 {
     WNDCLASSEX wc;
     ZeroMemory(&wc, sizeof(WNDCLASSEX));
@@ -49,17 +32,16 @@ HWND InitializeWindow(HINSTANCE& hInstance, HWND& parent)
     wc.lpfnWndProc = (WNDPROC)WindowProc;
     wc.hInstance = hInstance;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.lpszClassName = "ComplexGameSystems";
+    wc.lpszClassName = "Child";
     RegisterClassEx(&wc);
 
     HWND handle = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
-        "ComplexGameSystems", TEXT("ComplexGameSystems"),
-        WS_CHILD, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-        parent, nullptr, hInstance, nullptr);
+        wc.lpszClassName, wc.lpszClassName, WS_CHILD, 0, 0, 
+        size.x, size.y, parent, nullptr, hInstance, nullptr);
 
     if (handle == nullptr)
     {
-        ShowMessageBox("Failed to create application window");
+        MessageBox(0, "Failed to create application window", "ERROR", MB_OK);
     }
 
     ShowWindow(handle, SW_SHOWDEFAULT);
@@ -72,23 +54,16 @@ HWND InitializeWindow(HINSTANCE& hInstance, HWND& parent)
 */
 void GuiMain(SharedData* data)
 {
+    using namespace std::placeholders;
+
     auto gui = std::make_shared<GUI::GuiWrapper>();
-    data->guiHandle.Set(gui->GetWindowHandle());
 
     GuiRequestCallbacks requests;
-    requests.sendRequest = [data](GuiRequestType type)
-    {
-        data->guiRequest.Set(type);
-    };
-    requests.sendValueRequest = [data](GuiRequestType type, int value)
-    {
-        data->guiRequest.Set(type);
-        data->guiRequestValue.Set(value);
-    };
-    requests.closeApplication = [data]()
-    {
-        data->runApplication.Set(false);
-    };
+    requests.sendRequest = std::bind(&SharedData::SendGuiRequest, data, _1);
+    requests.sendValueRequest = std::bind(&SharedData::SendGuiValueRequest, data, _1, _2);
+    requests.closeApplication = std::bind(&SharedData::CloseApplication, data);
+    requests.sendWindowHandle = std::bind(&SharedData::SendWindowHandle, data, _1, _2);
+    requests.sendWindowSize = std::bind(&SharedData::SendWindowSize, data, _1, _2);
 
     gui->Initialize(&requests);
     gui->Show();
@@ -108,11 +83,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     std::thread thread(&GuiMain, data.get());
 
-    HWND guiHandle = data->guiHandle.Get().handle;
-    HWND appHandle = InitializeWindow(hInstance, guiHandle);
+    POINT windowSize = data->windowSize.Get(); // Blocks
+    HWND guiHandle = data->guiHandle.Get(); // Blocks
+    HWND appHandle = InitializeWindow(hInstance, guiHandle, windowSize);
     
     auto application = std::make_unique<Application>();
-    if (!application->Initialize(appHandle))
+    if (!application->Initialize(appHandle, windowSize))
     {
         return EXIT_FAILURE;
     }

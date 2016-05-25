@@ -5,7 +5,6 @@
 #include "application.h"
 #include "directxengine.h"
 #include "timer.h"
-#include "common.h"
 
 Application::Application()
 {
@@ -26,13 +25,13 @@ void Application::Render()
     m_engine->Render();
 }
 
-bool Application::Initialize(HWND hWnd)
+bool Application::Initialize(HWND hWnd, const POINT& size)
 {   
     m_timer = std::make_unique<Timer>();
     m_timer->StartTimer();
 
     m_engine = std::make_unique<DirectxEngine>();
-    if (!m_engine->Initialize(hWnd))
+    if (!m_engine->Initialize(hWnd, size))
     {
         return false;
     }
@@ -43,16 +42,13 @@ bool Application::Initialize(HWND hWnd)
 void Application::SetVectorizationAmount(int value)
 {
     m_vectorization = value;
-    ShowMessageBox("SetVectorizationAmount");
 }
 
 void Application::TogglePause()
 {
     m_paused = !m_paused;
-    ShowMessageBox("TogglePause");
 }
 
 void Application::Save()
 {
-    ShowMessageBox("Save");
 }

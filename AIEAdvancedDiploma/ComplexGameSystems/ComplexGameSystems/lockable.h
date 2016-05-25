@@ -50,7 +50,6 @@ private:
 
 /**
 * Synchronizes data between threads
-* Get() will block until IsInitialized() is true
 */
 template <typename T> class BlockingLockable
 {
@@ -70,6 +69,7 @@ public:
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_data = data;
+        m_hasBeenSet = true;
         m_cv.notify_one();
     }
 
@@ -78,7 +78,7 @@ public:
         std::unique_lock<std::mutex> lock(m_mutex);
         m_cv.wait(lock, [this]()
         {
-            return m_data.IsInitialized();
+            return m_hasBeenSet;
         });
 
         T data = m_data;
@@ -92,4 +92,5 @@ private:
     T m_data;
     std::condition_variable m_cv;
     mutable std::mutex m_mutex;
+    bool m_hasBeenSet = false;
 };

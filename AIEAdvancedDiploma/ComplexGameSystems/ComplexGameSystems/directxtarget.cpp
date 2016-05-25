@@ -97,7 +97,7 @@ bool DxRenderTarget::InitialiseDepthBuffer(ID3D11Device* device)
     ID3D11Texture2D* depthTexture;
     if(FAILED(device->CreateTexture2D(&textureDesc, 0, &depthTexture)))
     {
-        ShowMessageBox("DirectX: Depth buffer texture creation failed");
+        MessageBox(0, "DirectX: Depth buffer texture creation failed", "ERROR", MB_OK);
         return false;
     }
 
@@ -110,7 +110,7 @@ bool DxRenderTarget::InitialiseDepthBuffer(ID3D11Device* device)
     if(FAILED(device->CreateDepthStencilView(
         depthTexture, &depthBufferDesc, &m_depthBuffer)))
     {
-        ShowMessageBox("DirectX: Depth buffer creation failed");
+        MessageBox(0, "DirectX: Depth buffer creation failed", "ERROR", MB_OK);
         return false;
     }
 
@@ -126,7 +126,7 @@ bool DxRenderTarget::InitialiseBackBuffer(ID3D11Device* device, IDXGISwapChain* 
     swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&(m_textures[0]));
     if (FAILED(device->CreateRenderTargetView(m_textures[0], nullptr, &(m_targets[0]))))
     {
-        ShowMessageBox("DirectX: Failed to create back buffer");
+        MessageBox(0, "DirectX: Failed to create back buffer", "ERROR", MB_OK);
         return false;
     }
 
@@ -156,7 +156,7 @@ bool DxRenderTarget::InitialiseRenderTarget(ID3D11Device* device, int ID)
 
     if (FAILED(device->CreateTexture2D(&textureDesc, 0, &(m_textures[ID]))))
     {
-        ShowMessageBox("DirectX: Failed to create texture for " + name);
+        MessageBox(0, ("DirectX: Failed to create texture for " + name).c_str(), "ERROR", MB_OK);
         return false;
     }
 
@@ -169,7 +169,7 @@ bool DxRenderTarget::InitialiseRenderTarget(ID3D11Device* device, int ID)
 
     if (FAILED(device->CreateRenderTargetView(m_textures[ID], &renderTargetDesc, &(m_targets[ID]))))
     {
-        ShowMessageBox("DirectX: Failed to create render target for " + name);
+        MessageBox(0, ("DirectX: Failed to create render target for " + name).c_str(), "ERROR", MB_OK);
         return false;
     }
 
@@ -183,7 +183,7 @@ bool DxRenderTarget::InitialiseRenderTarget(ID3D11Device* device, int ID)
 
     if (FAILED(device->CreateShaderResourceView(m_textures[ID], &textureViewDesc, &(m_views[ID]))))
     {
-        ShowMessageBox("DirectX: Failed to create texture view for " + name);
+        MessageBox(0, ("DirectX: Failed to create texture view for " + name).c_str(), "ERROR", MB_OK);
         return false;
     }
 
@@ -196,13 +196,13 @@ bool DxRenderTarget::InitialiseRenderTarget(ID3D11Device* device, int ID)
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         if (FAILED(device->CreateTexture2D(&textureDesc, 0, &(m_copiedTextures[ID]))))
         {
-            ShowMessageBox("DirectX: Failed to create copy texture for " + name);
+            MessageBox(0, ("DirectX: Failed to create copy texture for " + name).c_str(), "ERROR", MB_OK);
             return false;
         }
 
         if (FAILED(device->CreateShaderResourceView(m_copiedTextures[ID], &textureViewDesc, &(m_copiedViews[ID]))))
         {
-            ShowMessageBox("DirectX: Failed to create copy texture view for " + name);
+            MessageBox(0, ("DirectX: Failed to create copy texture view for " + name).c_str(), "ERROR", MB_OK);
             return false;
         }
 
@@ -228,7 +228,7 @@ bool DxRenderTarget::Initialise(ID3D11Device* device, ID3D11SamplerState* state)
 
     if (!InitialiseDepthBuffer(device))
     {
-        ShowMessageBox("DirectX: Failed to create depth buffer");
+        MessageBox(0, "DirectX: Failed to create depth buffer", "ERROR", MB_OK);
         return false;
     }
 
@@ -236,7 +236,7 @@ bool DxRenderTarget::Initialise(ID3D11Device* device, ID3D11SamplerState* state)
     {
         if (!InitialiseRenderTarget(device, i))
         {
-            ShowMessageBox("DirectX: Failed to create render target");
+            MessageBox(0, "DirectX: Failed to create render target", "ERROR", MB_OK);
             return false;
         }
     }
