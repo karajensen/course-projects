@@ -3,6 +3,7 @@
 - Compute shader with gui slider setting colour level on video
 - Save/Pause button
 - Vecotrization algorithm
+- Remove uneeded OpenCV library components
 
 =================================================================
 AIE Advanced Diploma - Complex Game Systems Unit

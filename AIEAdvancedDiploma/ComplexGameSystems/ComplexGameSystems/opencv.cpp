@@ -4,7 +4,7 @@
 
 #include "opencv.h"
 #include <Windows.h>
-#include "opencv2/opencv.hpp"
+#include "opencv.hpp"
 
 OpenCV::OpenCV()
 {
