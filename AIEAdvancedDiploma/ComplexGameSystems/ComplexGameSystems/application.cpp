@@ -7,12 +7,14 @@
 #include "timer.h"
 #include "opencv.h"
 
-Application::Application()
-{
-}
+Application::Application() = default;
 
-Application::~Application()
+Application::~Application() = default;
+
+void Application::Close()
 {
+    m_openCV->Close();
+
     #ifdef _DEBUG
     OutputDebugString("Application::~Application\n");
     #endif
@@ -22,6 +24,11 @@ void Application::Render()
 {
     m_timer->UpdateTimer();
     const float deltatime = m_timer->GetDeltaTime();
+
+    if(!m_paused)
+    {
+        m_openCV->Update(m_vectorization);
+    }
 
     m_engine->Render();
 }
@@ -37,7 +44,7 @@ bool Application::Initialize(HWND hWnd, const POINT& size)
         return false;
     }
 
-    m_openCV = std::make_unique<OpenCV>();
+    m_openCV = std::make_unique<OpenCV>(*m_engine, size.x, size.y);
     if (!m_openCV->Initialize())
     {
         return false;
@@ -58,4 +65,5 @@ void Application::TogglePause()
 
 void Application::Save()
 {
+    m_engine->Save();
 }

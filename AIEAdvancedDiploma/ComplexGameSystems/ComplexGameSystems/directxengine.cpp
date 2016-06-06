@@ -5,8 +5,10 @@
 #include "directxengine.h"
 #include "directxcommon.h"
 #include "directxtarget.h"
+#include "directx/include/D3Dcompiler.h"
 #include <array>
 #include <fstream>
+#include <sstream>
 
 /**
 * Internal data for the directx rendering engine
@@ -23,17 +25,16 @@ struct DirectxData
     */
     ~DirectxData();
 
-    IDXGISwapChain* swapchain = nullptr;     ///< Collection of buffers for displaying frames
-    ID3D11Device* device = nullptr;          ///< Direct3D device interface
-    ID3D11DeviceContext* context = nullptr;  ///< Direct3D device context
-    ID3D11Debug* debug = nullptr;            ///< Direct3D debug interface, only created in debug
-    DxRenderTarget backBuffer;               ///< Render target for the back buffer
-    D3DXMATRIX view;                         ///< View matrix
-    D3DXMATRIX projection;                   ///< Projection matrix
+    IDXGISwapChain* swapchain = nullptr;   
+    ID3D11Device* device = nullptr;        
+    ID3D11DeviceContext* context = nullptr;
+    ID3D11Debug* debug = nullptr;          
+    DxRenderTarget backBuffer;             
+    ID3D11ComputeShader* computeShader = nullptr;
 };
 
 DirectxData::DirectxData() :
-    backBuffer("BackBuffer")
+    backBuffer("BackBuffer", true)
 {
 }
 
@@ -41,6 +42,7 @@ DirectxData::~DirectxData()
 {
     backBuffer.Release();
 
+    SafeRelease(&computeShader);
     SafeRelease(&swapchain);
     SafeRelease(&context);
     SafeRelease(&device);
@@ -75,7 +77,7 @@ bool DirectxEngine::Initialize(HWND hWnd, const POINT& size)
     scd.BufferCount = 1;
     scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     scd.OutputWindow = m_hwnd;
-    scd.SampleDesc.Count = MULTISAMPLING_COUNT;
+    scd.SampleDesc.Count = 1;
     scd.Windowed = TRUE;
     scd.BufferDesc.Width = size.x;
     scd.BufferDesc.Height = size.y;
@@ -112,19 +114,27 @@ bool DirectxEngine::Initialize(HWND hWnd, const POINT& size)
     viewport.MaxDepth = 1.0;
     m_data->context->RSSetViewports(1, &viewport);
 
-    const float ratio = size.x / static_cast<float>(size.y);
-
-    D3DXMatrixIdentity(&m_data->view);
-    D3DXMatrixPerspectiveFovLH(&m_data->projection,
-        (FLOAT)D3DXToRadian(FIELD_OF_VIEW),
-        ratio, CAMERA_NEAR, CAMERA_FAR);
-
     SetDebugName(m_data->device, "Device");
     SetDebugName(m_data->context, "Context");
     SetDebugName(m_data->swapchain, "SwapChain");
 
+    if (!CompileComputeShader(".//Resources//vectorization.fx"))
+    {
+        return false;
+    }
+
     m_data->backBuffer.SetActive(m_data->context);
     return true;
+}
+
+DxRenderTarget& DirectxEngine::GetBackBuffer() const
+{
+    return m_data->backBuffer;
+}
+
+ID3D11DeviceContext* DirectxEngine::GetContext() const
+{
+    return m_data->context;
 }
 
 void DirectxEngine::InitialiseDebugging()
@@ -162,4 +172,82 @@ void DirectxEngine::Render()
 ID3D11Device* DirectxEngine::GetDevice() const
 {
     return m_data->device;
+}
+
+void DirectxEngine::Save()
+{
+    D3DX11SaveTextureToFile(m_data->context, 
+        m_data->backBuffer.GetTexture(), D3DX11_IFF_PNG, "frame.png");
+
+    MessageBox(0, "Saved current frame", "INFO", MB_OK);
+}
+
+bool DirectxEngine::CompileComputeShader(const char* filename)
+{
+    // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ff476330%28v=vs.85%29.aspx
+
+    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+    #ifdef _DEBUG
+    flags |= D3DCOMPILE_DEBUG;
+    #endif
+
+    LPCSTR profile = (m_data->device->GetFeatureLevel() >= 
+        D3D_FEATURE_LEVEL_11_0) ? "cs_5_0" : "cs_4_0";
+
+    const D3D_SHADER_MACRO defines[] =
+    {
+        "EXAMPLE_DEFINE", "1",
+        NULL, NULL
+    };
+
+    ID3DBlob* errorBlob = nullptr;
+    ID3DBlob* shaderBlob = nullptr;
+    HRESULT hr = D3DX11CompileFromFile(filename, 
+                                       defines, 
+                                       0, "CSMain", 
+                                       profile, 
+                                       flags, 
+                                       0, 0, 
+                                       &shaderBlob, 
+                                       &errorBlob, 0);
+    if (FAILED(hr))
+    {
+        std::ostringstream stream;
+        stream << "Failed to compile compute shader: ";
+
+        if (errorBlob)
+        {
+            stream << (char*)errorBlob->GetBufferPointer();
+            errorBlob->Release();
+        }
+        else
+        {
+            stream << "Unknown Error";
+        }
+
+        if (shaderBlob)
+        {
+            shaderBlob->Release();
+        }
+
+        MessageBox(0, stream.str().c_str(), "ERROR", MB_OK);
+        return false;
+    }
+
+    if (errorBlob)
+    {
+        errorBlob->Release();
+    }
+
+    if(FAILED(m_data->device->CreateComputeShader(shaderBlob->GetBufferPointer(), 
+                                                  shaderBlob->GetBufferSize(), 
+                                                  nullptr, &m_data->computeShader)))
+    {
+        MessageBox(0, "Failed to create compute shader", "ERROR", MB_OK);
+        shaderBlob->Release();
+        return false;
+    }
+
+    shaderBlob->Release();
+    return true;
 }

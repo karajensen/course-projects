@@ -72,6 +72,10 @@ void GuiMain(SharedData* data)
     {
         gui->Update();
     }
+
+    #ifdef _DEBUG
+    OutputDebugString("Closing GUI thread\n");
+    #endif
 }
 
 /**
@@ -119,7 +123,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     }
 
+    application->Close();
+
     SetParent(appHandle, 0);
+    ::DestroyWindow(appHandle);
+    ::UnregisterClass("Child", hInstance);
+
     thread.join();
 
     #ifdef _DEBUG

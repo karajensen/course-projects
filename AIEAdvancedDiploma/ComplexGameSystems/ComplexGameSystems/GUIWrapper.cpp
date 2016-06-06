@@ -51,10 +51,9 @@ namespace GUI
         form->Initialize(requestCallbacks);
     }
 
-    bool GuiWrapper::Update()
+    void GuiWrapper::Update()
     {
         System::Windows::Forms::Application::DoEvents();
-        return true;
     }
 
     void GuiWrapper::Show()

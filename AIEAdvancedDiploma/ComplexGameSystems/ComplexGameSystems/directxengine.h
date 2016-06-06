@@ -9,6 +9,8 @@
 
 struct DirectxData;
 struct ID3D11Device;
+struct ID3D11DeviceContext;
+class DxRenderTarget;
 
 /**
 * DirectX Graphics engine
@@ -46,6 +48,21 @@ public:
     */
     ID3D11Device* GetDevice() const;
 
+    /**
+    * @return the directX context
+    */
+    ID3D11DeviceContext* GetContext() const;
+
+    /**
+    * @return the back buffer
+    */
+    DxRenderTarget& GetBackBuffer() const;
+
+    /**
+    * Saves the current frame
+    */
+    void Save();
+
 private:
 
     /**
@@ -53,6 +70,11 @@ private:
     * @note only for _DEBUG
     */
     void InitialiseDebugging();
+
+    /**
+    * Compiles the vectorization compute shader
+    */
+    bool CompileComputeShader(const char* filename);
 
     HWND m_hwnd = nullptr;               
     std::unique_ptr<DirectxData> m_data;

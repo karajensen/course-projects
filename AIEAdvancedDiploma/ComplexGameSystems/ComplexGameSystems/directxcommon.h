@@ -12,7 +12,6 @@
 
 const float CAMERA_FAR = 1000.0f;
 const float CAMERA_NEAR = 1.0f;
-const int MULTISAMPLING_COUNT = 4;
 const int MAX_ANISOTROPY = 16;
 const float FIELD_OF_VIEW = 60.0f;
 

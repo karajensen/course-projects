@@ -31,6 +31,9 @@ struct SharedData
     void CloseApplication()
     {
         runApplication.Set(false);
+#ifdef _DEBUG
+        OutputDebugString("Application close requested\n");
+#endif
     }
 
     void SendWindowHandle(HWND hwnd, HINSTANCE hinstance)

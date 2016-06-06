@@ -188,7 +188,7 @@ namespace GUI
             this->m_mainPanel->Controls->Add(this->m_trackBarPanel);
             this->m_mainPanel->Location = System::Drawing::Point(0, 0);
             this->m_mainPanel->Name = L"m_mainPanel";
-            this->m_mainPanel->Size = System::Drawing::Size(624, 441);
+            this->m_mainPanel->Size = System::Drawing::Size(640, 480);
             this->m_mainPanel->TabIndex = 0;
             // 
             // m_trackBarPanel
@@ -197,7 +197,7 @@ namespace GUI
             this->m_trackBarPanel->Controls->Add(this->m_saveButton);
             this->m_trackBarPanel->Controls->Add(this->m_pauseButton);
             this->m_trackBarPanel->Controls->Add(this->m_trackBar);
-            this->m_trackBarPanel->Location = System::Drawing::Point(6, 391);
+            this->m_trackBarPanel->Location = System::Drawing::Point(6, 431);
             this->m_trackBarPanel->Name = L"m_trackBarPanel";
             this->m_trackBarPanel->Size = System::Drawing::Size(194, 44);
             this->m_trackBarPanel->TabIndex = 1;
@@ -256,11 +256,11 @@ namespace GUI
             // 
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::None;
             this->BackColor = System::Drawing::Color::DimGray;
-            this->ClientSize = System::Drawing::Size(640, 480);
+            this->ClientSize = System::Drawing::Size(656, 519);
             this->Controls->Add(this->m_mainPanel);
             this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
-            this->MaximumSize = System::Drawing::Size(640, 480);
-            this->MinimumSize = System::Drawing::Size(640, 480);
+            this->MaximumSize = System::Drawing::Size(656, 519);
+            this->MinimumSize = System::Drawing::Size(656, 519);
             this->Name = L"GUIForm";
             this->Text = L"Complex Game Systems";
             this->FormClosed += gcnew System::Windows::Forms::FormClosedEventHandler(this, &GUIForm::GUIForm_FormClosed);

@@ -28,6 +28,11 @@ public:
     ~Application();
 
     /**
+    * Closes the application
+    */
+    void Close();
+
+    /**
     * Initialises the application
     * @param hWnd The handle to the window
     * @param size The size of the window

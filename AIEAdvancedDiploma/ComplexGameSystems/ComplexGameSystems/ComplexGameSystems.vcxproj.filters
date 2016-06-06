@@ -11,6 +11,9 @@
     <Filter Include="DirectX">
       <UniqueIdentifier>{0f7687a1-725d-4b5c-9f12-de8a44be62b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{71bd2aa0-ee34-4cbb-bb95-732ebdbd32f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="timer.cpp">
@@ -66,5 +69,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Resources\vectorization.fx">
+      <Filter>Resources</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

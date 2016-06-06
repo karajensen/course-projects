@@ -32,9 +32,8 @@ namespace GUI
 
         /**
         * Ticks the GUI
-        * @return whether the update was successful
         */
-        bool Update();
+        void Update();
 
         /**
         * Shows the GUI Window
