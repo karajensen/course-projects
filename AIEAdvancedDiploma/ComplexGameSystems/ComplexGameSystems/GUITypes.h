@@ -23,7 +23,7 @@ enum GuiRequestType
 */
 struct GuiRequestCallbacks
 {
-    std::function<void(GuiRequestType, int)> sendValueRequest;
+    std::function<void(GuiRequestType, float)> sendValueRequest;
     std::function<void(GuiRequestType)> sendRequest;
     std::function<void(void)> closeApplication;
     std::function<void(HWND, HINSTANCE)> sendWindowHandle;

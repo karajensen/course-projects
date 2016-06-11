@@ -13,11 +13,11 @@ struct SharedData
     SharedData() :
         guiRequest(NONE),
         runApplication(true),
-        guiRequestValue(0)
+        guiRequestValue(0.0f)
     {
     }
 
-    void SendGuiValueRequest(GuiRequestType type, int value)
+    void SendGuiValueRequest(GuiRequestType type, float value)
     {
         guiRequest.Set(type);
         guiRequestValue.Set(value);
@@ -55,5 +55,5 @@ struct SharedData
     BlockingLockable<POINT> windowSize;
     Lockable<bool> runApplication;
     Lockable<GuiRequestType> guiRequest;
-    Lockable<int> guiRequestValue;
+    Lockable<float> guiRequestValue;
 };

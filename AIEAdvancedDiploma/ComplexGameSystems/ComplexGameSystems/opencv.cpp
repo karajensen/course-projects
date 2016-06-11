@@ -78,28 +78,28 @@ void OpenCV::DiagnosticLine(cv::UMat& mat, const std::string& text)
     ++m_diagnosticLine;
 }
 
-void OpenCV::Update(int vectorization)
+ID3D11Texture2D* OpenCV::GetFrame()
 {
-    m_diagnosticLine = 0;
+    return m_texture;
+}
 
-    auto* context = m_directx.GetContext();
-
+bool OpenCV::Update(float vectorization)
+{
     cv::Mat m_frame_bgr;
-    bool success = m_video.read(m_frame_bgr);
-    if (!success)
+    if (!m_video.read(m_frame_bgr))
     {
-        MessageBox(0, "Cannot read a frame from video stream", "ERROR", MB_OK);
-        return;
+        return false;
     }
 
     cv::cvtColor(m_frame_bgr, m_frame_rgba, CV_BGR2RGBA);
 
+    auto* context = m_directx.GetContext();
     UINT subResource = ::D3D11CalcSubresource(0, 0, 0);
     D3D11_MAPPED_SUBRESOURCE mappedTex;
     if (FAILED(context->Map(m_texture, subResource, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
     {
         MessageBox(0, "Surface mapping failed", "ERROR", MB_OK);
-        return;
+        return false;
     }
 
     cv::Mat mat(m_height, m_width, CV_8UC4, mappedTex.pData, mappedTex.RowPitch);
@@ -107,16 +107,17 @@ void OpenCV::Update(int vectorization)
 
     context->Unmap(m_texture, subResource);
 
+#ifdef _DEBUG
+    m_diagnosticLine = 0;
     cv::UMat uMat;
     cv::directx::convertFromD3D11Texture2D(m_texture, uMat);
     
-    #ifdef _DEBUG
     DiagnosticLine(uMat, "Width: " + std::to_string(m_width));
     DiagnosticLine(uMat, "Height: " + std::to_string(m_height));
     DiagnosticLine(uMat, "Vectorization: " + std::to_string(vectorization));
-    #endif
     
     cv::directx::convertToD3D11Texture2D(uMat, m_texture);
+#endif
 
-    m_directx.GetContext()->CopyResource(m_directx.GetBackBuffer().GetTexture(), m_texture);
-}
+    return true;
+}   

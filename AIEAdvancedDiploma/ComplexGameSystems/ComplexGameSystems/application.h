@@ -9,6 +9,7 @@
 class Timer;
 class DirectxEngine;
 class OpenCV;
+class Vectorization;
 
 /**
 * Main Application Class
@@ -48,7 +49,7 @@ public:
     /**
     * Sets the amount of vectorization
     */
-    void SetVectorizationAmount(int value);
+    void SetVectorizationAmount(float value);
 
     /**
     * Toggles whether the application is paused
@@ -68,9 +69,9 @@ private:
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;
 
-    int m_vectorization = 0;
     bool m_paused = false;
     std::unique_ptr<Timer> m_timer; 
     std::unique_ptr<DirectxEngine> m_engine;
     std::unique_ptr<OpenCV> m_openCV;
+    std::unique_ptr<Vectorization> m_vectorization;
 };

@@ -94,6 +94,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="vectorization.cpp" />
     <ClCompile Include="directxengine.cpp" />
     <ClCompile Include="directxtarget.cpp" />
     <ClCompile Include="matrix.cpp" />
@@ -104,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="directxcommon.h" />
+    <ClInclude Include="vectorization.h" />
     <ClInclude Include="directxengine.h" />
     <ClInclude Include="directxtarget.h" />
     <ClInclude Include="lockable.h" />

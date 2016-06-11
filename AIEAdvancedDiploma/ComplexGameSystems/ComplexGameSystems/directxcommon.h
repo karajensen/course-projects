@@ -10,11 +10,6 @@
 #include "directx/include/d3dx11.h"
 #include "directx/include/d3dx10.h"
 
-const float CAMERA_FAR = 1000.0f;
-const float CAMERA_NEAR = 1.0f;
-const int MAX_ANISOTROPY = 16;
-const float FIELD_OF_VIEW = 60.0f;
-
 /**
 * Sets the name of the directx object for debugging
 * @param object The object to set

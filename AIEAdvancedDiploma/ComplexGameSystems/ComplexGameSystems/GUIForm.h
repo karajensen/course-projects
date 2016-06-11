@@ -148,7 +148,8 @@ namespace GUI
         */
         System::Void TrackBarValueChanged(System::Object^ sender, System::EventArgs^ e) 
         {
-            m_requestCallbacks->sendValueRequest(VECTORIZATION, m_trackBar->Value);
+            m_requestCallbacks->sendValueRequest(VECTORIZATION, 
+                m_trackBar->Value / (float)m_trackBar->Maximum);
         }
 
         /**

@@ -4,13 +4,11 @@
 
 #pragma once
 
+#include "directxcommon.h"
 #include <Windows.h>
 #include <memory>
 
 struct DirectxData;
-struct ID3D11Device;
-struct ID3D11DeviceContext;
-class DxRenderTarget;
 
 /**
 * DirectX Graphics engine
@@ -21,7 +19,6 @@ public:
 
     /**
     * Constructor
-    * @param hwnd Handle to the window
     */
     DirectxEngine();
 
@@ -56,7 +53,7 @@ public:
     /**
     * @return the back buffer
     */
-    DxRenderTarget& GetBackBuffer() const;
+    ID3D11Texture2D* GetBackBuffer() const;
 
     /**
     * Saves the current frame
@@ -71,11 +68,7 @@ private:
     */
     void InitialiseDebugging();
 
-    /**
-    * Compiles the vectorization compute shader
-    */
-    bool CompileComputeShader(const char* filename);
-
     HWND m_hwnd = nullptr;               
     std::unique_ptr<DirectxData> m_data;
+    POINT m_screen;
 };                     

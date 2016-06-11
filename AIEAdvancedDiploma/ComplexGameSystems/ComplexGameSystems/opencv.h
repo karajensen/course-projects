@@ -41,7 +41,12 @@ public:
     /**
     * Updates openCV
     */
-    void Update(int vectorization);
+    bool Update(float vectorization);
+
+    /**
+    * @return the camera frame
+    */
+    ID3D11Texture2D* GetFrame();
 
 private:
 

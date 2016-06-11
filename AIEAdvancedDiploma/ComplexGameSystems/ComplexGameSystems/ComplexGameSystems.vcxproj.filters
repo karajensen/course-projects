@@ -37,6 +37,9 @@
     <ClCompile Include="opencv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vectorization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="timer.h">
@@ -64,6 +67,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="opencv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vectorization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,9 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "directxengine.h"
-#include "directxcommon.h"
 #include "directxtarget.h"
-#include "directx/include/D3Dcompiler.h"
 #include <array>
 #include <fstream>
 #include <sstream>
@@ -29,8 +27,7 @@ struct DirectxData
     ID3D11Device* device = nullptr;        
     ID3D11DeviceContext* context = nullptr;
     ID3D11Debug* debug = nullptr;          
-    DxRenderTarget backBuffer;             
-    ID3D11ComputeShader* computeShader = nullptr;
+    DxRenderTarget backBuffer;
 };
 
 DirectxData::DirectxData() :
@@ -41,8 +38,6 @@ DirectxData::DirectxData() :
 DirectxData::~DirectxData()
 {
     backBuffer.Release();
-
-    SafeRelease(&computeShader);
     SafeRelease(&swapchain);
     SafeRelease(&context);
     SafeRelease(&device);
@@ -70,6 +65,7 @@ DirectxEngine::~DirectxEngine()
 bool DirectxEngine::Initialize(HWND hWnd, const POINT& size)
 {
     m_hwnd = hWnd;
+    m_screen = size;
 
     DXGI_SWAP_CHAIN_DESC scd;
     ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
@@ -118,18 +114,13 @@ bool DirectxEngine::Initialize(HWND hWnd, const POINT& size)
     SetDebugName(m_data->context, "Context");
     SetDebugName(m_data->swapchain, "SwapChain");
 
-    if (!CompileComputeShader(".//Resources//vectorization.fx"))
-    {
-        return false;
-    }
-
     m_data->backBuffer.SetActive(m_data->context);
     return true;
 }
 
-DxRenderTarget& DirectxEngine::GetBackBuffer() const
+ID3D11Texture2D* DirectxEngine::GetBackBuffer() const
 {
-    return m_data->backBuffer;
+    return m_data->backBuffer.GetTexture();
 }
 
 ID3D11DeviceContext* DirectxEngine::GetContext() const
@@ -180,74 +171,4 @@ void DirectxEngine::Save()
         m_data->backBuffer.GetTexture(), D3DX11_IFF_PNG, "frame.png");
 
     MessageBox(0, "Saved current frame", "INFO", MB_OK);
-}
-
-bool DirectxEngine::CompileComputeShader(const char* filename)
-{
-    // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ff476330%28v=vs.85%29.aspx
-
-    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-    #ifdef _DEBUG
-    flags |= D3DCOMPILE_DEBUG;
-    #endif
-
-    LPCSTR profile = (m_data->device->GetFeatureLevel() >= 
-        D3D_FEATURE_LEVEL_11_0) ? "cs_5_0" : "cs_4_0";
-
-    const D3D_SHADER_MACRO defines[] =
-    {
-        "EXAMPLE_DEFINE", "1",
-        NULL, NULL
-    };
-
-    ID3DBlob* errorBlob = nullptr;
-    ID3DBlob* shaderBlob = nullptr;
-    HRESULT hr = D3DX11CompileFromFile(filename, 
-                                       defines, 
-                                       0, "CSMain", 
-                                       profile, 
-                                       flags, 
-                                       0, 0, 
-                                       &shaderBlob, 
-                                       &errorBlob, 0);
-    if (FAILED(hr))
-    {
-        std::ostringstream stream;
-        stream << "Failed to compile compute shader: ";
-
-        if (errorBlob)
-        {
-            stream << (char*)errorBlob->GetBufferPointer();
-            errorBlob->Release();
-        }
-        else
-        {
-            stream << "Unknown Error";
-        }
-
-        if (shaderBlob)
-        {
-            shaderBlob->Release();
-        }
-
-        MessageBox(0, stream.str().c_str(), "ERROR", MB_OK);
-        return false;
-    }
-
-    if (errorBlob)
-    {
-        errorBlob->Release();
-    }
-
-    if(FAILED(m_data->device->CreateComputeShader(shaderBlob->GetBufferPointer(), 
-                                                  shaderBlob->GetBufferSize(), 
-                                                  nullptr, &m_data->computeShader)))
-    {
-        MessageBox(0, "Failed to create compute shader", "ERROR", MB_OK);
-        shaderBlob->Release();
-        return false;
-    }
-
-    shaderBlob->Release();
-    return true;
 }
