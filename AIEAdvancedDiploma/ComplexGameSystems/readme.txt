@@ -1,5 +1,4 @@
 
-- Compute shader with gui slider setting colour level on video
 - Vecotrization algorithm
 - Buy and test 720p webcam
 

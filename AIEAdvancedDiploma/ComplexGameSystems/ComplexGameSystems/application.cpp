@@ -32,20 +32,24 @@ void Application::Render()
 
     if(!m_paused)
     {
-        if (m_openCV->Update(m_vectorization->GetVectorization()))
+        if (m_openCV->Update())
         {
-#ifdef NO_VECTORIZATION
+            #ifdef _DEBUG
+            m_openCV->RenderDiagnostics(m_vectorization->GetVectorization());
+            #endif
+
+            #ifdef NO_VECTORIZATION
             m_engine->GetContext()->CopyResource(
                 m_engine->GetBackBuffer(),
                 m_openCV->GetFrame());
-#else   
+            #else   
             m_vectorization->CopyToBuffer(m_openCV->GetFrame());
             m_vectorization->Render();
 
             m_engine->GetContext()->CopyResource(
                 m_engine->GetBackBuffer(),
                 m_vectorization->GetBuffer());
-#endif
+            #endif
         }
     }
 

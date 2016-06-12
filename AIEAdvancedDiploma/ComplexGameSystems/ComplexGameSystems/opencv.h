@@ -41,12 +41,17 @@ public:
     /**
     * Updates openCV
     */
-    bool Update(float vectorization);
+    bool Update();
 
     /**
     * @return the camera frame
     */
     ID3D11Texture2D* GetFrame();
+
+    /**
+    * Renders diagnostic text
+    */
+    void RenderDiagnostics(float vectorization);
 
 private:
 

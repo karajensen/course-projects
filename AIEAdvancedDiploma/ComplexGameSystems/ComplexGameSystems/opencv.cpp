@@ -83,7 +83,21 @@ ID3D11Texture2D* OpenCV::GetFrame()
     return m_texture;
 }
 
-bool OpenCV::Update(float vectorization)
+void OpenCV::RenderDiagnostics(float vectorization)
+{
+    m_diagnosticLine = 0;
+
+    cv::UMat uMat;
+    cv::directx::convertFromD3D11Texture2D(m_texture, uMat);
+
+    DiagnosticLine(uMat, "Width: " + std::to_string(m_width));
+    DiagnosticLine(uMat, "Height: " + std::to_string(m_height));
+    DiagnosticLine(uMat, "Vectorization: " + std::to_string(vectorization));
+
+    cv::directx::convertToD3D11Texture2D(uMat, m_texture);
+}
+
+bool OpenCV::Update()
 {
     cv::Mat m_frame_bgr;
     if (!m_video.read(m_frame_bgr))
@@ -106,18 +120,6 @@ bool OpenCV::Update(float vectorization)
     m_frame_rgba.copyTo(mat);
 
     context->Unmap(m_texture, subResource);
-
-#ifdef _DEBUG
-    m_diagnosticLine = 0;
-    cv::UMat uMat;
-    cv::directx::convertFromD3D11Texture2D(m_texture, uMat);
-    
-    DiagnosticLine(uMat, "Width: " + std::to_string(m_width));
-    DiagnosticLine(uMat, "Height: " + std::to_string(m_height));
-    DiagnosticLine(uMat, "Vectorization: " + std::to_string(vectorization));
-    
-    cv::directx::convertToD3D11Texture2D(uMat, m_texture);
-#endif
 
     return true;
 }   
