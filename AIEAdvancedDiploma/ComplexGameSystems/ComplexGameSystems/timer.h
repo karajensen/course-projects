@@ -30,18 +30,12 @@ public:
     /**
     * @return The time passed since last frame in seconds
     */
-    float GetDeltaTime() const;
+    double GetDeltaTime() const;
 
     /**
-    * Toggles whether to use an explicitly set deltatime
+    * @return the frames per second
     */
-    void ToggleForceDeltatime();
-
-    /**
-    * Increases or decreases the explicitly set deltatime
-    * @param increase Whether to increase deltatime or not
-    */
-    void ChangeDeltatime(bool increase);
+    unsigned int GetFPS() const;
 
 private:
 
@@ -52,7 +46,5 @@ private:
     double m_deltaTimeCounter;  ///< Combined timestep between frames up to 1 second
     unsigned int m_fps;         ///< Amount of frames rendered in 1 second
     unsigned int m_fpsCounter;  ///< Amount of frames rendered since delta time counter began
-    bool m_forceDeltatime;      ///< Whether to force deltatime explicitly or not
-    double m_forcedDeltatime;   ///< The value for the forced deltatime
 };
 

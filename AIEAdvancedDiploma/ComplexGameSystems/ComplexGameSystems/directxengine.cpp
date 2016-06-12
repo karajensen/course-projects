@@ -72,6 +72,8 @@ bool DirectxEngine::Initialize(HWND hWnd, const POINT& size)
     scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     scd.BufferCount = 1;
     scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    scd.BufferDesc.RefreshRate.Numerator = 0;
+    scd.BufferDesc.RefreshRate.Denominator = 1;
     scd.OutputWindow = m_hwnd;
     scd.SampleDesc.Count = 1;
     scd.Windowed = TRUE;

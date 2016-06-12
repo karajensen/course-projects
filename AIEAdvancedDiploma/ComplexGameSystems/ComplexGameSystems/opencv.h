@@ -51,7 +51,9 @@ public:
     /**
     * Renders diagnostic text
     */
-    void RenderDiagnostics(float vectorization);
+    void RenderDiagnostics(double deltatime, 
+                           unsigned int fps,
+                           float vectorization);
 
 private:
 

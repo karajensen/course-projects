@@ -83,15 +83,17 @@ ID3D11Texture2D* OpenCV::GetFrame()
     return m_texture;
 }
 
-void OpenCV::RenderDiagnostics(float vectorization)
+void OpenCV::RenderDiagnostics(double deltatime, 
+                               unsigned int fps,
+                               float vectorization)
 {
     m_diagnosticLine = 0;
 
     cv::UMat uMat;
     cv::directx::convertFromD3D11Texture2D(m_texture, uMat);
 
-    DiagnosticLine(uMat, "Width: " + std::to_string(m_width));
-    DiagnosticLine(uMat, "Height: " + std::to_string(m_height));
+    DiagnosticLine(uMat, "DeltaTime: " + std::to_string(deltatime));
+    DiagnosticLine(uMat, "FPS: " + std::to_string(fps));
     DiagnosticLine(uMat, "Vectorization: " + std::to_string(vectorization));
 
     cv::directx::convertToD3D11Texture2D(uMat, m_texture);

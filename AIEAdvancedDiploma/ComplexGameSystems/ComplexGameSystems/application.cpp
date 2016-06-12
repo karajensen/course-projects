@@ -11,6 +11,9 @@
 // Uncomment to test without compute shader
 //#define NO_VECTORIZATION
 
+// Uncomment to show diagnostics
+#define DIAGNOSTICS
+
 Application::Application() = default;
 
 Application::~Application() = default;
@@ -27,15 +30,19 @@ void Application::Close()
 
 void Application::Render()
 {
+    #ifdef DIAGNOSTICS
     m_timer->UpdateTimer();
-    const float deltatime = m_timer->GetDeltaTime();
+    #endif
 
     if(!m_paused)
     {
         if (m_openCV->Update())
         {
-            #ifdef _DEBUG
-            m_openCV->RenderDiagnostics(m_vectorization->GetVectorization());
+            #ifdef DIAGNOSTICS
+            m_openCV->RenderDiagnostics(
+                m_timer->GetDeltaTime(),
+                m_timer->GetFPS(),
+                m_vectorization->GetVectorization());
             #endif
 
             #ifdef NO_VECTORIZATION
@@ -58,8 +65,10 @@ void Application::Render()
 
 bool Application::Initialize(HWND hWnd, const POINT& size)
 {   
+    #ifdef _DEBUG
     m_timer = std::make_unique<Timer>();
     m_timer->StartTimer();
+    #endif
 
     m_engine = std::make_unique<DirectxEngine>();
     if (!m_engine->Initialize(hWnd, size))
