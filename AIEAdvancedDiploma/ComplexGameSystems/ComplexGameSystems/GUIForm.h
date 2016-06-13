@@ -290,7 +290,7 @@ namespace GUI
             // 
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::None;
             this->BackColor = System::Drawing::Color::DimGray;
-            this->ClientSize = System::Drawing::Size(640, 480);
+            this->ClientSize = System::Drawing::Size(656, 519);
             this->Controls->Add(this->m_mainPanel);
             this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
             this->MaximumSize = System::Drawing::Size(656, 519);
