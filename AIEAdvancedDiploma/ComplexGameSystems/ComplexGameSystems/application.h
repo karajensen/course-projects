@@ -57,6 +57,11 @@ public:
     void TogglePause();
 
     /**
+    * Toggles whether a border is drawn
+    */
+    void ToggleBorder();
+
+    /**
     * Saves the current image
     */
     void Save();

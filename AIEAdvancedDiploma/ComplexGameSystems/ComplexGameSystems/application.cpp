@@ -11,9 +11,6 @@
 // Uncomment to test without compute shader
 //#define NO_VECTORIZATION
 
-// Uncomment to show diagnostics
-#define DIAGNOSTICS
-
 Application::Application() = default;
 
 Application::~Application() = default;
@@ -30,21 +27,12 @@ void Application::Close()
 
 void Application::Render()
 {
-    #ifdef DIAGNOSTICS
     m_timer->UpdateTimer();
-    #endif
 
     if(!m_paused)
     {
         if (m_openCV->Update())
         {
-            #ifdef DIAGNOSTICS
-            m_openCV->RenderDiagnostics(
-                m_timer->GetDeltaTime(),
-                m_timer->GetFPS(),
-                m_vectorization->GetVectorization());
-            #endif
-
             #ifdef NO_VECTORIZATION
             m_engine->GetContext()->CopyResource(
                 m_engine->GetBackBuffer(),
@@ -104,6 +92,11 @@ void Application::SetVectorizationAmount(float value)
 void Application::TogglePause()
 {
     m_paused = !m_paused;
+}
+
+void Application::ToggleBorder()
+{
+    m_vectorization->ToggleBorder();
 }
 
 void Application::Save()

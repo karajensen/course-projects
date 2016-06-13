@@ -17,7 +17,6 @@
 OpenCV::OpenCV(DirectxEngine& directx, int width, int height) :
     m_directx(directx),
     m_texture(nullptr),
-    m_diagnosticPosition(10, 20),
     m_width(width),
     m_height(height)
 {
@@ -70,33 +69,9 @@ bool OpenCV::Initialize()
     return true;
 }
 
-void OpenCV::DiagnosticLine(cv::UMat& mat, const std::string& text)
-{
-    cv::Point pt(m_diagnosticPosition);
-    pt.y += m_diagnosticLine * 10;
-    cv::putText(mat, text, pt, 1, 0.8, cv::Scalar(255, 255, 255), 1);
-    ++m_diagnosticLine;
-}
-
 ID3D11Texture2D* OpenCV::GetFrame()
 {
     return m_texture;
-}
-
-void OpenCV::RenderDiagnostics(double deltatime, 
-                               unsigned int fps,
-                               float vectorization)
-{
-    m_diagnosticLine = 0;
-
-    cv::UMat uMat;
-    cv::directx::convertFromD3D11Texture2D(m_texture, uMat);
-
-    DiagnosticLine(uMat, "DeltaTime: " + std::to_string(deltatime));
-    DiagnosticLine(uMat, "FPS: " + std::to_string(fps));
-    DiagnosticLine(uMat, "Vectorization: " + std::to_string(vectorization));
-
-    cv::directx::convertToD3D11Texture2D(uMat, m_texture);
 }
 
 bool OpenCV::Update()

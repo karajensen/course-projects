@@ -94,10 +94,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="SRM.cpp" />
     <ClCompile Include="vectorization.cpp" />
     <ClCompile Include="directxengine.cpp" />
     <ClCompile Include="directxtarget.cpp" />
-    <ClCompile Include="matrix.cpp" />
     <ClCompile Include="opencv.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="application.cpp" />
@@ -105,11 +105,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="directxcommon.h" />
+    <ClInclude Include="SRM.h" />
     <ClInclude Include="vectorization.h" />
     <ClInclude Include="directxengine.h" />
     <ClInclude Include="directxtarget.h" />
     <ClInclude Include="lockable.h" />
-    <ClInclude Include="matrix.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="opencv.h" />
     <ClInclude Include="shareddata.h" />

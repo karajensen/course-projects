@@ -1,4 +1,3 @@
-
 =================================================================
 AIE Advanced Diploma - Computer Graphics Unit
 =================================================================
@@ -7,6 +6,7 @@ www.KaraJensen.com
 https://github.com/karajensen/course-projects.git
 =================================================================
 
+SUMMARY: 3D OpenGL scene manipulated by tweakbar
 RELEASE REQUIREMENTS: Windows 7+
 BUILD REQUIREMENTS: Windows 7+, Visual Studio 2013 (v120)
 

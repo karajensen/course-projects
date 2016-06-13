@@ -118,6 +118,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             case VECTORIZATION:
                 application->SetVectorizationAmount(data->guiRequestValue.Get());
                 break;
+            case BORDER:
+                application->ToggleBorder();
+                break;
             }
             application->Render();
         }

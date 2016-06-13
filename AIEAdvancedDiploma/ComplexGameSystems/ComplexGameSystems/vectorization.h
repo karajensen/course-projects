@@ -6,6 +6,9 @@
 
 #include "directxcommon.h"
 #include <vector>
+#include <memory>
+
+class SRM;
 
 /**
 * References:
@@ -71,6 +74,11 @@ public:
     */
     float GetVectorization() const;
 
+    /**
+    * Toggles whether a border is drawn
+    */
+    void ToggleBorder();
+
 private:
 
     bool CreateShader(const char* file);
@@ -86,6 +94,8 @@ private:
 
     ValuesData m_valuesData;
     bool m_requiresRender = false;
+    bool m_useComputeShader = false;
+    bool m_border = false;
     POINT m_screen;
     size_t m_bufferSize = 0;
     size_t m_bufferStride = 0;
@@ -101,4 +111,5 @@ private:
     ID3D11UnorderedAccessView* m_destBufferView = nullptr;
     ID3D11Texture2D* m_destTexture = nullptr;
     ID3D11Texture2D* m_srcTexture = nullptr;
+    std::unique_ptr<SRM> m_srm; ///< CPU Statistical region merging algorithm
 };

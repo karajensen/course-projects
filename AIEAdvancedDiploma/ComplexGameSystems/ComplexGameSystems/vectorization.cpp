@@ -3,10 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "vectorization.h"
+#include "SRM.h"
 #include "directx/include/D3Dcompiler.h"
 #include <sstream>
 
-Vectorization::Vectorization() 
+Vectorization::Vectorization()
 {
 }
 
@@ -134,26 +135,52 @@ void Vectorization::CopyToBuffer(ID3D11Texture2D* texture)
 {
     m_requiresRender = true;
 
-    m_context->CopyResource(m_srcTexture, texture);
+    if (m_valuesData.vectorization == 0.0f)
+    {
+        m_context->CopyResource(m_destTexture, texture);
+    }
+    else
+    {
+        m_context->CopyResource(m_srcTexture, texture);
 
-    D3D11_MAPPED_SUBRESOURCE mappedTex;
-    if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
-    {
-        MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
-        return;
+        D3D11_MAPPED_SUBRESOURCE mappedTex;
+        if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
+        {
+            MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
+            return;
+        }
+
+        if (m_useComputeShader)
+        {
+            D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+            if (FAILED(m_context->Map(m_srcBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
+            {
+                MessageBox(0, "Failed to map input buffer", "ERROR", MB_OK);
+                return;
+            }
+
+            memcpy(mappedBuffer.pData, mappedTex.pData, m_bufferSize);
+
+            m_context->Unmap(m_srcBuffer, 0);
+        }
+        else
+        {
+            D3D11_MAPPED_SUBRESOURCE mappedOutput;
+            if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedOutput)))
+            {
+                MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
+                return;
+            }
+
+            auto* output = reinterpret_cast<int*>(mappedOutput.pData);
+            auto* input = reinterpret_cast<int*>(mappedTex.pData);
+            m_srm->Execute(input, output, m_valuesData.vectorization, m_border);
+
+            m_context->Unmap(m_destTexture, 0);
+        }
+
+        m_context->Unmap(m_srcTexture, 0);
     }
-    
-    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-    if (FAILED(m_context->Map(m_srcBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
-    {
-        MessageBox(0, "Failed to map input buffer", "ERROR", MB_OK);
-        return;
-    }
-    
-    memcpy(mappedBuffer.pData, mappedTex.pData, m_bufferSize);
-    
-    m_context->Unmap(m_srcBuffer, 0);
-    m_context->Unmap(m_srcTexture, 0);
 }
 
 bool Vectorization::RequiresRendering() const
@@ -167,41 +194,50 @@ void Vectorization::Render()
     {
         return;
     }
-
     m_requiresRender = false;
-    m_context->Dispatch(1, 1, 1);
-    m_context->CopyResource(m_destBufferSystem, m_destBuffer);
 
-    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-    if (FAILED(m_context->Map(m_destBufferSystem, 0, D3D11_MAP_READ, 0, &mappedBuffer)))
+    if (m_useComputeShader && m_valuesData.vectorization != 0.0f)
     {
-        MessageBox(0, "Failed to map output buffer", "ERROR", MB_OK);
-        return;
-    }
-    
-    D3D11_MAPPED_SUBRESOURCE mappedTex;
-    if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
-    {
-        MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
-        return;
-    }
+        m_context->Dispatch(1, 1, 1);
+        m_context->CopyResource(m_destBufferSystem, m_destBuffer);
 
-    memcpy(mappedTex.pData, mappedBuffer.pData, m_bufferSize);
-    
-    m_context->Unmap(m_destBufferSystem, 0);
-    m_context->Unmap(m_destTexture, 0);
+        D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+        if (FAILED(m_context->Map(m_destBufferSystem, 0, D3D11_MAP_READ, 0, &mappedBuffer)))
+        {
+            MessageBox(0, "Failed to map output buffer", "ERROR", MB_OK);
+            return;
+        }
+
+        D3D11_MAPPED_SUBRESOURCE mappedTex;
+        if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
+        {
+            MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
+            return;
+        }
+
+        memcpy(mappedTex.pData, mappedBuffer.pData, m_bufferSize);
+
+        m_context->Unmap(m_destBufferSystem, 0);
+        m_context->Unmap(m_destTexture, 0);
+    }
+}
+
+void Vectorization::ToggleBorder()
+{
+    m_border = !m_border;
 }
 
 bool Vectorization::Initialise(ID3D11Device* device, 
-                                 ID3D11DeviceContext* context,
-                                 const char* file, 
-                                 const POINT& size)
+                               ID3D11DeviceContext* context,
+                               const char* file, 
+                               const POINT& size)
 {
     m_screen = size;
     m_device = device;
     m_context = context;
     m_bufferStride = sizeof(int);
-    m_bufferSize = (m_bufferStride * m_screen.x) * m_screen.y;
+    m_bufferSize = (m_bufferStride * size.x) * size.y;
+    m_srm = std::make_unique<SRM>(size.x, size.y);
 
     return CreateInputBuffer() && CreateOutputBuffer() && CreateValuesBuffer() && CreateShader(file);
 }

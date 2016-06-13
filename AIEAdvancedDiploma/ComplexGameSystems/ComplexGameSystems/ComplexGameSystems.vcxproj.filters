@@ -22,9 +22,6 @@
     <ClCompile Include="winmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="matrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -40,12 +37,12 @@
     <ClCompile Include="vectorization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SRM.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lockable.h">
@@ -70,6 +67,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vectorization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SRM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

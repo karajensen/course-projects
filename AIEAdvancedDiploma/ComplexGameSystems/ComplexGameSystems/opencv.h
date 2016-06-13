@@ -48,13 +48,6 @@ public:
     */
     ID3D11Texture2D* GetFrame();
 
-    /**
-    * Renders diagnostic text
-    */
-    void RenderDiagnostics(double deltatime, 
-                           unsigned int fps,
-                           float vectorization);
-
 private:
 
     /**
@@ -63,18 +56,11 @@ private:
     OpenCV(const OpenCV&) = delete;
     OpenCV& operator=(const OpenCV&) = delete;
 
-    /**
-    * Adds diagnostic text
-    */
-    void DiagnosticLine(cv::UMat& mat, const std::string& text);
-
     DirectxEngine& m_directx;
     ID3D11Texture2D* m_texture;
     cv::VideoCapture m_video;
     cv::Mat m_frame_bgr;
     cv::Mat m_frame_rgba;
-    cv::Point m_diagnosticPosition;
-    int m_diagnosticLine = 0;
     int m_width = 0;
     int m_height = 0;
 };
