@@ -18,7 +18,7 @@ class SRM
 {
 public:
 
-    SRM(int width, int height);
+    SRM(int w, int h);
     ~SRM();
     void Execute(int* input, int* output, float vectorization, bool border);
 
@@ -34,12 +34,10 @@ private:
         int diff = 0;
     };
 
-    void FullSegmentation(int* intput, int* output, bool border);
     void InitializeSegmentation(int* input);
     void Segmentation(int* input);
     bool MergePredicate(int reg1, int reg2);
     void MergeRegions(int C1, int C2);
-    void MergeSmallRegion();
     void OutputSegmentation(int* output);
     void DrawBorder(int* output);
 
@@ -48,11 +46,9 @@ private:
     */
     void BucketSortOrder();
 
-    int w, h, n;
-    double aspectratio = 0.0;
+    int width, height, size;
     double complexity = 0.0;        ///< Complexity of regions generated
     int levels = 256;               ///< Number of levels in a color channel
-    int smallregion = 0;            ///< Number of pixels that define a "small region" to be collapsed
     double logdelta = 0.0;
     int edges = 0;
 
@@ -61,9 +57,8 @@ private:
     std::vector<double> Ravg;
     std::vector<double> Gavg;
     std::vector<double> Bavg;
-    std::vector<int> C; // the class number
-    std::vector<Rmpair> order;
     std::vector<int> nbe;
     std::vector<int> cnbe;
+    std::vector<Rmpair> order;
     std::vector<Rmpair> order2;
 };

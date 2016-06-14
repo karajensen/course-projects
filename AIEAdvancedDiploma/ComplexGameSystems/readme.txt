@@ -1,6 +1,9 @@
 
 - Vecotrization algorithm
-- Improve frame rate
+    - Cleanup and comment
+    - Try with image half the size
+    - Move parts to GPU
+
 - Test release on x4 computers
 
 =================================================================

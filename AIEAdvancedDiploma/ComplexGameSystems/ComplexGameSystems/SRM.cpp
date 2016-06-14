@@ -6,6 +6,7 @@
 #include <math.h>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
 /**
 * Union Find Data Structure of Tarjan for Disjoint Sets
@@ -17,10 +18,10 @@ public:
     /**
     * Create a UF for n elements
     */
-    UnionFind(int n)
+    UnionFind(int size)
     {
-        parent.resize(n);
-        rank.resize(n);
+        parent.resize(size);
+        rank.resize(size);
     }
 
     /**
@@ -28,12 +29,8 @@ public:
     */
     void Initialise()
     {
-        int n = (int)parent.size();
-        for (int k = 0; k < n; k++)
-        {
-            parent[k] = k;
-            rank[k] = 0;
-        }
+        std::iota(parent.begin(), parent.end(), 0);
+        rank.assign(rank.size(), 0);
     }
 
     /**
@@ -107,23 +104,19 @@ int Colour(int r, int g, int b)
 
 SRM::~SRM() = default;
 
-SRM::SRM(int width, int height) :
-    w(width),
-    h(height),
-    aspectratio(h / w),
-    n(w * h)
+SRM::SRM(int w, int h) :
+    width(w),
+    height(h),
+    size(w * h)
 {
-    logdelta = 2.0 * log(6.0 * n);
-    smallregion = (int)(0.0001 * n);
+    logdelta = 2.0 * log(6.0 * size);
     edges = 2 * (w - 1)*(h - 1) + (h - 1) + (w - 1);
+    UF = std::make_unique<UnionFind>(size);
 
-    UF = std::make_unique<UnionFind>(n);
-
-    Ravg.resize(n);
-    Gavg.resize(n);
-    Bavg.resize(n);
-    N.resize(n);
-    C.resize(n);
+    Ravg.resize(size);
+    Gavg.resize(size);
+    Bavg.resize(size);
+    N.resize(size);
     order.resize(edges);
     order2.resize(edges);
     nbe.resize(levels);
@@ -135,38 +128,8 @@ void SRM::Execute(int* input, int* output, float vectorization, bool border)
     // Complexity is inverse to vectorization range [0,1]
     complexity = 30.0 + ((1.0 - vectorization) * 300.0);
 
-    UF->Initialise();
-
     InitializeSegmentation(input);
-    FullSegmentation(input, output, border);
-}
-
-void SRM::InitializeSegmentation(int* input)
-{
-    for (int y = 0; y < h; y++)
-    {
-        for (int x = 0; x < w; x++)
-        {
-            int index = y*w + x;
-
-            int red = Red(input[index]);
-            int green = Green(input[index]);
-            int blue = Blue(input[index]);
-
-            Ravg[index] = red;
-            Gavg[index] = green;
-            Bavg[index] = blue;
-
-            N[index] = 1;
-            C[index] = index;
-        }
-    }
-}
-
-void SRM::FullSegmentation(int* input, int* output, bool border)
-{
     Segmentation(input);
-    MergeSmallRegion();
     OutputSegmentation(output);
 
     if (border)
@@ -175,13 +138,35 @@ void SRM::FullSegmentation(int* input, int* output, bool border)
     }
 }
 
+void SRM::InitializeSegmentation(int* input)
+{
+    UF->Initialise();
+    N.assign(N.size(), 1);
+
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            int index = y*width + x;
+
+            int red = Red(input[index]);
+            int green = Green(input[index]);
+            int blue = Blue(input[index]);
+
+            Ravg[index] = red;
+            Gavg[index] = green;
+            Bavg[index] = blue;
+        }
+    }
+}
+
 void SRM::OutputSegmentation(int* output)
 {
-    for (int i = 0; i<h; i++) // for each row
+    for (int y = 0; y < height; y++)
     {
-        for (int j = 0; j<w; j++) // for each column
+        for (int x = 0; x < width; x++)
         {
-            int index = i*w + j;
+            int index = y*width + x;
             int indexb = UF->Find(index); // Get the root index 
 
             int r = (int)Ravg[indexb];
@@ -195,24 +180,25 @@ void SRM::OutputSegmentation(int* output)
 
 void SRM::DrawBorder(int* output)
 {
-    const int border = 1;
+    const int borderthickness = 1;
 
-    for (int i = 1; i<h; i++) // for each row
+    for (int i = 1; i < height; i++)
     {
-        for (int j = 1; j<w; j++) // for each column
+        for (int j = 1; j < width; j++)
         {
-            int index = i*w + j;
+            int index = i*width + j;
+
             int C1 = UF->Find(index);
-            int C2 = UF->Find(index - 1 - w);
+            int C2 = UF->Find(index - 1 - width);
 
             if (C2 != C1)
             {
-                for (int k = -border; k <= border; k++)
+                for (int k = -borderthickness; k <= borderthickness; k++)
                 {
-                    for (int l = -border; l <= border; l++)
+                    for (int l = -borderthickness; l <= borderthickness; l++)
                     {
-                        index = (i + k)*w + (j + l);
-                        if ((index >= 0) && (index<w*h))
+                        index = (i + k) * width + (j + l);
+                        if ((index >= 0) && (index < size))
                         {
                             int red = std::max(Red(output[index]) - 10, 0);
                             int green = std::max(Green(output[index]) - 10, 0);
@@ -226,36 +212,15 @@ void SRM::DrawBorder(int* output)
     }
 }
 
-void SRM::MergeSmallRegion()
-{
-    for (int i = 0; i<h; i++) // for each row
-    {
-        for (int j = 1; j<w; j++) // for each column
-        {
-            int index = i*w + j;
-            int C1 = UF->Find(index);
-            int C2 = UF->Find(index - 1);
-
-            if (C2 != C1) 
-            {
-                if ((N[C2] < smallregion) || (N[C1] < smallregion))
-                {
-                    MergeRegions(C1, C2);
-                }
-            }
-        }
-    }
-}
-
 void SRM::Segmentation(int* input)
 {
     int cpair = 0;
 
-    for (int i = 0; i < h - 1; i++)
+    for (int y = 0; y < height - 1; y++)
     {
-        for (int j = 0; j < w - 1; j++)
+        for (int x = 0; x < width - 1; x++)
         {
-            int index = i * w + j;
+            int index = y*width + x;
 
             order[cpair].r1 = index;
             order[cpair].r2 = index + 1;
@@ -272,11 +237,11 @@ void SRM::Segmentation(int* input)
             cpair++;
 
             order[cpair].r1 = index;
-            order[cpair].r2 = index + w;
+            order[cpair].r2 = index + width;
 
-            r2 = Red(input[index + w]);
-            g2 = Green(input[index + w]);
-            b2 = Blue(input[index + w]);
+            r2 = Red(input[index + width]);
+            g2 = Green(input[index + width]);
+            b2 = Blue(input[index + width]);
 
             order[cpair].diff = (int)Max3(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
             cpair++;
@@ -284,26 +249,26 @@ void SRM::Segmentation(int* input)
     }
 
     // The two border lines
-    for (int i = 0; i < h - 1; i++)
+    for (int i = 0; i < height - 1; i++)
     {
-        int index = i * w + w - 1;
+        int index = i * width + width - 1;
         order[cpair].r1 = index;
-        order[cpair].r2 = index + w;
+        order[cpair].r2 = index + width;
 
         int r1 = Red(input[index]);
         int g1 = Green(input[index]);
         int b1 = Blue(input[index]);
-        int r2 = Red(input[index + w]);
-        int g2 = Green(input[index + w]);
-        int b2 = Blue(input[index + w]);
+        int r2 = Red(input[index + width]);
+        int g2 = Green(input[index + width]);
+        int b2 = Blue(input[index + width]);
 
         order[cpair].diff = (int)Max3(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
         cpair++;
     }
 
-    for (int j = 0; j<w - 1; j++)
+    for (int j = 0; j < width - 1; j++)
     {
-        int index = (h - 1)*w + j;
+        int index = (height - 1)*width + j;
 
         order[cpair].r1 = index;
         order[cpair].r2 = index + 1;
@@ -327,6 +292,7 @@ void SRM::Segmentation(int* input)
         int C1 = UF->Find(reg1);
         int reg2 = order[i].r2;
         int C2 = UF->Find(reg2);
+
         if ((C1 != C2) && (MergePredicate(C1, C2)))
         {
             MergeRegions(C1, C2);
