@@ -74,29 +74,34 @@ ID3D11Texture2D* OpenCV::GetFrame()
     return m_texture;
 }
 
-bool OpenCV::Update()
+bool OpenCV::Update(double deltatime)
 {
-    cv::Mat m_frame_bgr;
-    if (!m_video.read(m_frame_bgr))
+    m_timer += deltatime;
+    if (m_timer >= 0.2)
     {
-        return false;
+        if (!m_video.read(m_frame_bgr))
+        {
+            return false;
+        }
+
+        cv::cvtColor(m_frame_bgr, m_frame_rgba, CV_BGR2RGBA);
+
+        auto* context = m_directx.GetContext();
+        UINT subResource = ::D3D11CalcSubresource(0, 0, 0);
+        D3D11_MAPPED_SUBRESOURCE mappedTex;
+        if (FAILED(context->Map(m_texture, subResource, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
+        {
+            MessageBox(0, "Surface mapping failed", "ERROR", MB_OK);
+            return false;
+        }
+
+        cv::Mat mat(m_height, m_width, CV_8UC4, mappedTex.pData, mappedTex.RowPitch);
+        m_frame_rgba.copyTo(mat);
+
+        context->Unmap(m_texture, subResource);
+
+        m_timer = 0.0;
+        return true;
     }
-
-    cv::cvtColor(m_frame_bgr, m_frame_rgba, CV_BGR2RGBA);
-
-    auto* context = m_directx.GetContext();
-    UINT subResource = ::D3D11CalcSubresource(0, 0, 0);
-    D3D11_MAPPED_SUBRESOURCE mappedTex;
-    if (FAILED(context->Map(m_texture, subResource, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
-    {
-        MessageBox(0, "Surface mapping failed", "ERROR", MB_OK);
-        return false;
-    }
-
-    cv::Mat mat(m_height, m_width, CV_8UC4, mappedTex.pData, mappedTex.RowPitch);
-    m_frame_rgba.copyTo(mat);
-
-    context->Unmap(m_texture, subResource);
-
-    return true;
+    return false;
 }   

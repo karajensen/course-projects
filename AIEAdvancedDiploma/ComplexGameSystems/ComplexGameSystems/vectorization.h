@@ -60,11 +60,6 @@ public:
     ID3D11Texture2D* GetBuffer();
 
     /**
-    * @return if the compute shader requires rendering
-    */
-    bool RequiresRendering() const;
-
-    /**
     * Sets the vectorization amount
     */
     void SetVectorization(float value);
@@ -72,12 +67,7 @@ public:
     /**
     * @return the vectorization amount
     */
-    float GetVectorization() const;
-
-    /**
-    * Toggles whether a border is drawn
-    */
-    void ToggleBorder();
+    bool RequiresVectorization() const;
 
 private:
 
@@ -93,10 +83,8 @@ private:
     };
 
     ValuesData m_valuesData;
-    bool m_requiresRender = false;
     bool m_useComputeShader = false;
-    bool m_border = false;
-    POINT m_screen;
+    POINT m_size;
     size_t m_bufferSize = 0;
     size_t m_bufferStride = 0;
     ID3D11DeviceContext* m_context = nullptr;

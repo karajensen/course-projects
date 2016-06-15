@@ -5,6 +5,8 @@
 #pragma once
 #include <Windows.h>
 
+class Tweaker;
+
 /**
 * FPS class for determining frame rate and delta time
 */
@@ -36,6 +38,11 @@ public:
     * @return the frames per second
     */
     unsigned int GetFPS() const;
+
+    /**
+    * Adds the timer to the tweak bar
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
 private:
 

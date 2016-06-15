@@ -10,6 +10,7 @@ class Timer;
 class DirectxEngine;
 class OpenCV;
 class Vectorization;
+class Tweaker;
 
 /**
 * Main Application Class
@@ -57,9 +58,9 @@ public:
     void TogglePause();
 
     /**
-    * Toggles whether a border is drawn
+    * Toggles whether diagnostics are on
     */
-    void ToggleBorder();
+    void ToggleDiagnostics();
 
     /**
     * Saves the current image
@@ -69,14 +70,21 @@ public:
 private:
 
     /**
+    * Initialises the tweak bar
+    */
+    void InitialiseTweakBar(const POINT& point);
+
+    /**
     * Prevent copying
     */
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;
 
+    bool m_diagnostics = false;
     bool m_paused = false;
     std::unique_ptr<Timer> m_timer; 
     std::unique_ptr<DirectxEngine> m_engine;
     std::unique_ptr<OpenCV> m_openCV;
     std::unique_ptr<Vectorization> m_vectorization;
+    std::unique_ptr<Tweaker> m_tweaker;
 };

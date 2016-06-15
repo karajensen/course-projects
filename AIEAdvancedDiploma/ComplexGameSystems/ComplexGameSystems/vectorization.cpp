@@ -50,9 +50,9 @@ void Vectorization::SetVectorization(float value)
     UpdateValuesBuffer();
 }
 
-float Vectorization::GetVectorization() const
+bool Vectorization::RequiresVectorization() const
 {
-    return m_valuesData.vectorization;
+    return m_valuesData.vectorization != 0.0f;
 }
 
 bool Vectorization::CreateShader(const char* file)
@@ -133,70 +133,50 @@ ID3D11Texture2D* Vectorization::GetBuffer()
 
 void Vectorization::CopyToBuffer(ID3D11Texture2D* texture)
 {
-    m_requiresRender = true;
+    m_context->CopyResource(m_srcTexture, texture);
 
-    if (m_valuesData.vectorization == 0.0f)
+    D3D11_MAPPED_SUBRESOURCE mappedTex;
+    if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
     {
-        m_context->CopyResource(m_destTexture, texture);
+        MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
+        return;
     }
-    else
-    {
-        m_context->CopyResource(m_srcTexture, texture);
 
-        D3D11_MAPPED_SUBRESOURCE mappedTex;
-        if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
+    if (m_useComputeShader)
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+        if (FAILED(m_context->Map(m_srcBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
         {
-            MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
+            MessageBox(0, "Failed to map input buffer", "ERROR", MB_OK);
             return;
         }
 
-        if (m_useComputeShader)
-        {
-            D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-            if (FAILED(m_context->Map(m_srcBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
-            {
-                MessageBox(0, "Failed to map input buffer", "ERROR", MB_OK);
-                return;
-            }
+        memcpy(mappedBuffer.pData, mappedTex.pData, m_bufferSize);
 
-            memcpy(mappedBuffer.pData, mappedTex.pData, m_bufferSize);
-
-            m_context->Unmap(m_srcBuffer, 0);
-        }
-        else
-        {
-            D3D11_MAPPED_SUBRESOURCE mappedOutput;
-            if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedOutput)))
-            {
-                MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
-                return;
-            }
-
-            auto* output = reinterpret_cast<int*>(mappedOutput.pData);
-            auto* input = reinterpret_cast<int*>(mappedTex.pData);
-            m_srm->Execute(input, output, m_valuesData.vectorization, m_border);
-
-            m_context->Unmap(m_destTexture, 0);
-        }
-
-        m_context->Unmap(m_srcTexture, 0);
+        m_context->Unmap(m_srcBuffer, 0);
     }
-}
+    else
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedOutput;
+        if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedOutput)))
+        {
+            MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
+            return;
+        }
 
-bool Vectorization::RequiresRendering() const
-{
-    return m_requiresRender;
+        auto* output = reinterpret_cast<int*>(mappedOutput.pData);
+        auto* input = reinterpret_cast<int*>(mappedTex.pData);
+        m_srm->Execute(input, output, m_valuesData.vectorization);
+
+        m_context->Unmap(m_destTexture, 0);
+    }
+
+    m_context->Unmap(m_srcTexture, 0);
 }
 
 void Vectorization::Render()
 {
-    if (!m_requiresRender)
-    {
-        return;
-    }
-    m_requiresRender = false;
-
-    if (m_useComputeShader && m_valuesData.vectorization != 0.0f)
+    if (m_useComputeShader)
     {
         m_context->Dispatch(1, 1, 1);
         m_context->CopyResource(m_destBufferSystem, m_destBuffer);
@@ -222,24 +202,27 @@ void Vectorization::Render()
     }
 }
 
-void Vectorization::ToggleBorder()
-{
-    m_border = !m_border;
-}
-
 bool Vectorization::Initialise(ID3D11Device* device, 
                                ID3D11DeviceContext* context,
                                const char* file, 
                                const POINT& size)
 {
-    m_screen = size;
+    m_size = size;
     m_device = device;
     m_context = context;
     m_bufferStride = sizeof(int);
     m_bufferSize = (m_bufferStride * size.x) * size.y;
     m_srm = std::make_unique<SRM>(size.x, size.y);
 
-    return CreateInputBuffer() && CreateOutputBuffer() && CreateValuesBuffer() && CreateShader(file);
+    if (!CreateInputBuffer() ||
+        !CreateOutputBuffer() ||
+        !CreateValuesBuffer() ||
+        !CreateShader(file))
+    {
+        return false;
+    }
+
+    SetVectorization(0.0f);
 }
 
 bool Vectorization::CreateInputBuffer()
@@ -273,8 +256,8 @@ bool Vectorization::CreateInputBuffer()
     }
 
     D3D11_TEXTURE2D_DESC descTex;
-    descTex.Width = m_screen.x;
-    descTex.Height = m_screen.y;
+    descTex.Width = m_size.x;
+    descTex.Height = m_size.y;
     descTex.MipLevels = 1;
     descTex.ArraySize = 1;
     descTex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -376,8 +359,8 @@ bool Vectorization::CreateOutputBuffer()
     }
 
     D3D11_TEXTURE2D_DESC descTex;
-    descTex.Width = m_screen.x;
-    descTex.Height = m_screen.y;
+    descTex.Width = m_size.x;
+    descTex.Height = m_size.y;
     descTex.MipLevels = 1;
     descTex.ArraySize = 1;
     descTex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;

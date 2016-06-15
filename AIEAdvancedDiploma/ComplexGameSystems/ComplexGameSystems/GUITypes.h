@@ -15,7 +15,7 @@ enum GuiRequestType
     NONE,
     PAUSE,
     SAVE,
-    BORDER,
+    DIAGNOSTICS,
     VECTORIZATION
 };
 

@@ -53,7 +53,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\$(SolutionName)\directx\include;$(SolutionDir)$(ProjectName)\opencv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\$(SolutionName)\directx\include;$(SolutionDir)$(ProjectName)\opencv\include;$(SolutionDir)$(ProjectName);$(SolutionDir)$(ProjectName)\anttweakbar;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -63,11 +63,11 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUID.lib;opencv_highgui310d.lib;opencv_calib3d310d.lib;opencv_core310d.lib;opencv_features2d310d.lib;opencv_video310d.lib;opencv_videoio310d.lib;opencv_flann310d.lib;opencv_imgcodecs310d.lib;opencv_imgproc310d.lib;opencv_ml310d.lib;opencv_objdetect310d.lib;opencv_photo310d.lib;opencv_shape310d.lib;opencv_stitching310d.lib;opencv_superres310d.lib;opencv_ts310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUID.lib;opencv_highgui310d.lib;opencv_calib3d310d.lib;opencv_core310d.lib;opencv_features2d310d.lib;opencv_video310d.lib;opencv_videoio310d.lib;opencv_flann310d.lib;opencv_imgcodecs310d.lib;opencv_imgproc310d.lib;opencv_ml310d.lib;opencv_objdetect310d.lib;opencv_photo310d.lib;opencv_shape310d.lib;opencv_stitching310d.lib;opencv_superres310d.lib;opencv_ts310d.lib;AntTweakBar.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)\$(SolutionName)\opencv\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)\$(SolutionName)\opencv\lib;$(SolutionDir)$(ProjectName)\anttweakbar;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -80,7 +80,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\$(SolutionName)\directx\include;$(SolutionDir)$(ProjectName)\opencv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\$(SolutionName)\directx\include;$(SolutionDir)$(ProjectName)\opencv\include;$(SolutionDir)$(ProjectName);$(SolutionDir)$(ProjectName)\anttweakbar;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <Link>
@@ -89,12 +89,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUI.lib;opencv_highgui310.lib;opencv_calib3d310.lib;opencv_core310.lib;opencv_features2d310.lib;opencv_video310.lib;opencv_videoio310.lib;opencv_flann310.lib;opencv_imgcodecs310.lib;opencv_imgproc310.lib;opencv_ml310.lib;opencv_objdetect310.lib;opencv_photo310.lib;opencv_shape310.lib;opencv_stitching310.lib;opencv_superres310.lib;opencv_ts310.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)$(ProjectName)\opencv\lib;$(SolutionDir)\$(SolutionName)\opencv\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;d3dcompiler.lib;dxguid.lib;ComplexGameSystemsGUI.lib;opencv_highgui310.lib;opencv_calib3d310.lib;opencv_core310.lib;opencv_features2d310.lib;opencv_video310.lib;opencv_videoio310.lib;opencv_flann310.lib;opencv_imgcodecs310.lib;opencv_imgproc310.lib;opencv_ml310.lib;opencv_objdetect310.lib;opencv_photo310.lib;opencv_shape310.lib;opencv_stitching310.lib;opencv_superres310.lib;opencv_ts310.lib;AntTweakBar.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\$(SolutionName)\directx\lib;$(SolutionDir)$(ProjectName)\opencv\lib;$(SolutionDir)\$(SolutionName)\opencv\lib;$(SolutionDir)$(ProjectName)\anttweakbar;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="SRM.cpp" />
+    <ClCompile Include="tweaker.cpp" />
     <ClCompile Include="vectorization.cpp" />
     <ClCompile Include="directxengine.cpp" />
     <ClCompile Include="directxtarget.cpp" />
@@ -106,6 +107,7 @@
   <ItemGroup>
     <ClInclude Include="directxcommon.h" />
     <ClInclude Include="SRM.h" />
+    <ClInclude Include="tweaker.h" />
     <ClInclude Include="vectorization.h" />
     <ClInclude Include="directxengine.h" />
     <ClInclude Include="directxtarget.h" />

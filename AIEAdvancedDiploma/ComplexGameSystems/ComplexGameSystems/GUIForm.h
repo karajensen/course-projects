@@ -33,7 +33,7 @@ namespace GUI
 
             m_pauseButton->BackgroundImage = Image::FromFile(".//Resources//pause.png");
             m_saveButton->BackgroundImage = Image::FromFile(".//Resources//save.png");
-            m_borderButton->BackgroundImage = Image::FromFile(".//Resources//border.png");
+            m_diagnosticsButton->BackgroundImage = Image::FromFile(".//Resources//border.png");
         }
 
         /**
@@ -157,11 +157,11 @@ namespace GUI
         }
 
         /**
-        * On Border button click
+        * On Diagnostics button click
         */
-        System::Void BorderButtonClick(System::Object^  sender, System::EventArgs^ e)
+        System::Void DiagnosticsButtonClick(System::Object^  sender, System::EventArgs^ e)
         {
-            m_requestCallbacks->sendRequest(BORDER);
+            m_requestCallbacks->sendRequest(DIAGNOSTICS);
         }
 
         /**
@@ -188,7 +188,7 @@ namespace GUI
         {
             this->m_mainPanel = (gcnew System::Windows::Forms::Panel());
             this->m_trackBarPanel = (gcnew System::Windows::Forms::Panel());
-            this->m_borderButton = (gcnew System::Windows::Forms::Button());
+            this->m_diagnosticsButton = (gcnew System::Windows::Forms::Button());
             this->m_saveButton = (gcnew System::Windows::Forms::Button());
             this->m_pauseButton = (gcnew System::Windows::Forms::Button());
             this->m_trackBar = (gcnew System::Windows::Forms::TrackBar());
@@ -208,7 +208,7 @@ namespace GUI
             // m_trackBarPanel
             // 
             this->m_trackBarPanel->BackColor = System::Drawing::Color::Transparent;
-            this->m_trackBarPanel->Controls->Add(this->m_borderButton);
+            this->m_trackBarPanel->Controls->Add(this->m_diagnosticsButton);
             this->m_trackBarPanel->Controls->Add(this->m_saveButton);
             this->m_trackBarPanel->Controls->Add(this->m_pauseButton);
             this->m_trackBarPanel->Controls->Add(this->m_trackBar);
@@ -217,24 +217,24 @@ namespace GUI
             this->m_trackBarPanel->Size = System::Drawing::Size(231, 44);
             this->m_trackBarPanel->TabIndex = 1;
             // 
-            // m_borderButton
+            // m_diagnosticsButton
             // 
-            this->m_borderButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(230)), static_cast<System::Int32>(static_cast<System::Byte>(230)),
+            this->m_diagnosticsButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(230)), static_cast<System::Int32>(static_cast<System::Byte>(230)),
                 static_cast<System::Int32>(static_cast<System::Byte>(230)));
-            this->m_borderButton->Cursor = System::Windows::Forms::Cursors::Hand;
-            this->m_borderButton->FlatAppearance->BorderSize = 0;
-            this->m_borderButton->FlatAppearance->CheckedBackColor = System::Drawing::Color::Gray;
-            this->m_borderButton->FlatAppearance->MouseDownBackColor = System::Drawing::Color::Gray;
-            this->m_borderButton->FlatAppearance->MouseOverBackColor = System::Drawing::Color::DarkGray;
-            this->m_borderButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-            this->m_borderButton->Location = System::Drawing::Point(82, 7);
-            this->m_borderButton->Margin = System::Windows::Forms::Padding(0);
-            this->m_borderButton->Name = L"m_borderButton";
-            this->m_borderButton->Size = System::Drawing::Size(32, 32);
-            this->m_borderButton->TabIndex = 1;
-            this->m_borderButton->TabStop = false;
-            this->m_borderButton->UseVisualStyleBackColor = false;
-            this->m_borderButton->Click += gcnew System::EventHandler(this, &GUIForm::BorderButtonClick);
+            this->m_diagnosticsButton->Cursor = System::Windows::Forms::Cursors::Hand;
+            this->m_diagnosticsButton->FlatAppearance->BorderSize = 0;
+            this->m_diagnosticsButton->FlatAppearance->CheckedBackColor = System::Drawing::Color::Gray;
+            this->m_diagnosticsButton->FlatAppearance->MouseDownBackColor = System::Drawing::Color::Gray;
+            this->m_diagnosticsButton->FlatAppearance->MouseOverBackColor = System::Drawing::Color::DarkGray;
+            this->m_diagnosticsButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->m_diagnosticsButton->Location = System::Drawing::Point(82, 7);
+            this->m_diagnosticsButton->Margin = System::Windows::Forms::Padding(0);
+            this->m_diagnosticsButton->Name = L"m_diagnosticsButton";
+            this->m_diagnosticsButton->Size = System::Drawing::Size(32, 32);
+            this->m_diagnosticsButton->TabIndex = 1;
+            this->m_diagnosticsButton->TabStop = false;
+            this->m_diagnosticsButton->UseVisualStyleBackColor = false;
+            this->m_diagnosticsButton->Click += gcnew System::EventHandler(this, &GUIForm::DiagnosticsButtonClick);
             // 
             // m_saveButton
             // 
@@ -317,7 +317,7 @@ namespace GUI
         System::Windows::Forms::Panel^ m_trackBarPanel;
         System::Windows::Forms::Button^  m_pauseButton;
         System::Windows::Forms::Button^  m_saveButton;
-        System::Windows::Forms::Button^  m_borderButton;
+        System::Windows::Forms::Button^  m_diagnosticsButton;
         System::Windows::Forms::Panel^ m_mainPanel;
     };
 }

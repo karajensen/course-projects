@@ -87,8 +87,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     std::thread thread(&GuiMain, data.get());
 
-    POINT windowSize = data->windowSize.Get(); // Blocks
-    HWND guiHandle = data->guiHandle.Get(); // Blocks
+    // Blocks until getting a copy from the GUI thread
+    POINT windowSize = data->windowSize.Get();
+    HWND guiHandle = data->guiHandle.Get();
     HWND appHandle = InitializeWindow(hInstance, guiHandle, windowSize);
     
     auto application = std::make_unique<Application>();
@@ -118,8 +119,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             case VECTORIZATION:
                 application->SetVectorizationAmount(data->guiRequestValue.Get());
                 break;
-            case BORDER:
-                application->ToggleBorder();
+            case DIAGNOSTICS:
+                application->ToggleDiagnostics();
                 break;
             }
             application->Render();

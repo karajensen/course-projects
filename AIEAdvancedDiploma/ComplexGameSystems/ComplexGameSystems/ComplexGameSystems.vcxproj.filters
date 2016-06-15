@@ -38,7 +38,10 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SRM.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tweaker.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +73,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SRM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tweaker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

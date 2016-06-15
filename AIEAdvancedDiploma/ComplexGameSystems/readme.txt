@@ -1,9 +1,9 @@
-
+ 
 - Vecotrization algorithm
     - Cleanup and comment
-    - Try with image half the size
-    - Move parts to GPU
+    - Move segmentation to GPU
 
+- Loading text
 - Test release on x4 computers
 
 =================================================================

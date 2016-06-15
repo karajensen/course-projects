@@ -8,222 +8,91 @@
 #include <algorithm>
 #include <numeric>
 
-/**
-* Union Find Data Structure of Tarjan for Disjoint Sets
-*/
-class UnionFind
+namespace
 {
-public:
-
-    /**
-    * Create a UF for n elements
-    */
-    UnionFind(int size)
+    double Max(double a, double b, double c)
     {
-        parent.resize(size);
-        rank.resize(size);
+        return std::max(a, std::max(b, c));
     }
 
-    /**
-    * Initialises
-    */
-    void Initialise()
+    int Red(int colour)
     {
-        std::iota(parent.begin(), parent.end(), 0);
-        rank.assign(rank.size(), 0);
+        return colour & 0xFF;
     }
 
-    /**
-    * Find procedures
-    */
-    int Find(int k)
+    int Green(int colour)
     {
-        while (parent[k] != k)
-        {
-            k = parent[k];
-        }
-        return k;
+        return (colour & 0xFF00) >> 8;
     }
 
-    /**
-    * Assume x and y being roots
-    */
-    int UnionRoot(int x, int y)
+    int Blue(int colour)
     {
-        if (x == y)
-        {
-            return -1;
-        }
-
-        if (rank[x] > rank[y])
-        {
-            parent[y] = x; 
-            return x;
-        }
-        else
-        {
-            parent[x] = y; 
-            if (rank[x] == rank[y])
-            {
-                rank[y]++;
-            }
-            return y;
-        }
+        return (colour & 0xFF0000) >> 16;
     }
 
-private:
-
-    std::vector<int> rank;
-    std::vector<int> parent;
-};
-
-double Max3(double a, double b, double c)
-{
-    return std::max(a, std::max(b, c));
-}
-
-int Red(int colour)
-{
-    return colour & 0xFF;
-}
-
-int Green(int colour)
-{
-    return (colour & 0xFF00) >> 8;
-}
-
-int Blue(int colour)
-{
-    return (colour & 0xFF0000) >> 16;
-}
-
-int Colour(int r, int g, int b)
-{
-    return 0xff000000 | b << 16 | g << 8 | r;
+    int ToColour(int r, int g, int b)
+    {
+        return 0xff000000 | b << 16 | g << 8 | r;
+    }
 }
 
 SRM::~SRM() = default;
 
 SRM::SRM(int w, int h) :
-    width(w),
-    height(h),
-    size(w * h)
+    m_width(w),
+    m_height(h),
+    m_size(w * h)
 {
-    logdelta = 2.0 * log(6.0 * size);
-    edges = 2 * (w - 1)*(h - 1) + (h - 1) + (w - 1);
-    UF = std::make_unique<UnionFind>(size);
+    m_logdelta = 2.0 * log(6.0 * m_size);
+    m_edges = 2 * (w - 1)*(h - 1) + (h - 1) + (w - 1);
+    m_levelsSqr = m_levels * m_levels;
 
-    Ravg.resize(size);
-    Gavg.resize(size);
-    Bavg.resize(size);
-    N.resize(size);
-    order.resize(edges);
-    order2.resize(edges);
-    nbe.resize(levels);
-    cnbe.resize(levels);
+    m_average.resize(m_size);
+    m_N.resize(m_size);
+    m_order.resize(m_edges);
+    m_parent.resize(m_size);
+    m_rank.resize(m_size);
 }
 
-void SRM::Execute(int* input, int* output, float vectorization, bool border)
+void SRM::Execute(int* input, int* output, float vectorization)
 {
-    // Complexity is inverse to vectorization range [0,1]
-    complexity = 30.0 + ((1.0 - vectorization) * 300.0);
+    // complexity is inverse to vectorization range [0,1]
+    m_complexity = 30.0 + ((1.0 - vectorization) * 300.0);
 
-    InitializeSegmentation(input);
-    Segmentation(input);
-    OutputSegmentation(output);
+    std::iota(m_parent.begin(), m_parent.end(), 0);
+    m_N.assign(m_N.size(), 1);
+    m_rank.assign(m_rank.size(), 0);
+    DisjointSet set(&m_rank[0], &m_parent[0]);
 
-    if (border)
+    for (size_t i = 0; i < m_average.size(); ++i)
     {
-        DrawBorder(output);
+        m_average[i].r = Red(input[i]);
+        m_average[i].g = Green(input[i]);
+        m_average[i].b = Blue(input[i]);
+    }
+    
+    Segmentation(input, set);
+    
+    for (size_t i = 0; i < m_average.size(); ++i)
+    {
+        const auto& c = m_average[set.find_set(i)];
+        output[i] = ToColour(c.r, c.g, c.b);
     }
 }
 
-void SRM::InitializeSegmentation(int* input)
-{
-    UF->Initialise();
-    N.assign(N.size(), 1);
-
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            int index = y*width + x;
-
-            int red = Red(input[index]);
-            int green = Green(input[index]);
-            int blue = Blue(input[index]);
-
-            Ravg[index] = red;
-            Gavg[index] = green;
-            Bavg[index] = blue;
-        }
-    }
-}
-
-void SRM::OutputSegmentation(int* output)
-{
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            int index = y*width + x;
-            int indexb = UF->Find(index); // Get the root index 
-
-            int r = (int)Ravg[indexb];
-            int g = (int)Gavg[indexb];
-            int b = (int)Bavg[indexb];
-
-            output[index] = Colour(r, g, b);
-        }
-    }
-}
-
-void SRM::DrawBorder(int* output)
-{
-    const int borderthickness = 1;
-
-    for (int i = 1; i < height; i++)
-    {
-        for (int j = 1; j < width; j++)
-        {
-            int index = i*width + j;
-
-            int C1 = UF->Find(index);
-            int C2 = UF->Find(index - 1 - width);
-
-            if (C2 != C1)
-            {
-                for (int k = -borderthickness; k <= borderthickness; k++)
-                {
-                    for (int l = -borderthickness; l <= borderthickness; l++)
-                    {
-                        index = (i + k) * width + (j + l);
-                        if ((index >= 0) && (index < size))
-                        {
-                            int red = std::max(Red(output[index]) - 10, 0);
-                            int green = std::max(Green(output[index]) - 10, 0);
-                            int blue = std::max(Blue(output[index]) - 10, 0);
-                            output[index] = Colour(red, green, blue);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-void SRM::Segmentation(int* input)
+void SRM::Segmentation(int* input, DisjointSet& set)
 {
     int cpair = 0;
 
-    for (int y = 0; y < height - 1; y++)
+    // Segmentation to move to GPU
+    for (int y = 0; y < m_height - 1; y++)
     {
-        for (int x = 0; x < width - 1; x++)
+        for (int x = 0; x < m_width - 1; x++)
         {
-            int index = y*width + x;
+            int index = y*m_width + x;
 
-            order[cpair].r1 = index;
-            order[cpair].r2 = index + 1;
+            m_order[cpair].r1 = index;
+            m_order[cpair].r2 = index + 1;
 
             int r1 = Red(input[index]);
             int g1 = Green(input[index]);
@@ -233,126 +102,67 @@ void SRM::Segmentation(int* input)
             int g2 = Green(input[index + 1]);
             int b2 = Blue(input[index + 1]);
 
-            order[cpair].diff = (int)Max3(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
+            m_order[cpair].diff = (int)Max(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
             cpair++;
 
-            order[cpair].r1 = index;
-            order[cpair].r2 = index + width;
+            m_order[cpair].r1 = index;
+            m_order[cpair].r2 = index + m_width;
 
-            r2 = Red(input[index + width]);
-            g2 = Green(input[index + width]);
-            b2 = Blue(input[index + width]);
+            r2 = Red(input[index + m_width]);
+            g2 = Green(input[index + m_width]);
+            b2 = Blue(input[index + m_width]);
 
-            order[cpair].diff = (int)Max3(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
+            m_order[cpair].diff = (int)Max(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
             cpair++;
         }
     }
 
-    // The two border lines
-    for (int i = 0; i < height - 1; i++)
+    std::sort(m_order.begin(), m_order.end(),
+        [](const SRM::Edge& e1, const SRM::Edge& e2)
     {
-        int index = i * width + width - 1;
-        order[cpair].r1 = index;
-        order[cpair].r2 = index + width;
+        return e1.diff < e2.diff;
+    });
 
-        int r1 = Red(input[index]);
-        int g1 = Green(input[index]);
-        int b1 = Blue(input[index]);
-        int r2 = Red(input[index + width]);
-        int g2 = Green(input[index + width]);
-        int b2 = Blue(input[index + width]);
-
-        order[cpair].diff = (int)Max3(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
-        cpair++;
-    }
-
-    for (int j = 0; j < width - 1; j++)
+    for (int i = 0; i < m_edges; i++)
     {
-        int index = (height - 1)*width + j;
+        int reg1 = m_order[i].r1;
+        int C1 = set.find_set(reg1);
+        int reg2 = m_order[i].r2;
+        int C2 = set.find_set(reg2);
 
-        order[cpair].r1 = index;
-        order[cpair].r2 = index + 1;
-
-        int r1 = Red(input[index]);
-        int g1 = Green(input[index]);
-        int b1 = Blue(input[index]);
-        int r2 = Red(input[index + 1]);
-        int g2 = Green(input[index + 1]);
-        int b2 = Blue(input[index + 1]);
-        order[cpair].diff = (int)Max3(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
-
-        cpair++;
-    }
-
-    BucketSortOrder();
-
-    for (int i = 0; i < edges; i++)
-    {
-        int reg1 = order[i].r1;
-        int C1 = UF->Find(reg1);
-        int reg2 = order[i].r2;
-        int C2 = UF->Find(reg2);
-
-        if ((C1 != C2) && (MergePredicate(C1, C2)))
+        if (C1 != C2 && MergePredicate(C1, C2))
         {
-            MergeRegions(C1, C2);
+            MergeRegions(C1, C2, set);
         }
     }
 }
 
-void SRM::MergeRegions(int C1, int C2)
+void SRM::MergeRegions(int C1, int C2, DisjointSet& set)
 {
-    int reg = UF->UnionRoot(C1, C2);
-    int nreg = N[C1] + N[C2];
-    double ravg = (N[C1] * Ravg[C1] + N[C2] * Ravg[C2]) / nreg;
-    double gavg = (N[C1] * Gavg[C1] + N[C2] * Gavg[C2]) / nreg;
-    double bavg = (N[C1] * Bavg[C1] + N[C2] * Bavg[C2]) / nreg;
+    set.union_set(C1, C2);
+    
+    const int reg = m_rank[C1] > m_rank[C2] ? C1 : C2;
+    const int nreg = m_N[C1] + m_N[C2];
 
-    N[reg] = nreg;
-    Ravg[reg] = ravg;
-    Gavg[reg] = gavg;
-    Bavg[reg] = bavg;
+    m_average[reg].r = (m_N[C1] * m_average[C1].r + m_N[C2] * m_average[C2].r) / (double)nreg;
+    m_average[reg].g = (m_N[C1] * m_average[C1].g + m_N[C2] * m_average[C2].g) / (double)nreg;
+    m_average[reg].b = (m_N[C1] * m_average[C1].b + m_N[C2] * m_average[C2].b) / (double)nreg;
+    m_N[reg] = nreg;
 }
 
 bool SRM::MergePredicate(int reg1, int reg2)
 {
-    double dR = (Ravg[reg1] - Ravg[reg2]);
-    dR *= dR;
+    const double dR = pow(m_average[reg1].r - m_average[reg2].r, 2);
+    const double dG = pow(m_average[reg1].g - m_average[reg2].g, 2);
+    const double dB = pow(m_average[reg1].b - m_average[reg2].b, 2);
 
-    double dG = (Gavg[reg1] - Gavg[reg2]);
-    dG *= dG;
+    const double logreg1 = std::min(double(m_levels), (double)(m_N[reg1]) * log(1.0 + m_N[reg1]));
+    const double logreg2 = std::min(double(m_levels), (double)(m_N[reg2]) * log(1.0 + m_N[reg2]));
 
-    double dB = (Bavg[reg1] - Bavg[reg2]);
-    dB *= dB;
+    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * m_N[reg1]))*(logreg1 + m_logdelta);
+    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * m_N[reg2]))*(logreg2 + m_logdelta);
 
-    double logreg1 = std::min(double(levels), (double)(N[reg1]) * log(1.0 + N[reg1]));
-    double logreg2 = std::min(double(levels), (double)(N[reg2]) * log(1.0 + N[reg2]));
+    const double dev = dev1 + dev2;
 
-    double dev1 = ((levels*levels) / (2.0 * complexity * N[reg1]))*(logreg1 + logdelta);
-    double dev2 = ((levels*levels) / (2.0 * complexity * N[reg2]))*(logreg2 + logdelta);
-
-    double dev = dev1 + dev2;
-
-    return ((dR<dev) && (dG<dev) && (dB<dev));
-}
-
-void SRM::BucketSortOrder()
-{
-    for (int i = 0; i<levels; i++)
-        nbe[i] = 0;
-
-    // class all elements according to their family
-    for (int i = 0; i<edges; i++)
-        nbe[order[i].diff]++;
-
-    // cumulative histogram
-    cnbe[0] = 0;
-    for (int i = 1; i<levels; i++)
-        cnbe[i] = cnbe[i - 1] + nbe[i - 1]; // index of first element of category i
-
-    // allocation
-    for (int i = 0; i<edges; i++)
-        order2[cnbe[order[i].diff]++] = order[i];
-
-    std::swap(order2, order);
+    return dR < dev && dG < dev && dB < dev;
 }

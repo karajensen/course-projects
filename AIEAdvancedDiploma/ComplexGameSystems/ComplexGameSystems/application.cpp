@@ -7,9 +7,7 @@
 #include "vectorization.h"
 #include "timer.h"
 #include "opencv.h"
-
-// Uncomment to test without compute shader
-//#define NO_VECTORIZATION
+#include "tweaker.h"
 
 Application::Application() = default;
 
@@ -31,20 +29,28 @@ void Application::Render()
 
     if(!m_paused)
     {
-        if (m_openCV->Update())
+        if (m_openCV->Update(m_timer->GetDeltaTime()))
         {
-            #ifdef NO_VECTORIZATION
-            m_engine->GetContext()->CopyResource(
-                m_engine->GetBackBuffer(),
-                m_openCV->GetFrame());
-            #else   
-            m_vectorization->CopyToBuffer(m_openCV->GetFrame());
-            m_vectorization->Render();
+            if (m_vectorization->RequiresVectorization())
+            {
+                m_vectorization->CopyToBuffer(m_openCV->GetFrame());
+                m_vectorization->Render();
 
-            m_engine->GetContext()->CopyResource(
-                m_engine->GetBackBuffer(),
-                m_vectorization->GetBuffer());
-            #endif
+                m_engine->GetContext()->CopyResource(
+                    m_engine->GetBackBuffer(),
+                    m_vectorization->GetBuffer());
+            }
+            else
+            {
+                m_engine->GetContext()->CopyResource(
+                    m_engine->GetBackBuffer(),
+                    m_openCV->GetFrame());
+            } 
+
+            if (m_diagnostics)
+            {
+                m_tweaker->Update();
+            }
         }
     }
 
@@ -79,9 +85,16 @@ bool Application::Initialize(HWND hWnd, const POINT& size)
         return false;
     }
 
-    SetVectorizationAmount(0.0f);
+    InitialiseTweakBar(size);
 
     return true;
+}
+
+void Application::InitialiseTweakBar(const POINT& size)
+{
+    m_tweaker = std::make_unique<Tweaker>(m_engine->GetDevice(), size);
+
+    m_timer->AddToTweaker(*m_tweaker);
 }
 
 void Application::SetVectorizationAmount(float value)
@@ -94,9 +107,9 @@ void Application::TogglePause()
     m_paused = !m_paused;
 }
 
-void Application::ToggleBorder()
+void Application::ToggleDiagnostics()
 {
-    m_vectorization->ToggleBorder();
+    m_diagnostics = !m_diagnostics;
 }
 
 void Application::Save()

@@ -4,6 +4,7 @@
 
 #include <Windows.h>
 #include "timer.h"
+#include "tweaker.h"
 
 Timer::Timer() :
     m_frequency(0.0),
@@ -51,4 +52,13 @@ double Timer::GetDeltaTime() const
 unsigned int Timer::GetFPS() const
 {
     return m_fps;
+}
+
+void Timer::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddDblEntry("Deltatime", 
+        [this]() { return m_deltaTime; });
+
+    tweaker.AddIntEntry("FPS",
+        [this]() { return m_fps; });
 }
