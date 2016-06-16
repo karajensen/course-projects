@@ -44,14 +44,15 @@ SRM::SRM(int w, int h) :
     m_size(w * h)
 {
     m_logdelta = 2.0 * log(6.0 * m_size);
-    m_edges = 2 * (w - 1)*(h - 1) + (h - 1) + (w - 1);
     m_levelsSqr = m_levels * m_levels;
 
     m_average.resize(m_size);
-    m_N.resize(m_size);
-    m_order.resize(m_edges);
+    m_count.resize(m_size);
     m_parent.resize(m_size);
     m_rank.resize(m_size);
+
+    const int edges = 2 * (w - 1) * (h - 1) + (h - 1) + (w - 1);
+    m_order.resize(edges);
 }
 
 void SRM::Execute(int* input, int* output, float vectorization)
@@ -59,9 +60,11 @@ void SRM::Execute(int* input, int* output, float vectorization)
     // complexity is inverse to vectorization range [0,1]
     m_complexity = 30.0 + ((1.0 - vectorization) * 300.0);
 
+    // Initialise all containers
     std::iota(m_parent.begin(), m_parent.end(), 0);
-    m_N.assign(m_N.size(), 1);
+    m_count.assign(m_count.size(), 1);
     m_rank.assign(m_rank.size(), 0);
+
     DisjointSet set(&m_rank[0], &m_parent[0]);
 
     for (size_t i = 0; i < m_average.size(); ++i)
@@ -71,8 +74,10 @@ void SRM::Execute(int* input, int* output, float vectorization)
         m_average[i].b = Blue(input[i]);
     }
     
+    // Main segmentation algorithm
     Segmentation(input, set);
     
+    // Copy to output buffer
     for (size_t i = 0; i < m_average.size(); ++i)
     {
         const auto& c = m_average[set.find_set(i)];
@@ -82,17 +87,17 @@ void SRM::Execute(int* input, int* output, float vectorization)
 
 void SRM::Segmentation(int* input, DisjointSet& set)
 {
-    int cpair = 0;
+    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
 
-    // Segmentation to move to GPU
+    int pair = 0;
     for (int y = 0; y < m_height - 1; y++)
     {
         for (int x = 0; x < m_width - 1; x++)
         {
-            int index = y*m_width + x;
+            int index = y * m_width + x;
 
-            m_order[cpair].r1 = index;
-            m_order[cpair].r2 = index + 1;
+            m_order[pair].r1 = index;
+            m_order[pair].r2 = index + 1;
 
             int r1 = Red(input[index]);
             int g1 = Green(input[index]);
@@ -102,18 +107,18 @@ void SRM::Segmentation(int* input, DisjointSet& set)
             int g2 = Green(input[index + 1]);
             int b2 = Blue(input[index + 1]);
 
-            m_order[cpair].diff = (int)Max(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
-            cpair++;
+            m_order[pair].diff = (int)Max(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
+            pair++;
 
-            m_order[cpair].r1 = index;
-            m_order[cpair].r2 = index + m_width;
+            m_order[pair].r1 = index;
+            m_order[pair].r2 = index + m_width;
 
             r2 = Red(input[index + m_width]);
             g2 = Green(input[index + m_width]);
             b2 = Blue(input[index + m_width]);
 
-            m_order[cpair].diff = (int)Max(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
-            cpair++;
+            m_order[pair].diff = (int)Max(std::abs(r2 - r1), std::abs(g2 - g1), std::abs(b2 - b1));
+            pair++;
         }
     }
 
@@ -123,12 +128,12 @@ void SRM::Segmentation(int* input, DisjointSet& set)
         return e1.diff < e2.diff;
     });
 
-    for (int i = 0; i < m_edges; i++)
+    for (size_t i = 0; i < m_order.size(); i++)
     {
-        int reg1 = m_order[i].r1;
-        int C1 = set.find_set(reg1);
-        int reg2 = m_order[i].r2;
-        int C2 = set.find_set(reg2);
+        int r1 = m_order[i].r1;
+        int C1 = set.find_set(r1);
+        int r2 = m_order[i].r2;
+        int C2 = set.find_set(r2);
 
         if (C1 != C2 && MergePredicate(C1, C2))
         {
@@ -139,30 +144,33 @@ void SRM::Segmentation(int* input, DisjointSet& set)
 
 void SRM::MergeRegions(int C1, int C2, DisjointSet& set)
 {
+    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+
     set.union_set(C1, C2);
     
-    const int reg = m_rank[C1] > m_rank[C2] ? C1 : C2;
-    const int nreg = m_N[C1] + m_N[C2];
+    const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
+    const int nreg = m_count[C1] + m_count[C2];
 
-    m_average[reg].r = (m_N[C1] * m_average[C1].r + m_N[C2] * m_average[C2].r) / (double)nreg;
-    m_average[reg].g = (m_N[C1] * m_average[C1].g + m_N[C2] * m_average[C2].g) / (double)nreg;
-    m_average[reg].b = (m_N[C1] * m_average[C1].b + m_N[C2] * m_average[C2].b) / (double)nreg;
-    m_N[reg] = nreg;
+    m_average[region].r = (m_count[C1] * m_average[C1].r + m_count[C2] * m_average[C2].r) / (double)nreg;
+    m_average[region].g = (m_count[C1] * m_average[C1].g + m_count[C2] * m_average[C2].g) / (double)nreg;
+    m_average[region].b = (m_count[C1] * m_average[C1].b + m_count[C2] * m_average[C2].b) / (double)nreg;
+    m_count[region] = nreg;
 }
 
 bool SRM::MergePredicate(int reg1, int reg2)
 {
-    const double dR = pow(m_average[reg1].r - m_average[reg2].r, 2);
-    const double dG = pow(m_average[reg1].g - m_average[reg2].g, 2);
-    const double dB = pow(m_average[reg1].b - m_average[reg2].b, 2);
+    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
 
-    const double logreg1 = std::min(double(m_levels), (double)(m_N[reg1]) * log(1.0 + m_N[reg1]));
-    const double logreg2 = std::min(double(m_levels), (double)(m_N[reg2]) * log(1.0 + m_N[reg2]));
+    const double r = pow(m_average[reg1].r - m_average[reg2].r, 2);
+    const double g = pow(m_average[reg1].g - m_average[reg2].g, 2);
+    const double b = pow(m_average[reg1].b - m_average[reg2].b, 2);
 
-    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * m_N[reg1]))*(logreg1 + m_logdelta);
-    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * m_N[reg2]))*(logreg2 + m_logdelta);
+    const double logreg1 = std::min(double(m_levels), (double)(m_count[reg1]) * log(1.0 + m_count[reg1]));
+    const double logreg2 = std::min(double(m_levels), (double)(m_count[reg2]) * log(1.0 + m_count[reg2]));
 
+    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * m_count[reg1]))*(logreg1 + m_logdelta);
+    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * m_count[reg2]))*(logreg2 + m_logdelta);
     const double dev = dev1 + dev2;
 
-    return dR < dev && dG < dev && dB < dev;
+    return r < dev && g < dev && b < dev;
 }

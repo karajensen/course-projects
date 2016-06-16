@@ -1,8 +1,5 @@
  
-- Vecotrization algorithm
-    - Cleanup and comment
-    - Move segmentation to GPU
-
+- Move segmentation to GPU
 - Loading text
 - Test release on x4 computers
 

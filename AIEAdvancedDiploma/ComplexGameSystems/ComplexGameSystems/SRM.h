@@ -9,10 +9,8 @@
 #include "boost/pending/disjoint_sets.hpp"
 
 /**
-* Statistical Region Merging(SRM) Image Segmentation References
+* Statistical Region Merging(SRM) Image Segmentation Reference
 * www1.univ-ag.fr/~rnock/Articles/Drafts/tpami04-nn.pdf
-* http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
-* https://github.com/fiji/Statistical_Region_Merging/
 */
 class SRM
 {
@@ -40,6 +38,18 @@ private:
         int diff = 0;
     };
 
+    /**
+    * 3 Component colour
+    */
+    struct Colour
+    {
+        float r, g, b;
+    };
+
+    /**
+    * Main algorithm technique 
+    * Reference: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+    */
     void Segmentation(int* input, DisjointSet& set);
     bool MergePredicate(int reg1, int reg2);
     void MergeRegions(int C1, int C2, DisjointSet& set);
@@ -49,16 +59,10 @@ private:
     int m_size = 0;                   ///< width x height of the image 
     double m_complexity = 0.0;        ///< Complexity of regions generated
     int m_levels = 256;               ///< Number of levels in a color channel
-    int m_levelsSqr = 0;
-    double m_logdelta = 0.0;
-    int m_edges = 0;
+    int m_levelsSqr = 0;              ///< Levels value squared
+    double m_logdelta = 0.0;          ///< Constant for algorithm
 
-    struct Colour
-    {
-        float r, g, b;
-    };
-
-    std::vector<int> m_N;
+    std::vector<int> m_count;
     std::vector<Colour> m_average;
     std::vector<Edge> m_order;
     std::vector<int> m_rank;
