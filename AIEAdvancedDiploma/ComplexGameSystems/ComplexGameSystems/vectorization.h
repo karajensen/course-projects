@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "directxcommon.h"
 #include <vector>
 #include <memory>
+#include "directxcommon.h"
+#include "boost/pending/disjoint_sets.hpp"
 
 class SRM;
 
@@ -71,33 +72,89 @@ public:
 
 private:
 
+    /**
+    * Compute shader initialisation
+    */
     bool CreateShader(const char* file);
     bool CreateInputBuffer();
     bool CreateOutputBuffer();
-    bool CreateValuesBuffer();
-    void UpdateValuesBuffer();
+    bool CreateConstantBuffer();
 
-    struct ValuesData
+    /**
+    * Union Find Data Structure to keep track of a set of elements
+    * partitioned into a number of disjoint (nonoverlapping) subsets
+    */
+    typedef boost::disjoint_sets<int*, int*> DisjointSet;
+
+    /**
+    * 3 Component colour
+    */
+    struct Colour
     {
-        float vectorization = 0.0f;
+        float r, g, b;
     };
 
-    ValuesData m_valuesData;
-    bool m_useComputeShader = false;
-    POINT m_size;
-    size_t m_bufferSize = 0;
-    size_t m_bufferStride = 0;
+    /**
+    * An edge: two indices and a difference value
+    */
+    struct Edge
+    {
+        int region1 = 0;
+        int region2 = 0;
+        int difference = 0;
+    };
+
+    /**
+    * Constant data sent to the compute shader
+    */
+    struct Constants
+    {
+        int start = 0;
+        int width = 0;
+        int height = 0;
+    };
+
+    /**
+    * Main algorithm technique
+    * Reference: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+    */
+    bool MergePredicate(int reg1, int reg2);
+    void MergeRegions(int C1, int C2, DisjointSet& set);
+    void InitialiseSRM();
+    void ExecuteSRM(DisjointSet& set);
+    void OutputSRM(DisjointSet& set);
+
+    int m_edges = 0;
+    int m_width = 0;                  ///< Width of the image 
+    int m_height = 0;                 ///< Height of the image 
+    int m_size = 0;                   ///< width x height of the image 
+    double m_complexity = 0.0;        ///< Complexity of regions generated
+    int m_levels = 256;               ///< Number of levels in a color channel
+    int m_levelsSqr = 0;              ///< Levels value squared
+    double m_logdelta = 0.0;          ///< Constant for algorithm
+
+    float m_vectorization = 0.0f;
+    size_t m_srcBufferSize = 0;
+    size_t m_srcBufferStride = 0;
+    size_t m_destBufferSize = 0;
+    size_t m_destBufferStride = 0;
+    size_t m_constantBufferSize = 0;
+    size_t m_constantBufferStride = 0;
     ID3D11DeviceContext* m_context = nullptr;
     ID3D11Device* m_device = nullptr;
     ID3D11ComputeShader* m_shader = nullptr;
     ID3D11Buffer* m_srcBuffer = nullptr;
     ID3D11ShaderResourceView* m_srcBufferView = nullptr;
-    ID3D11Buffer* m_valuesBuffer = nullptr;
-    ID3D11ShaderResourceView* m_valuesBufferView = nullptr;
+    ID3D11Buffer* m_constantBuffer = nullptr;
+    ID3D11ShaderResourceView* m_constantBufferView = nullptr;
     ID3D11Buffer* m_destBuffer = nullptr;
     ID3D11Buffer* m_destBufferSystem = nullptr;
     ID3D11UnorderedAccessView* m_destBufferView = nullptr;
     ID3D11Texture2D* m_destTexture = nullptr;
     ID3D11Texture2D* m_srcTexture = nullptr;
-    std::unique_ptr<SRM> m_srm; ///< CPU Statistical region merging algorithm
+
+    std::vector<int> m_count;
+    std::vector<Colour> m_average;
+    std::vector<int> m_rank;
+    std::vector<int> m_parent;
 };

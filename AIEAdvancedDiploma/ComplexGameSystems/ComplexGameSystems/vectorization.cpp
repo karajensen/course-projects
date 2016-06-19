@@ -3,9 +3,35 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "vectorization.h"
-#include "SRM.h"
 #include "directx/include/D3Dcompiler.h"
 #include <sstream>
+#include <math.h>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+
+namespace
+{
+    int Red(int colour)
+    {
+        return colour & 0xFF;
+    }
+
+    int Green(int colour)
+    {
+        return (colour & 0xFF00) >> 8;
+    }
+
+    int Blue(int colour)
+    {
+        return (colour & 0xFF0000) >> 16;
+    }
+
+    int ToColour(int r, int g, int b)
+    {
+        return 0xff000000 | b << 16 | g << 8 | r;
+    }
+}
 
 Vectorization::Vectorization()
 {
@@ -22,37 +48,197 @@ void Vectorization::Release()
     SafeRelease(&m_destTexture);
     SafeRelease(&m_srcBuffer);
     SafeRelease(&m_srcBufferView);
-    SafeRelease(&m_valuesBuffer);
-    SafeRelease(&m_valuesBufferView);
+    SafeRelease(&m_constantBuffer);
+    SafeRelease(&m_constantBufferView);
     SafeRelease(&m_destBuffer);
     SafeRelease(&m_destBufferSystem);
     SafeRelease(&m_destBufferView);
     SafeRelease(&m_shader);
 }
 
-void Vectorization::UpdateValuesBuffer()
-{
-    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-    if (FAILED(m_context->Map(m_valuesBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
-    {
-        MessageBox(0, "Failed to map values buffer", "ERROR", MB_OK);
-        return;
-    }
-
-    *reinterpret_cast<ValuesData*>(mappedBuffer.pData) = m_valuesData;
-
-    m_context->Unmap(m_valuesBuffer, 0);
-}
-
 void Vectorization::SetVectorization(float value)
 {
-    m_valuesData.vectorization = value;
-    UpdateValuesBuffer();
+    m_vectorization = value;
 }
 
 bool Vectorization::RequiresVectorization() const
 {
-    return m_valuesData.vectorization != 0.0f;
+    return m_vectorization != 0.0f;
+}
+
+ID3D11Texture2D* Vectorization::GetBuffer()
+{
+    return m_destTexture;
+}
+
+void Vectorization::CopyToBuffer(ID3D11Texture2D* texture)
+{
+    m_context->CopyResource(m_srcTexture, texture);
+
+    D3D11_MAPPED_SUBRESOURCE mappedTex;
+    if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
+    {
+        MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
+        return;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+    if (FAILED(m_context->Map(m_srcBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
+    {
+        MessageBox(0, "Failed to map input buffer", "ERROR", MB_OK);
+        return;
+    }
+
+    memcpy(mappedBuffer.pData, mappedTex.pData, m_srcBufferSize);
+
+    m_context->Unmap(m_srcBuffer, 0);
+    m_context->Unmap(m_srcTexture, 0);
+}
+
+void Vectorization::InitialiseSRM()
+{
+    // Initialise all containers
+    std::iota(m_parent.begin(), m_parent.end(), 0);
+    m_count.assign(m_count.size(), 1);
+    m_rank.assign(m_rank.size(), 0);
+
+    // complexity is inverse to vectorization range [0,1]
+    m_complexity = 30.0 + ((1.0 - m_vectorization) * 300.0);
+
+    D3D11_MAPPED_SUBRESOURCE mappedTex;
+    if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
+    {
+        MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
+        return;
+    }
+
+    auto* input = reinterpret_cast<int*>(mappedTex.pData);
+
+    for (size_t i = 0; i < m_average.size(); ++i)
+    {
+        m_average[i].r = (float)Red(input[i]);
+        m_average[i].g = (float)Green(input[i]);
+        m_average[i].b = (float)Blue(input[i]);
+    }
+
+    m_context->Unmap(m_srcTexture, 0);
+}
+
+void Vectorization::ExecuteSRM(DisjointSet& set)
+{
+    m_context->Dispatch(1, 1, 1);
+    m_context->CopyResource(m_destBufferSystem, m_destBuffer);
+
+    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+    if (FAILED(m_context->Map(m_destBufferSystem, 0, D3D11_MAP_READ, 0, &mappedBuffer)))
+    {
+        MessageBox(0, "Failed to map output buffer", "ERROR", MB_OK);
+        return;
+    }
+
+    auto* output = reinterpret_cast<Edge*>(mappedBuffer.pData);
+
+    for (int i = 0; i < m_edges; ++i)
+    {
+        Edge& test = output[i];
+        if (test.difference > 0)
+        {
+            int x = 0;
+        }
+    }
+
+    std::sort(output, output + m_edges,
+        [](const Edge& e1, const Edge& e2)
+    {
+        return e1.difference < e2.difference;
+    });
+
+    for (int i = 0; i < m_edges; i++)
+    {
+        const int r1 = output[i].region1;
+        const int r2 = output[i].region2;
+
+        const int C1 = set.find_set(r1);
+        const int C2 = set.find_set(r2);
+
+        if (C1 != C2 && MergePredicate(C1, C2))
+        {
+            MergeRegions(C1, C2, set);
+        }
+    }
+
+    m_context->Unmap(m_destBufferSystem, 0);
+}
+
+void Vectorization::OutputSRM(DisjointSet& set)
+{
+    D3D11_MAPPED_SUBRESOURCE mappedTex;
+    if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
+    {
+        MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
+        return;
+    }
+
+    auto* output = reinterpret_cast<int*>(mappedTex.pData);
+
+    for (size_t i = 0; i < m_average.size(); ++i)
+    {
+        const auto& c = m_average[set.find_set(i)];
+        output[i] = ToColour((int)c.r, (int)c.g, (int)c.b);
+    }
+
+    m_context->Unmap(m_destTexture, 0);
+}
+
+void Vectorization::Render()
+{
+    InitialiseSRM();
+
+    DisjointSet set(&m_rank[0], &m_parent[0]);
+
+    ExecuteSRM(set);
+
+    OutputSRM(set);
+}
+
+bool Vectorization::Initialise(ID3D11Device* device, 
+                               ID3D11DeviceContext* context,
+                               const char* file, 
+                               const POINT& size)
+{
+    int w = size.x;
+    int h = size.y;
+    m_width = w;
+    m_height = h;
+    m_size = w * h;
+    m_logdelta = 2.0 * log(6.0 * m_size);
+    m_levelsSqr = m_levels * m_levels;
+    m_edges = 2 * (w - 1) * (h - 1) + (h - 1) + (w - 1);
+
+    m_average.resize(m_size);
+    m_count.resize(m_size);
+    m_parent.resize(m_size);
+    m_rank.resize(m_size);
+
+    m_device = device;
+    m_context = context;
+    m_srcBufferStride = sizeof(int);
+    m_srcBufferSize = (m_srcBufferStride * w) * h;
+    m_destBufferStride = sizeof(Edge);
+    m_destBufferSize = m_destBufferStride * m_edges;
+    m_constantBufferStride = sizeof(Constants);
+    m_constantBufferSize = m_constantBufferStride;
+
+    if (!CreateInputBuffer() ||
+        !CreateOutputBuffer() ||
+        !CreateConstantBuffer() ||
+        !CreateShader(file))
+    {
+        return false;
+    }
+
+    SetVectorization(0.0f);
+    return true;
 }
 
 bool Vectorization::CreateShader(const char* file)
@@ -106,8 +292,8 @@ bool Vectorization::CreateShader(const char* file)
     }
 
     if (FAILED(m_device->CreateComputeShader(shaderBlob->GetBufferPointer(),
-                                             shaderBlob->GetBufferSize(),
-                                             nullptr, &m_shader)))
+        shaderBlob->GetBufferSize(),
+        nullptr, &m_shader)))
     {
         MessageBox(0, "Failed to create compute shader", "ERROR", MB_OK);
         shaderBlob->Release();
@@ -118,111 +304,12 @@ bool Vectorization::CreateShader(const char* file)
 
     SetDebugName(m_shader, "Compute Shader");
 
-    m_context->CSSetShader(m_shader, NULL, 0);
+    m_context->CSSetShader(m_shader, 0, 0);
     m_context->CSSetShaderResources(0, 1, &m_srcBufferView);
-    m_context->CSSetShaderResources(1, 1, &m_valuesBufferView);
-    m_context->CSSetUnorderedAccessViews(0, 1, &m_destBufferView, NULL);
+    m_context->CSSetShaderResources(1, 1, &m_constantBufferView);
+    m_context->CSSetUnorderedAccessViews(0, 1, &m_destBufferView, 0);
 
     return true;
-}
-
-ID3D11Texture2D* Vectorization::GetBuffer()
-{
-    return m_destTexture;
-}
-
-void Vectorization::CopyToBuffer(ID3D11Texture2D* texture)
-{
-    m_context->CopyResource(m_srcTexture, texture);
-
-    D3D11_MAPPED_SUBRESOURCE mappedTex;
-    if (FAILED(m_context->Map(m_srcTexture, 0, D3D11_MAP_READ, 0, &mappedTex)))
-    {
-        MessageBox(0, "Failed to map input texture", "ERROR", MB_OK);
-        return;
-    }
-
-    if (m_useComputeShader)
-    {
-        D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-        if (FAILED(m_context->Map(m_srcBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
-        {
-            MessageBox(0, "Failed to map input buffer", "ERROR", MB_OK);
-            return;
-        }
-
-        memcpy(mappedBuffer.pData, mappedTex.pData, m_bufferSize);
-
-        m_context->Unmap(m_srcBuffer, 0);
-    }
-    else
-    {
-        D3D11_MAPPED_SUBRESOURCE mappedOutput;
-        if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedOutput)))
-        {
-            MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
-            return;
-        }
-
-        auto* output = reinterpret_cast<int*>(mappedOutput.pData);
-        auto* input = reinterpret_cast<int*>(mappedTex.pData);
-        m_srm->Execute(input, output, m_valuesData.vectorization);
-
-        m_context->Unmap(m_destTexture, 0);
-    }
-
-    m_context->Unmap(m_srcTexture, 0);
-}
-
-void Vectorization::Render()
-{
-    if (m_useComputeShader)
-    {
-        m_context->Dispatch(1, 1, 1);
-        m_context->CopyResource(m_destBufferSystem, m_destBuffer);
-
-        D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-        if (FAILED(m_context->Map(m_destBufferSystem, 0, D3D11_MAP_READ, 0, &mappedBuffer)))
-        {
-            MessageBox(0, "Failed to map output buffer", "ERROR", MB_OK);
-            return;
-        }
-
-        D3D11_MAPPED_SUBRESOURCE mappedTex;
-        if (FAILED(m_context->Map(m_destTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
-        {
-            MessageBox(0, "Failed to map output texture", "ERROR", MB_OK);
-            return;
-        }
-
-        memcpy(mappedTex.pData, mappedBuffer.pData, m_bufferSize);
-
-        m_context->Unmap(m_destBufferSystem, 0);
-        m_context->Unmap(m_destTexture, 0);
-    }
-}
-
-bool Vectorization::Initialise(ID3D11Device* device, 
-                               ID3D11DeviceContext* context,
-                               const char* file, 
-                               const POINT& size)
-{
-    m_size = size;
-    m_device = device;
-    m_context = context;
-    m_bufferStride = sizeof(int);
-    m_bufferSize = (m_bufferStride * size.x) * size.y;
-    m_srm = std::make_unique<SRM>(size.x, size.y);
-
-    if (!CreateInputBuffer() ||
-        !CreateOutputBuffer() ||
-        !CreateValuesBuffer() ||
-        !CreateShader(file))
-    {
-        return false;
-    }
-
-    SetVectorization(0.0f);
 }
 
 bool Vectorization::CreateInputBuffer()
@@ -230,9 +317,9 @@ bool Vectorization::CreateInputBuffer()
     D3D11_BUFFER_DESC descBuffer;
     ZeroMemory(&descBuffer, sizeof(descBuffer));
     descBuffer.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    descBuffer.ByteWidth = m_bufferSize;
+    descBuffer.ByteWidth = m_srcBufferSize;
     descBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-    descBuffer.StructureByteStride = m_bufferStride;
+    descBuffer.StructureByteStride = m_srcBufferStride;
     descBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     descBuffer.Usage = D3D11_USAGE_DYNAMIC;
 
@@ -256,8 +343,8 @@ bool Vectorization::CreateInputBuffer()
     }
 
     D3D11_TEXTURE2D_DESC descTex;
-    descTex.Width = m_size.x;
-    descTex.Height = m_size.y;
+    descTex.Width = m_width;
+    descTex.Height = m_height;
     descTex.MipLevels = 1;
     descTex.ArraySize = 1;
     descTex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -281,20 +368,20 @@ bool Vectorization::CreateInputBuffer()
     return true;
 }
 
-bool Vectorization::CreateValuesBuffer()
+bool Vectorization::CreateConstantBuffer()
 {
     D3D11_BUFFER_DESC descBuffer;
     ZeroMemory(&descBuffer, sizeof(descBuffer));
     descBuffer.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    descBuffer.ByteWidth = sizeof(ValuesData);
+    descBuffer.ByteWidth = m_constantBufferSize;
     descBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-    descBuffer.StructureByteStride = sizeof(ValuesData);
+    descBuffer.StructureByteStride = m_constantBufferStride;
     descBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     descBuffer.Usage = D3D11_USAGE_DYNAMIC;
 
-    if (FAILED(m_device->CreateBuffer(&descBuffer, NULL, &m_valuesBuffer)))
+    if (FAILED(m_device->CreateBuffer(&descBuffer, NULL, &m_constantBuffer)))
     {
-        MessageBox(0, "Failed to create compute shader values buffer", "ERROR", MB_OK);
+        MessageBox(0, "Failed to create compute shader constant buffer", "ERROR", MB_OK);
         return false;
     }
 
@@ -305,14 +392,30 @@ bool Vectorization::CreateValuesBuffer()
     descView.Format = DXGI_FORMAT_UNKNOWN;
     descView.BufferEx.NumElements = descBuffer.ByteWidth / descBuffer.StructureByteStride;
 
-    if (FAILED(m_device->CreateShaderResourceView(m_valuesBuffer, &descView, &m_valuesBufferView)))
+    if (FAILED(m_device->CreateShaderResourceView(m_constantBuffer, &descView, &m_constantBufferView)))
     {
-        MessageBox(0, "Failed to create compute shader values view", "ERROR", MB_OK);
+        MessageBox(0, "Failed to create compute shader constant view", "ERROR", MB_OK);
         return false;
     }
 
-    SetDebugName(m_srcBuffer, "Compute Shader Values Buffer");
-    SetDebugName(m_srcBufferView, "Compute Shader Values View");
+    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+    if (FAILED(m_context->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer)))
+    {
+        MessageBox(0, "Failed to map constant buffer", "ERROR", MB_OK);
+        return false;
+    }
+
+    Constants constants;
+    constants.height = m_height;
+    constants.width = m_width;
+    constants.start = 0;
+
+    memcpy(mappedBuffer.pData, &constants, m_constantBufferSize);
+
+    m_context->Unmap(m_constantBuffer, 0);
+
+    SetDebugName(m_constantBuffer, "Compute Shader Constant Buffer");
+    SetDebugName(m_constantBufferView, "Compute Shader Constant View");
 
     return true;
 }
@@ -322,11 +425,11 @@ bool Vectorization::CreateOutputBuffer()
     D3D11_BUFFER_DESC descBuffer;
     ZeroMemory(&descBuffer, sizeof(descBuffer));
     descBuffer.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-    descBuffer.ByteWidth = m_bufferSize;
+    descBuffer.ByteWidth = m_destBufferSize;
     descBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
     descBuffer.CPUAccessFlags = 0;
     descBuffer.Usage = D3D11_USAGE_DEFAULT;
-    descBuffer.StructureByteStride = m_bufferStride;
+    descBuffer.StructureByteStride = m_destBufferStride;
 
     if (FAILED(m_device->CreateBuffer(&descBuffer, NULL, &m_destBuffer)))
     {
@@ -359,8 +462,8 @@ bool Vectorization::CreateOutputBuffer()
     }
 
     D3D11_TEXTURE2D_DESC descTex;
-    descTex.Width = m_size.x;
-    descTex.Height = m_size.y;
+    descTex.Width = m_width;
+    descTex.Height = m_height;
     descTex.MipLevels = 1;
     descTex.ArraySize = 1;
     descTex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -382,4 +485,38 @@ bool Vectorization::CreateOutputBuffer()
     SetDebugName(m_destTexture, "Compute Shader Output Texture");
 
     return true;
+}
+
+
+void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
+{
+    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+
+    set.union_set(C1, C2);
+
+    const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
+    const int nreg = m_count[C1] + m_count[C2];
+
+    m_average[region].r = (m_count[C1] * m_average[C1].r + m_count[C2] * m_average[C2].r) / (float)nreg;
+    m_average[region].g = (m_count[C1] * m_average[C1].g + m_count[C2] * m_average[C2].g) / (float)nreg;
+    m_average[region].b = (m_count[C1] * m_average[C1].b + m_count[C2] * m_average[C2].b) / (float)nreg;
+    m_count[region] = nreg;
+}
+
+bool Vectorization::MergePredicate(int reg1, int reg2)
+{
+    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+
+    const double r = pow(m_average[reg1].r - m_average[reg2].r, 2);
+    const double g = pow(m_average[reg1].g - m_average[reg2].g, 2);
+    const double b = pow(m_average[reg1].b - m_average[reg2].b, 2);
+
+    const double logreg1 = min(double(m_levels), (double)(m_count[reg1]) * log(1.0 + m_count[reg1]));
+    const double logreg2 = min(double(m_levels), (double)(m_count[reg2]) * log(1.0 + m_count[reg2]));
+
+    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * m_count[reg1]))*(logreg1 + m_logdelta);
+    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * m_count[reg2]))*(logreg2 + m_logdelta);
+    const double dev = dev1 + dev2;
+
+    return r < dev && g < dev && b < dev;
 }

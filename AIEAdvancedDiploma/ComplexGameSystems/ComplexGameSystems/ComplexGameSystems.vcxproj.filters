@@ -37,9 +37,6 @@
     <ClCompile Include="vectorization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SRM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tweaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -70,9 +67,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vectorization.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SRM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tweaker.h">
