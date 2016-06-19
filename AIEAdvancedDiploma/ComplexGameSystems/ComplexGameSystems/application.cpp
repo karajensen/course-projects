@@ -33,8 +33,7 @@ void Application::Render()
         {
             if (m_vectorization->RequiresVectorization())
             {
-                m_vectorization->CopyToBuffer(m_openCV->GetFrame());
-                m_vectorization->Render();
+                m_vectorization->Render(m_openCV->GetFrame());
 
                 m_engine->GetContext()->CopyResource(
                     m_engine->GetBackBuffer(),
@@ -50,6 +49,7 @@ void Application::Render()
             if (m_diagnostics)
             {
                 m_tweaker->Update();
+                m_vectorization->SetActive();
             }
         }
     }
@@ -76,6 +76,8 @@ bool Application::Initialize(HWND hWnd, const POINT& size)
         return false;
     }
 
+    InitialiseTweakBar(size);
+
     m_vectorization = std::make_unique<Vectorization>();
     if (!m_vectorization->Initialise(m_engine->GetDevice(),
                                      m_engine->GetContext(),
@@ -84,8 +86,6 @@ bool Application::Initialize(HWND hWnd, const POINT& size)
     {
         return false;
     }
-
-    InitialiseTweakBar(size);
 
     return true;
 }

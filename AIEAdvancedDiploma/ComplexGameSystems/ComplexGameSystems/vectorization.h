@@ -48,12 +48,12 @@ public:
     /**
     * Renders the compute shader
     */
-    void Render();
+    void Render(ID3D11Texture2D* texture);
 
     /**
-    * Copies the texture to the input buffer
+    * Sets the compute shader active
     */
-    void CopyToBuffer(ID3D11Texture2D* texture);
+    void SetActive();
 
     /**
     * @return the output buffer
@@ -109,9 +109,9 @@ private:
     */
     struct Constants
     {
-        int start = 0;
         int width = 0;
         int height = 0;
+        int edges = 0;
     };
 
     /**
@@ -120,7 +120,7 @@ private:
     */
     bool MergePredicate(int reg1, int reg2);
     void MergeRegions(int C1, int C2, DisjointSet& set);
-    void InitialiseSRM();
+    void InitialiseSRM(ID3D11Texture2D* texture);
     void ExecuteSRM(DisjointSet& set);
     void OutputSRM(DisjointSet& set);
 

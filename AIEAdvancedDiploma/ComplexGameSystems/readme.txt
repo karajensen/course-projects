@@ -1,5 +1,4 @@
  
-- Get compute shader output working
 - Loading text
 - Fix FPS
 - Test release on x4 computers
