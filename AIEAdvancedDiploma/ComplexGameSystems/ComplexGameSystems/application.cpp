@@ -29,7 +29,7 @@ void Application::Render()
 
     if(!m_paused)
     {
-        if (m_openCV->Update(m_timer->GetDeltaTime()))
+        if (m_openCV->Update())
         {
             if (m_vectorization->RequiresVectorization())
             {
@@ -59,10 +59,8 @@ void Application::Render()
 
 bool Application::Initialize(HWND hWnd, const POINT& size)
 {   
-    #ifdef _DEBUG
     m_timer = std::make_unique<Timer>();
     m_timer->StartTimer();
-    #endif
 
     m_engine = std::make_unique<DirectxEngine>();
     if (!m_engine->Initialize(hWnd, size))

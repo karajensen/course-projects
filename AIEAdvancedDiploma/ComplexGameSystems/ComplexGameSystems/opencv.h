@@ -41,7 +41,7 @@ public:
     /**
     * Updates openCV
     */
-    bool Update(double deltatime);
+    bool Update();
 
     /**
     * @return the camera frame
@@ -63,5 +63,4 @@ private:
     cv::Mat m_frame_rgba;
     int m_width = 0;
     int m_height = 0;
-    double m_timer = 0.0;
 };

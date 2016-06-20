@@ -160,6 +160,42 @@ void Vectorization::ExecuteSRM(DisjointSet& set)
     m_context->Unmap(m_destBufferSystem, 0);
 }
 
+void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
+{
+    set.union_set(C1, C2);
+
+    const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
+    const int nreg = m_count[C1] + m_count[C2];
+    const float fnreg = 1.0f / (float)nreg;
+    const int c1 = m_count[C1];
+    const int c2 = m_count[C2];
+    const auto& a1 = m_average[C1];
+    const auto& a2 = m_average[C2];
+
+    m_average[region].r = (c1 * a1.r + c2 * a2.r) * fnreg;
+    m_average[region].g = (c1 * a1.g + c2 * a2.g) * fnreg;
+    m_average[region].b = (c1 * a1.b + c2 * a2.b) * fnreg;
+
+    m_count[region] = nreg;
+}
+
+bool Vectorization::MergePredicate(int reg1, int reg2)
+{
+    const double c1 = (double)m_count[reg1];
+    const double c2 = (double)m_count[reg2];
+
+    const double logreg1 = min(double(m_levels), c1 * log(1.0 + c1));
+    const double logreg2 = min(double(m_levels), c2 * log(1.0 + c2));
+
+    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * c1)) * (logreg1 + m_logdelta);
+    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * c2)) * (logreg2 + m_logdelta);
+    const double dev = dev1 + dev2;
+
+    return pow(m_average[reg1].r - m_average[reg2].r, 2) < dev &&
+           pow(m_average[reg1].g - m_average[reg2].g, 2) < dev &&
+           pow(m_average[reg1].b - m_average[reg2].b, 2) < dev;
+}
+
 void Vectorization::OutputSRM(DisjointSet& set)
 {
     D3D11_MAPPED_SUBRESOURCE mappedTex;
@@ -196,8 +232,8 @@ bool Vectorization::Initialise(ID3D11Device* device,
                                const char* file, 
                                const POINT& size)
 {
-    int w = size.x;
-    int h = size.y;
+    const int w = size.x;
+    const int h = size.y;
     m_width = w;
     m_height = h;
     m_size = w * h;
@@ -476,45 +512,4 @@ bool Vectorization::CreateOutputBuffer()
     SetDebugName(m_destTexture, "Compute Shader Output Texture");
 
     return true;
-}
-
-void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
-{
-    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
-
-    set.union_set(C1, C2);
-
-    const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
-    const int nreg = m_count[C1] + m_count[C2];
-    const float fnreg = 1.0f / (float)nreg;
-    const int c1 = m_count[C1];
-    const int c2 = m_count[C2];
-    const auto& a1 = m_average[C1];
-    const auto& a2 = m_average[C2];
-
-    m_average[region].r = (c1 * a1.r + c2 * a2.r) * fnreg;
-    m_average[region].g = (c1 * a1.g + c2 * a2.g) * fnreg;
-    m_average[region].b = (c1 * a1.b + c2 * a2.b) * fnreg;
-
-    m_count[region] = nreg;
-}
-
-bool Vectorization::MergePredicate(int reg1, int reg2)
-{
-    // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
-
-    const double c1 = (double)m_count[reg1];
-    const double c2 = (double)m_count[reg2];
-
-    const double logreg1 = min(double(m_levels), c1 * log(1.0 + c1));
-    const double logreg2 = min(double(m_levels), c2 * log(1.0 + c2));
-
-    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * c1)) * (logreg1 + m_logdelta);
-    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * c2)) * (logreg2 + m_logdelta);
-    const double dev = dev1 + dev2;
-
-    const double r = pow(m_average[reg1].r - m_average[reg2].r, 2);
-    const double g = pow(m_average[reg1].g - m_average[reg2].g, 2);
-    const double b = pow(m_average[reg1].b - m_average[reg2].b, 2);
-    return r < dev && g < dev && b < dev;
 }
