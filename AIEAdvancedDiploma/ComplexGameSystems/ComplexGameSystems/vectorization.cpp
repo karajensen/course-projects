@@ -93,17 +93,20 @@ void Vectorization::InitialiseSRM(ID3D11Texture2D* texture)
     memcpy(mappedBuffer.pData, mappedTex.pData, m_srcBufferSize);
     m_context->Unmap(m_srcBuffer, 0);
 
+    // Dispatch the call to the compute shader
+    m_context->Dispatch(32, 32, 1);
+
     // Initialise all containers
     std::iota(m_parent.begin(), m_parent.end(), 0);
-    m_count.assign(m_count.size(), 1);
-    m_rank.assign(m_rank.size(), 0);
+    m_count.assign(m_size, 1);
+    m_rank.assign(m_size, 0);
 
     // complexity is inverse to vectorization range [0,1]
     m_complexity = 30.0 + ((1.0 - m_vectorization) * 300.0);
 
     auto* input = reinterpret_cast<int*>(mappedTex.pData);
 
-    for (size_t i = 0; i < m_average.size(); ++i)
+    for (int i = 0; i < m_size; ++i)
     {
         m_average[i].r = (float)Red(input[i]);
         m_average[i].g = (float)Green(input[i]);
@@ -123,15 +126,14 @@ void Vectorization::SetActive()
 
 void Vectorization::ExecuteSRM(DisjointSet& set)
 {
-    m_context->Dispatch(32, 32, 1);
     m_context->CopyResource(m_destBufferSystem, m_destBuffer);
 
-   D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-   if (FAILED(m_context->Map(m_destBufferSystem, 0, D3D11_MAP_READ, 0, &mappedBuffer)))
-   {
-       MessageBox(0, "Failed to map output buffer", "ERROR", MB_OK);
-       return;
-   }
+    D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+    if (FAILED(m_context->Map(m_destBufferSystem, 0, D3D11_MAP_READ, 0, &mappedBuffer)))
+    {
+        MessageBox(0, "Failed to map output buffer", "ERROR", MB_OK);
+        return;
+    }
 
     auto* output = reinterpret_cast<Edge*>(mappedBuffer.pData);
 
@@ -169,7 +171,7 @@ void Vectorization::OutputSRM(DisjointSet& set)
 
     auto* output = reinterpret_cast<int*>(mappedTex.pData);
 
-    for (size_t i = 0; i < m_average.size(); ++i)
+    for (int i = 0; i < m_size; ++i)
     {
         const auto& c = m_average[set.find_set(i)];
         output[i] = ToColour((int)c.r, (int)c.g, (int)c.b);
@@ -476,7 +478,6 @@ bool Vectorization::CreateOutputBuffer()
     return true;
 }
 
-
 void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
 {
     // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
@@ -485,10 +486,16 @@ void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
 
     const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
     const int nreg = m_count[C1] + m_count[C2];
+    const float fnreg = 1.0f / (float)nreg;
+    const int c1 = m_count[C1];
+    const int c2 = m_count[C2];
+    const auto& a1 = m_average[C1];
+    const auto& a2 = m_average[C2];
 
-    m_average[region].r = (m_count[C1] * m_average[C1].r + m_count[C2] * m_average[C2].r) / (float)nreg;
-    m_average[region].g = (m_count[C1] * m_average[C1].g + m_count[C2] * m_average[C2].g) / (float)nreg;
-    m_average[region].b = (m_count[C1] * m_average[C1].b + m_count[C2] * m_average[C2].b) / (float)nreg;
+    m_average[region].r = (c1 * a1.r + c2 * a2.r) * fnreg;
+    m_average[region].g = (c1 * a1.g + c2 * a2.g) * fnreg;
+    m_average[region].b = (c1 * a1.b + c2 * a2.b) * fnreg;
+
     m_count[region] = nreg;
 }
 
@@ -496,16 +503,18 @@ bool Vectorization::MergePredicate(int reg1, int reg2)
 {
     // Algorithm from: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
 
+    const double c1 = (double)m_count[reg1];
+    const double c2 = (double)m_count[reg2];
+
+    const double logreg1 = min(double(m_levels), c1 * log(1.0 + c1));
+    const double logreg2 = min(double(m_levels), c2 * log(1.0 + c2));
+
+    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * c1)) * (logreg1 + m_logdelta);
+    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * c2)) * (logreg2 + m_logdelta);
+    const double dev = dev1 + dev2;
+
     const double r = pow(m_average[reg1].r - m_average[reg2].r, 2);
     const double g = pow(m_average[reg1].g - m_average[reg2].g, 2);
     const double b = pow(m_average[reg1].b - m_average[reg2].b, 2);
-
-    const double logreg1 = min(double(m_levels), (double)(m_count[reg1]) * log(1.0 + m_count[reg1]));
-    const double logreg2 = min(double(m_levels), (double)(m_count[reg2]) * log(1.0 + m_count[reg2]));
-
-    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * m_count[reg1]))*(logreg1 + m_logdelta);
-    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * m_count[reg2]))*(logreg2 + m_logdelta);
-    const double dev = dev1 + dev2;
-
     return r < dev && g < dev && b < dev;
 }

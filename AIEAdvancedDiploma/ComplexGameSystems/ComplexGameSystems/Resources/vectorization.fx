@@ -58,7 +58,6 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
         for (int x = dispatchThreadID.x; x < endX; x++)
         {
             int index = y * width + x;
-            int outIndex = index;
             
             int c1 = BufferIn[index].colour;
             int r1 = Red(c1);
@@ -69,15 +68,16 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
             int r2 = Red(c2);
             int g2 = Green(c2);
             int b2 = Blue(c2);
-            
-            BufferOut[outIndex].region1 = index;
-            BufferOut[outIndex].region2 = index + 1;
-            BufferOut[outIndex].difference = max(max(abs(r2 - r1), abs(g2 - g1)), abs(b2 - b1));
 
             int c3 = BufferIn[index + width].colour;
             int r3 = Red(c3);
             int g3 = Green(c3);
             int b3 = Blue(c3);
+
+            int outIndex = index;
+            BufferOut[outIndex].region1 = index;
+            BufferOut[outIndex].region2 = index + 1;
+            BufferOut[outIndex].difference = max(max(abs(r2 - r1), abs(g2 - g1)), abs(b2 - b1));
             
             outIndex += offset;
             BufferOut[outIndex].region1 = index;

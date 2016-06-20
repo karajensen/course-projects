@@ -1,6 +1,5 @@
- 
-- Loading text
-- Fix FPS
+
+- Fix vectorization FPS
 - Test release on x4 computers
 
 =================================================================
