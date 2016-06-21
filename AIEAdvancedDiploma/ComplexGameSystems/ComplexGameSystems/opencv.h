@@ -8,7 +8,7 @@
 #include "opencv.hpp"
 #include "directxcommon.h"
 
-class DirectxEngine;
+class Tweaker;
 
 /**
 * Wrapper for the OpenCV library
@@ -20,7 +20,9 @@ public:
     /**
     * Constructor
     */
-    OpenCV(DirectxEngine& directx, int width, int height);
+    OpenCV(ID3D11Device* device,
+           ID3D11DeviceContext* context,
+           const POINT& size);
 
     /**
     * Destructor
@@ -40,6 +42,7 @@ public:
 
     /**
     * Updates openCV
+    * @return whether theres a new frame avaliable
     */
     bool Update();
 
@@ -47,6 +50,11 @@ public:
     * @return the camera frame
     */
     ID3D11Texture2D* GetFrame();
+
+    /**
+    * Adds to the tweak bar
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
 private:
 
@@ -56,7 +64,8 @@ private:
     OpenCV(const OpenCV&) = delete;
     OpenCV& operator=(const OpenCV&) = delete;
 
-    DirectxEngine& m_directx;
+    ID3D11DeviceContext* m_context = nullptr;
+    ID3D11Device* m_device = nullptr;
     ID3D11Texture2D* m_texture;
     cv::VideoCapture m_video;
     cv::Mat m_frame_bgr;

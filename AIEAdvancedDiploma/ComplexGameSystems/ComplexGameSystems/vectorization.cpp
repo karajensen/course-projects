@@ -4,6 +4,7 @@
 
 #include "vectorization.h"
 #include "directx/include/D3Dcompiler.h"
+#include "tweaker.h"
 #include <sstream>
 #include <math.h>
 #include <vector>
@@ -33,8 +34,30 @@ namespace
     }
 }
 
-Vectorization::Vectorization()
+Vectorization::Vectorization(ID3D11Device* device,
+                             ID3D11DeviceContext* context,
+                             const POINT& size)
+    : m_device(device)
+    , m_context(context)
+    , m_width(size.x)
+    , m_height(size.y)
 {
+    m_size = m_width * m_height;
+    m_logdelta = 2.0 * log(6.0 * m_size);
+    m_levelsSqr = m_levels * m_levels;
+    m_edges = 2 * (m_width - 1) * (m_height - 1) + (m_height - 1) + (m_width - 1);
+
+    m_average.resize(m_size);
+    m_count.resize(m_size);
+    m_parent.resize(m_size);
+    m_rank.resize(m_size);
+
+    m_srcBufferStride = sizeof(int);
+    m_srcBufferSize = (m_srcBufferStride * m_width) * m_height;
+    m_destBufferStride = sizeof(Edge);
+    m_destBufferSize = m_destBufferStride * m_edges;
+    m_constantBufferStride = sizeof(Constants);
+    m_constantBufferSize = m_constantBufferStride;
 }
 
 Vectorization::~Vectorization()
@@ -59,6 +82,9 @@ void Vectorization::Release()
 void Vectorization::SetVectorization(float value)
 {
     m_vectorization = value;
+
+    // complexity is inverse to vectorization range [0,1]
+    m_complexity = 30.0 + ((1.0 - m_vectorization) * 300.0);
 }
 
 bool Vectorization::RequiresVectorization() const
@@ -91,7 +117,18 @@ void Vectorization::InitialiseSRM(ID3D11Texture2D* texture)
     }
 
     memcpy(mappedBuffer.pData, mappedTex.pData, m_srcBufferSize);
+
+    // Get the input texture components and initialise the pixel averages
+    auto* inputTex = reinterpret_cast<int*>(mappedTex.pData);
+    for (int i = 0; i < m_size; ++i)
+    {
+        m_average[i].r = (float)Red(inputTex[i]);
+        m_average[i].g = (float)Green(inputTex[i]);
+        m_average[i].b = (float)Blue(inputTex[i]);
+    }
+
     m_context->Unmap(m_srcBuffer, 0);
+    m_context->Unmap(m_srcTexture, 0);
 
     // Dispatch the call to the compute shader
     m_context->Dispatch(32, 32, 1);
@@ -100,20 +137,6 @@ void Vectorization::InitialiseSRM(ID3D11Texture2D* texture)
     std::iota(m_parent.begin(), m_parent.end(), 0);
     m_count.assign(m_size, 1);
     m_rank.assign(m_size, 0);
-
-    // complexity is inverse to vectorization range [0,1]
-    m_complexity = 30.0 + ((1.0 - m_vectorization) * 300.0);
-
-    auto* input = reinterpret_cast<int*>(mappedTex.pData);
-
-    for (int i = 0; i < m_size; ++i)
-    {
-        m_average[i].r = (float)Red(input[i]);
-        m_average[i].g = (float)Green(input[i]);
-        m_average[i].b = (float)Blue(input[i]);
-    }
-
-    m_context->Unmap(m_srcTexture, 0);
 }
 
 void Vectorization::SetActive()
@@ -126,6 +149,7 @@ void Vectorization::SetActive()
 
 void Vectorization::ExecuteSRM(DisjointSet& set)
 {
+    // Output buffer cannot be directly read from so copy to a buffer in system memory
     m_context->CopyResource(m_destBufferSystem, m_destBuffer);
 
     D3D11_MAPPED_SUBRESOURCE mappedBuffer;
@@ -143,6 +167,10 @@ void Vectorization::ExecuteSRM(DisjointSet& set)
         return e1.difference < e2.difference;
     });
 
+    // Merge regions whose pixel colour is similar
+    // Algorithm from sample code provided with paper:
+    // http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+
     for (int i = 0; i < m_edges; i++)
     {
         const int r1 = output[i].region1;
@@ -158,42 +186,6 @@ void Vectorization::ExecuteSRM(DisjointSet& set)
     }
 
     m_context->Unmap(m_destBufferSystem, 0);
-}
-
-void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
-{
-    set.union_set(C1, C2);
-
-    const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
-    const int nreg = m_count[C1] + m_count[C2];
-    const float fnreg = 1.0f / (float)nreg;
-    const int c1 = m_count[C1];
-    const int c2 = m_count[C2];
-    const auto& a1 = m_average[C1];
-    const auto& a2 = m_average[C2];
-
-    m_average[region].r = (c1 * a1.r + c2 * a2.r) * fnreg;
-    m_average[region].g = (c1 * a1.g + c2 * a2.g) * fnreg;
-    m_average[region].b = (c1 * a1.b + c2 * a2.b) * fnreg;
-
-    m_count[region] = nreg;
-}
-
-bool Vectorization::MergePredicate(int reg1, int reg2)
-{
-    const double c1 = (double)m_count[reg1];
-    const double c2 = (double)m_count[reg2];
-
-    const double logreg1 = min(double(m_levels), c1 * log(1.0 + c1));
-    const double logreg2 = min(double(m_levels), c2 * log(1.0 + c2));
-
-    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * c1)) * (logreg1 + m_logdelta);
-    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * c2)) * (logreg2 + m_logdelta);
-    const double dev = dev1 + dev2;
-
-    return pow(m_average[reg1].r - m_average[reg2].r, 2) < dev &&
-           pow(m_average[reg1].g - m_average[reg2].g, 2) < dev &&
-           pow(m_average[reg1].b - m_average[reg2].b, 2) < dev;
 }
 
 void Vectorization::OutputSRM(DisjointSet& set)
@@ -227,44 +219,56 @@ void Vectorization::Render(ID3D11Texture2D* texture)
     OutputSRM(set);
 }
 
-bool Vectorization::Initialise(ID3D11Device* device, 
-                               ID3D11DeviceContext* context,
-                               const char* file, 
-                               const POINT& size)
+
+
+void Vectorization::MergeRegions(int C1, int C2, DisjointSet& set)
 {
-    const int w = size.x;
-    const int h = size.y;
-    m_width = w;
-    m_height = h;
-    m_size = w * h;
-    m_logdelta = 2.0 * log(6.0 * m_size);
-    m_levelsSqr = m_levels * m_levels;
-    m_edges = 2 * (w - 1) * (h - 1) + (h - 1) + (w - 1);
+    // Algorithm from sample code provided with paper:
+    // http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
 
-    m_average.resize(m_size);
-    m_count.resize(m_size);
-    m_parent.resize(m_size);
-    m_rank.resize(m_size);
+    set.union_set(C1, C2);
 
-    m_device = device;
-    m_context = context;
-    m_srcBufferStride = sizeof(int);
-    m_srcBufferSize = (m_srcBufferStride * w) * h;
-    m_destBufferStride = sizeof(Edge);
-    m_destBufferSize = m_destBufferStride * m_edges;
-    m_constantBufferStride = sizeof(Constants);
-    m_constantBufferSize = m_constantBufferStride;
+    const int region = m_rank[C1] > m_rank[C2] ? C1 : C2;
+    const int nreg = m_count[C1] + m_count[C2];
+    const float fnreg = 1.0f / (float)nreg;
+    const int c1 = m_count[C1];
+    const int c2 = m_count[C2];
+    const auto& a1 = m_average[C1];
+    const auto& a2 = m_average[C2];
 
-    if (!CreateInputBuffer() ||
-        !CreateOutputBuffer() ||
-        !CreateConstantBuffer() ||
-        !CreateShader(file))
-    {
-        return false;
-    }
+    m_average[region].r = (c1 * a1.r + c2 * a2.r) * fnreg;
+    m_average[region].g = (c1 * a1.g + c2 * a2.g) * fnreg;
+    m_average[region].b = (c1 * a1.b + c2 * a2.b) * fnreg;
 
-    SetVectorization(0.0f);
-    return true;
+    m_count[region] = nreg;
+}
+
+bool Vectorization::MergePredicate(int reg1, int reg2)
+{
+    // Algorithm from sample code provided with paper:
+    // http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+
+    const double c1 = (double)m_count[reg1];
+    const double c2 = (double)m_count[reg2];
+
+    const double logreg1 = min(double(m_levels), c1 * log(1.0 + c1));
+    const double logreg2 = min(double(m_levels), c2 * log(1.0 + c2));
+
+    const double dev1 = (m_levelsSqr / (2.0 * m_complexity * c1)) * (logreg1 + m_logdelta);
+    const double dev2 = (m_levelsSqr / (2.0 * m_complexity * c2)) * (logreg2 + m_logdelta);
+    const double dev = dev1 + dev2;
+
+    return pow(m_average[reg1].r - m_average[reg2].r, 2) < dev &&
+        pow(m_average[reg1].g - m_average[reg2].g, 2) < dev &&
+        pow(m_average[reg1].b - m_average[reg2].b, 2) < dev;
+}
+
+bool Vectorization::Initialise(const char* file)
+{
+    return CreateInputBuffer() &&
+           CreateOutputBuffer() &&
+           CreateConstantBuffer() &&
+           CreateShader(file);
 }
 
 bool Vectorization::CreateShader(const char* file)
@@ -317,10 +321,9 @@ bool Vectorization::CreateShader(const char* file)
         errorBlob->Release();
     }
 
-    if (FAILED(m_device->CreateComputeShader(
-        shaderBlob->GetBufferPointer(),
-        shaderBlob->GetBufferSize(),
-        nullptr, &m_shader)))
+    if (FAILED(m_device->CreateComputeShader(shaderBlob->GetBufferPointer(),
+                                             shaderBlob->GetBufferSize(),
+                                             nullptr, &m_shader)))
     {
         MessageBox(0, "Failed to create compute shader", "ERROR", MB_OK);
         shaderBlob->Release();
@@ -330,11 +333,6 @@ bool Vectorization::CreateShader(const char* file)
     shaderBlob->Release();
 
     SetDebugName(m_shader, "Compute Shader");
-
-    m_context->CSSetShader(m_shader, 0, 0);
-    m_context->CSSetShaderResources(0, 1, &m_srcBufferView);
-    m_context->CSSetShaderResources(1, 1, &m_constantBufferView);
-    m_context->CSSetUnorderedAccessViews(0, 1, &m_destBufferView, 0);
 
     return true;
 }
@@ -512,4 +510,15 @@ bool Vectorization::CreateOutputBuffer()
     SetDebugName(m_destTexture, "Compute Shader Output Texture");
 
     return true;
+}
+
+void Vectorization::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.SetGroup("Vectorization");
+
+    tweaker.AddDblEntry("Complexity",
+        [this]() { return m_complexity; });
+
+    tweaker.AddIntEntry("Edges",
+        [this]() { return m_edges; });
 }

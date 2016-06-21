@@ -67,23 +67,25 @@ bool Application::Initialize(HWND hWnd, const POINT& size)
     {
         return false;
     }
+    auto* device = m_engine->GetDevice();
+    auto* context = m_engine->GetContext();
 
-    m_openCV = std::make_unique<OpenCV>(*m_engine, size.x, size.y);
+    m_openCV = std::make_unique<OpenCV>(device, context, size);
     if (!m_openCV->Initialize())
+    {
+        return false;
+    }
+
+    m_vectorization = std::make_unique<Vectorization>(device, context, size);
+    if (!m_vectorization->Initialise(".//Resources//vectorization.fx"))
     {
         return false;
     }
 
     InitialiseTweakBar(size);
 
-    m_vectorization = std::make_unique<Vectorization>();
-    if (!m_vectorization->Initialise(m_engine->GetDevice(),
-                                     m_engine->GetContext(),
-                                     ".//Resources//vectorization.fx", 
-                                     size))
-    {
-        return false;
-    }
+    m_vectorization->SetVectorization(0.0f);
+    m_vectorization->SetActive();
 
     return true;
 }
@@ -93,6 +95,8 @@ void Application::InitialiseTweakBar(const POINT& size)
     m_tweaker = std::make_unique<Tweaker>(m_engine->GetDevice(), size);
 
     m_timer->AddToTweaker(*m_tweaker);
+    m_openCV->AddToTweaker(*m_tweaker);
+    m_vectorization->AddToTweaker(*m_tweaker);
 }
 
 void Application::SetVectorizationAmount(float value)

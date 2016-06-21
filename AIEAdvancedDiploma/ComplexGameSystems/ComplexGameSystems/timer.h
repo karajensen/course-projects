@@ -40,7 +40,7 @@ public:
     unsigned int GetFPS() const;
 
     /**
-    * Adds the timer to the tweak bar
+    * Adds to the tweak bar
     */
     void AddToTweaker(Tweaker& tweaker);
 

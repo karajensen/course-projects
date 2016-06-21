@@ -4,8 +4,8 @@
 
 #include "opencv.h"
 #include <Windows.h>
+#include "tweaker.h"
 #include "directxcommon.h"
-#include "directxtarget.h"
 #include "directxengine.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core.hpp"
@@ -14,11 +14,14 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio.hpp"
 
-OpenCV::OpenCV(DirectxEngine& directx, int width, int height) :
-    m_directx(directx),
-    m_texture(nullptr),
-    m_width(width),
-    m_height(height)
+OpenCV::OpenCV(ID3D11Device* device,
+               ID3D11DeviceContext* context,
+               const POINT& size)
+    : m_device(device)
+    , m_context(context)
+    , m_texture(nullptr)
+    , m_width(size.x)
+    , m_height(size.y)
 {
 }
 
@@ -39,7 +42,7 @@ void OpenCV::Close()
 
 bool OpenCV::Initialize()
 {   
-    cv::directx::ocl::initializeContextFromD3D11Device(m_directx.GetDevice());
+    cv::directx::ocl::initializeContextFromD3D11Device(m_device);
 
     if (!m_video.open(0))
     {
@@ -60,7 +63,7 @@ bool OpenCV::Initialize()
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     desc.MiscFlags = 0;
 
-    if (FAILED(m_directx.GetDevice()->CreateTexture2D(&desc, 0, &m_texture)))
+    if (FAILED(m_device->CreateTexture2D(&desc, 0, &m_texture)))
     {
         MessageBox(0, "Failed to create OpenCV texture", "ERROR", MB_OK);
         return false;
@@ -83,10 +86,9 @@ bool OpenCV::Update()
 
     cv::cvtColor(m_frame_bgr, m_frame_rgba, CV_BGR2RGBA);
 
-    auto* context = m_directx.GetContext();
     UINT subResource = ::D3D11CalcSubresource(0, 0, 0);
     D3D11_MAPPED_SUBRESOURCE mappedTex;
-    if (FAILED(context->Map(m_texture, subResource, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
+    if (FAILED(m_context->Map(m_texture, subResource, D3D11_MAP_WRITE_DISCARD, 0, &mappedTex)))
     {
         MessageBox(0, "Surface mapping failed", "ERROR", MB_OK);
         return false;
@@ -95,7 +97,18 @@ bool OpenCV::Update()
     cv::Mat mat(m_height, m_width, CV_8UC4, mappedTex.pData, mappedTex.RowPitch);
     m_frame_rgba.copyTo(mat);
 
-    context->Unmap(m_texture, subResource);
+    m_context->Unmap(m_texture, subResource);
 
     return true;
 }   
+
+void OpenCV::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.SetGroup("OpenCV");
+
+    tweaker.AddDblEntry("Camera Width",
+        [this]() { return m_video.get(cv::CAP_PROP_FRAME_WIDTH); });
+
+    tweaker.AddDblEntry("Camera Height",
+        [this]() { return m_video.get(cv::CAP_PROP_FRAME_HEIGHT); });
+}

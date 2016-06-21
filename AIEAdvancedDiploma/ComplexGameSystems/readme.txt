@@ -1,8 +1,3 @@
-
-- Add tweak bar options
-- Convert to 64-bit?
-- Test release on x4 computers
-
 =================================================================
 AIE Advanced Diploma - Complex Game Systems Unit
 =================================================================

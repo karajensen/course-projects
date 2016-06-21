@@ -9,13 +9,17 @@
 #include "directxcommon.h"
 #include "boost/pending/disjoint_sets.hpp"
 
-class SRM;
+class Tweaker;
 
 /**
-* References:
+* Uses the Statistical Region Merging (SRM) Image Segmentation algorithm
+* coupled with a compute shader. References for this class:
+* www1.univ-ag.fr/~rnock/Articles/Drafts/tpami04-nn.pdf
+* http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
 * http://www.codinglabs.net/tutorial_compute_shaders_filters.aspx
 * https://msdn.microsoft.com/en-us/library/windows/desktop/ff476330%28v=vs.85%29.aspx
 * http://stackoverflow.com/questions/32049639/directx-11-compute-shader-writing-to-an-output-resource
+* 
 */
 class Vectorization
 {
@@ -24,7 +28,9 @@ public:
     /**
     * Constructor
     */
-    Vectorization();
+    Vectorization(ID3D11Device* device,
+                  ID3D11DeviceContext* context,
+                  const POINT& size);
 
     /**
     * Destructor
@@ -32,18 +38,15 @@ public:
     ~Vectorization();
 
     /**
-    * Releases the shader
+    * Releases resources
     */
     void Release();
 
     /**
-    * Sets up the compute shader
+    * Sets up the vectorization algorithm
     * @return whether initialization succeeded
     */
-    bool Initialise(ID3D11Device* device, 
-                    ID3D11DeviceContext* context,
-                    const char* file, 
-                    const POINT& size);
+    bool Initialise(const char* file);
 
     /**
     * Renders the compute shader
@@ -70,15 +73,18 @@ public:
     */
     bool RequiresVectorization() const;
 
+    /**
+    * Adds to the tweak bar
+    */
+    void AddToTweaker(Tweaker& tweaker);
+
 private:
 
     /**
-    * Compute shader initialisation
+    * Prevent copying
     */
-    bool CreateShader(const char* file);
-    bool CreateInputBuffer();
-    bool CreateOutputBuffer();
-    bool CreateConstantBuffer();
+    Vectorization(const Vectorization&) = delete;
+    Vectorization& operator=(const Vectorization&) = delete;
 
     /**
     * Union Find Data Structure to keep track of a set of elements
@@ -115,8 +121,15 @@ private:
     };
 
     /**
-    * Main algorithm technique
-    * Reference: http://www.lix.polytechnique.fr/~nielsen/Srmjava.java
+    * Compute shader initialisation methods
+    */
+    bool CreateShader(const char* file);
+    bool CreateInputBuffer();
+    bool CreateOutputBuffer();
+    bool CreateConstantBuffer();
+
+    /**
+    * Main algorithm technique methods
     */
     bool MergePredicate(int reg1, int reg2);
     void MergeRegions(int C1, int C2, DisjointSet& set);
@@ -125,14 +138,13 @@ private:
     void OutputSRM(DisjointSet& set);
 
     int m_edges = 0;
-    int m_width = 0;                  ///< Width of the image 
-    int m_height = 0;                 ///< Height of the image 
-    int m_size = 0;                   ///< width x height of the image 
-    double m_complexity = 0.0;        ///< Complexity of regions generated
-    int m_levels = 256;               ///< Number of levels in a color channel
-    int m_levelsSqr = 0;              ///< Levels value squared
-    double m_logdelta = 0.0;          ///< Constant for algorithm
-
+    int m_width = 0;                ///< Width of the image 
+    int m_height = 0;               ///< Height of the image 
+    int m_size = 0;                 ///< width x height of the image 
+    double m_complexity = 0.0;      ///< Complexity of regions generated
+    int m_levels = 256;             ///< Number of levels in a color channel
+    int m_levelsSqr = 0;            ///< Levels value squared
+    double m_logdelta = 0.0;        ///< Constant for algorithm
     float m_vectorization = 0.0f;
     size_t m_srcBufferSize = 0;
     size_t m_srcBufferStride = 0;
@@ -140,6 +152,7 @@ private:
     size_t m_destBufferStride = 0;
     size_t m_constantBufferSize = 0;
     size_t m_constantBufferStride = 0;
+
     ID3D11DeviceContext* m_context = nullptr;
     ID3D11Device* m_device = nullptr;
     ID3D11ComputeShader* m_shader = nullptr;
