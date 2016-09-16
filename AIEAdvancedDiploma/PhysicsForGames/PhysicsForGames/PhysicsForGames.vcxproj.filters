@@ -27,16 +27,16 @@
     <ClCompile Include="PhysicsObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Plane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sphere.cpp">
+    <ClCompile Include="RigidBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RigidBody.cpp">
+    <ClCompile Include="CircleBody.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SquareBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,16 +50,16 @@
     <ClInclude Include="PhysicsScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sphere.h">
+    <ClInclude Include="RigidBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RigidBody.h">
+    <ClInclude Include="CircleBody.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SquareBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

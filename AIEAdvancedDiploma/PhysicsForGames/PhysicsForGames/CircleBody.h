@@ -5,12 +5,16 @@
 #pragma once
 
 #include "RigidBody.h"
-#include "PhysicsObject.h"
 
-class Sphere : public RigidBody
-             , public PhysicsObject
+class CircleBody : public RigidBody
 {
 public:
+    CircleBody(const glm::vec2& position, 
+               const glm::vec2& velocity, 
+               float mass, 
+               float radius, 
+               const glm::vec4& colour);
+
     virtual void Update(float gravity, float timeStep) override;
     virtual void Draw(aie::Renderer2D* renderer) override;
     virtual void Debug() override;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "glm/vec2.hpp"
+#include "glm/vec4.hpp"
 
 namespace aie
 {
@@ -24,17 +25,21 @@ class RigidBody;
 class PhysicsObject
 {
 public:
+    PhysicsObject(const glm::vec4& colour);
+    virtual ~PhysicsObject() {}
+
     virtual void Update(float gravity, float timeStep);
-    virtual void Draw(aie::Renderer2D* renderer) = 0;
-    virtual void Debug() = 0;
-    virtual void ResetPosition();
+    virtual void Draw(aie::Renderer2D* renderer);
+    virtual void Debug();
     virtual void ApplyForce(const glm::vec2& force);
     virtual void ApplyForceToActor(RigidBody* actor, const glm::vec2& force);
     ShapeType GetShapeID() const;
     void SetShapeID(ShapeType shapeID);
+    void ResetPosition();
 
 protected:
     float m_gravity = 0.0f;
     float m_timeStep = 0.0f;
     ShapeType m_shapeID = NONE;
+    glm::vec4 m_colour;
 };

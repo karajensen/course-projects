@@ -91,23 +91,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Box.cpp" />
+    <ClCompile Include="SquareBody.cpp" />
     <ClCompile Include="PhysicsForGamesApp.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsScene.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="RigidBody.cpp" />
-    <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="CircleBody.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Box.h" />
+    <ClInclude Include="SquareBody.h" />
     <ClInclude Include="PhysicsForGamesApp.h" />
     <ClInclude Include="PhysicsObject.h" />
     <ClInclude Include="PhysicsScene.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="RigidBody.h" />
-    <ClInclude Include="Sphere.h" />
+    <ClInclude Include="CircleBody.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
