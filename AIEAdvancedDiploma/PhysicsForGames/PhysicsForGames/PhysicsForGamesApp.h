@@ -28,7 +28,9 @@ public:
     virtual void update(float deltaTime);
     virtual void draw();
 
-protected:
+private:
+
+    void initialiseTutorial1();
 
     std::unique_ptr<PhysicsScene> m_physicsScene;
     std::unique_ptr<aie::Renderer2D> m_2dRenderer;

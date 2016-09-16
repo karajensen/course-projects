@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 namespace aie
 {
@@ -16,9 +17,7 @@ class PhysicsObject;
 class PhysicsScene
 {
 public:
-    void AddActor(PhysicsObject* actor);
-    void RemoveActor(PhysicsObject* actor);
-    void GetActors() const;
+    void AddActor(std::unique_ptr<PhysicsObject> actor);
     void Update();
     void DebugScene();
     void Draw(aie::Renderer2D* renderer);
@@ -28,7 +27,7 @@ public:
     float GetTimeStep() const;
 
 private:
-    std::vector<PhysicsObject*> m_actors;
+    std::vector<std::unique_ptr<PhysicsObject>> m_actors;
     float m_gravity = 0.0f;
     float m_timeStep = 0.0f;
 };

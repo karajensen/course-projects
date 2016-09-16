@@ -8,24 +8,14 @@
 #include <algorithm>
 #include <vector>
 
-void PhysicsScene::AddActor(PhysicsObject* actor)
+void PhysicsScene::AddActor(std::unique_ptr<PhysicsObject> actor)
 {
-    m_actors.push_back(actor);
-}
-
-void PhysicsScene::RemoveActor(PhysicsObject* actor)
-{
-    m_actors.erase(std::remove(m_actors.begin(), m_actors.end(), actor), m_actors.end());
-}
-
-void PhysicsScene::GetActors() const
-{
-
+    m_actors.push_back(std::move(actor));
 }
 
 void PhysicsScene::Update()
 {
-    for (PhysicsObject* actor : m_actors)
+    for (auto& actor : m_actors)
     {
         actor->Update(m_gravity, m_timeStep);
     }
@@ -33,7 +23,7 @@ void PhysicsScene::Update()
 
 void PhysicsScene::DebugScene()
 {
-    for (PhysicsObject* actor : m_actors)
+    for (auto& actor : m_actors)
     {
         actor->Debug();
     }
@@ -41,7 +31,7 @@ void PhysicsScene::DebugScene()
 
 void PhysicsScene::Draw(aie::Renderer2D* renderer)
 {
-    for (PhysicsObject* actor : m_actors)
+    for (auto& actor : m_actors)
     {
         actor->Draw(renderer);
     }
