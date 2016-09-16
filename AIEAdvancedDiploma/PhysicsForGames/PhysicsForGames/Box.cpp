@@ -1,0 +1,20 @@
+////////////////////////////////////////////////////////////////////////////////////////
+// Kara Jensen - mail@karajensen.com - Box.cpp
+////////////////////////////////////////////////////////////////////////////////////////
+
+#include "Box.h"
+
+void Box::Update(float gravity, float timeStep)
+{
+    PhysicsObject::Update(gravity, timeStep);
+}
+
+void Box::Draw(aie::Renderer2D* renderer)
+{
+
+}
+
+void Box::Debug()
+{
+
+}

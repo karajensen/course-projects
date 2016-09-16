@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////////////
+// Kara Jensen - mail@karajensen.com - RigidBody.h
+////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "glm/vec2.hpp"
+
+class RigidBody
+{
+public:
+    float GetMass() const;
+
+private:
+    glm::vec2 m_position;
+    glm::vec2 m_velocity;
+    float m_mass = 0.0f;
+};

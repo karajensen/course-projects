@@ -1,53 +1,51 @@
+////////////////////////////////////////////////////////////////////////////////////////
+// Kara Jensen - mail@karajensen.com - PhysicsForGamesApp.cpp
+////////////////////////////////////////////////////////////////////////////////////////
+
 #include "PhysicsForGamesApp.h"
 #include "Font.h"
 #include "Input.h"
+#include "Renderer2D.h"
+#include "PhysicsScene.h"
 
-PhysicsForGamesApp::PhysicsForGamesApp() {
-
+PhysicsForGamesApp::PhysicsForGamesApp()
+{
 }
 
-PhysicsForGamesApp::~PhysicsForGamesApp() {
-
+PhysicsForGamesApp::~PhysicsForGamesApp()
+{
 }
 
-bool PhysicsForGamesApp::startup() {
-	
-	m_2dRenderer = new aie::Renderer2D();
+bool PhysicsForGamesApp::startup() 
+{
+    m_physicsScene.reset(new PhysicsScene());
+    m_2dRenderer.reset(new aie::Renderer2D());
+    m_font.reset(new aie::Font("./font/consolas.ttf", 16));
 
-	m_font = new aie::Font("./font/consolas.ttf", 32);
-
-	return true;
+    return true;
 }
 
-void PhysicsForGamesApp::shutdown() {
-
-	delete m_font;
-	delete m_2dRenderer;
+void PhysicsForGamesApp::shutdown() 
+{
 }
 
-void PhysicsForGamesApp::update(float deltaTime) {
+void PhysicsForGamesApp::update(float deltaTime) 
+{
+    aie::Input* input = aie::Input::getInstance();
 
-	// input example
-	aie::Input* input = aie::Input::getInstance();
-
-	// exit the application
-	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
-		quit();
+    if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
+    {
+        quit();
+    }
 }
 
-void PhysicsForGamesApp::draw() {
+void PhysicsForGamesApp::draw() 
+{
+    clearScreen();
 
-	// wipe the screen to the background colour
-	clearScreen();
+    m_2dRenderer->begin();
 
-	// begin drawing sprites
-	m_2dRenderer->begin();
+    m_2dRenderer->drawText(m_font.get(), "Press ESC to quit", 0, 0);
 
-	// draw your stuff here!
-
-	// output some text
-	m_2dRenderer->drawText(m_font, "Press ESC to quit", 0, 0);
-
-	// done drawing sprites
-	m_2dRenderer->end();
+    m_2dRenderer->end();
 }

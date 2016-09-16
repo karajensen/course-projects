@@ -1,12 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////
-// Kara Jensen - mail@karajensen.com - main.cpp
+// Kara Jensen - mail@karajensen.com - RigidBody.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PhysicsForGamesApp.h"
+#include "RigidBody.h"
 
-int main() 
+float RigidBody::GetMass() const
 {
-    PhysicsForGamesApp app;
-    app.run("AIE", 1280, 720, false);
-    return 0;
+    return m_mass;
 }

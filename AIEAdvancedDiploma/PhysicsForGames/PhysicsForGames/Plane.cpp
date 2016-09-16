@@ -1,0 +1,20 @@
+////////////////////////////////////////////////////////////////////////////////////////
+// Kara Jensen - mail@karajensen.com - Plane.cpp
+////////////////////////////////////////////////////////////////////////////////////////
+
+#include "Plane.h"
+
+void Plane::Update(float gravity, float timeStep)
+{
+    PhysicsObject::Update(gravity, timeStep);
+}
+
+void Plane::Draw(aie::Renderer2D* renderer)
+{
+
+}
+
+void Plane::Debug()
+{
+
+}
