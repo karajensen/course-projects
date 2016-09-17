@@ -7,15 +7,17 @@
 
 SquareBody::SquareBody(const glm::vec2& position,
                        const glm::vec2& velocity, 
-                       float mass, 
+                       float mass,
+                       const glm::vec2& size,
                        const glm::vec4& colour)
-    : RigidBody(position, velocity, 0.0f, mass, colour)
+    : RigidBody(position, velocity, mass, colour)
+    , m_size(size)
 {
 }
 
-void SquareBody::Update(float gravity, float timeStep)
+void SquareBody::Update(float timeStep)
 {
-    RigidBody::Update(gravity, timeStep);
+    RigidBody::Update(timeStep);
 }
 
 void SquareBody::Draw(aie::Renderer2D* renderer)

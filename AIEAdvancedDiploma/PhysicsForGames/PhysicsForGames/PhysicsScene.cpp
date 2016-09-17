@@ -4,9 +4,24 @@
 
 #include "PhysicsScene.h"
 #include "PhysicsObject.h"
+#include "Utilities.h"
 
 #include <algorithm>
 #include <vector>
+
+PhysicsScene::PhysicsScene()
+    : m_timeStep(1.0f / 60.0f)
+{
+}
+
+PhysicsScene::~PhysicsScene()
+{
+}
+
+void PhysicsScene::Reset()
+{
+    m_actors.clear();
+}
 
 void PhysicsScene::AddActor(std::unique_ptr<PhysicsObject> actor)
 {
@@ -17,7 +32,10 @@ void PhysicsScene::Update()
 {
     for (auto& actor : m_actors)
     {
-        actor->Update(m_gravity, m_timeStep);
+        if (actor->IsActive())
+        {
+            actor->Update(m_timeStep);
+        }
     }
 }
 
@@ -33,18 +51,27 @@ void PhysicsScene::Draw(aie::Renderer2D* renderer)
 {
     for (auto& actor : m_actors)
     {
-        actor->Draw(renderer);
+        if (actor->IsActive())
+        {
+            actor->Draw(renderer);
+        }
     }
 }
 
-void PhysicsScene::SetGravity(float gravity)
+void PhysicsScene::SetGravity(float x, float y)
 {
-    m_gravity = gravity;
+    for (auto& actor : m_actors)
+    {
+        actor->SetGravity(x, y);
+    }
 }
 
-float PhysicsScene::GetGravity() const
+void PhysicsScene::SetGravity(const glm::vec2& gravity)
 {
-    return m_gravity;
+    for (auto& actor : m_actors)
+    {
+        actor->SetGravity(gravity);
+    }
 }
 
 void PhysicsScene::SetTimeStep(float timeStep)

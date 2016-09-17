@@ -7,6 +7,6 @@
 int main() 
 {
     PhysicsForGamesApp app;
-    app.run("AIE", 1280, 720, false);
+    app.start();
     return 0;
 }

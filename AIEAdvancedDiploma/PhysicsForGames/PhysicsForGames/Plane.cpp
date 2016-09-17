@@ -10,9 +10,9 @@ Plane::Plane(const glm::vec4& colour)
 {
 }
 
-void Plane::Update(float gravity, float timeStep)
+void Plane::Update(float timeStep)
 {
-    PhysicsObject::Update(gravity, timeStep);
+    PhysicsObject::Update(timeStep);
 }
 
 void Plane::Draw(aie::Renderer2D* renderer)

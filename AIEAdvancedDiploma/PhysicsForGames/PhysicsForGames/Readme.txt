@@ -1,0 +1,17 @@
+
+- Fix gui key down
+- Try changing the direction of the force you apply to steer the rocket around the screen
+
+=================================================================
+AIE Advanced Diploma - Physics For Games Unit
+=================================================================
+mail@KaraJensen.com
+www.KaraJensen.com
+https://github.com/karajensen/course-projects.git
+=================================================================
+
+SUMMARY: 2D Physics Environment
+RELEASE REQUIREMENTS: Windows 10+, Visual C++ Redistributable 2015 32-bit
+BUILD REQUIREMENTS: Windows 10+, Visual Studio 2015
+
+=================================================================

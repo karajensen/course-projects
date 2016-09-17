@@ -10,14 +10,14 @@ CircleBody::CircleBody(const glm::vec2& position,
                        float mass, 
                        float radius, 
                        const glm::vec4& colour)
-    : RigidBody(position, velocity, 0.0f, mass, colour)
+    : RigidBody(position, velocity, mass, colour)
     , m_radius(radius)
 {
 }
 
-void CircleBody::Update(float gravity, float timeStep)
+void CircleBody::Update(float timeStep)
 {
-    RigidBody::Update(gravity, timeStep);
+    RigidBody::Update(timeStep);
 }
 
 void CircleBody::Draw(aie::Renderer2D* renderer)

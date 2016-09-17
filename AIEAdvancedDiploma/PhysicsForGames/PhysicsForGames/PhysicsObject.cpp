@@ -12,10 +12,18 @@ PhysicsObject::PhysicsObject(const glm::vec4& colour)
 {
 }
 
-void PhysicsObject::Update(float gravity, float timeStep)
+PhysicsObject::PhysicsObject(const glm::vec4& colour, const glm::vec2& position)
+    : m_colour(colour)
+    , m_position(position)
 {
-    m_gravity = gravity;
-    m_timeStep = timeStep;
+}
+
+void PhysicsObject::Update(float timeStep)
+{
+    if (m_updateFn != nullptr)
+    {
+        m_updateFn(timeStep);
+    }
 }
 
 void PhysicsObject::Draw(aie::Renderer2D* renderer)
@@ -27,25 +35,57 @@ void PhysicsObject::Debug()
 {
 }
 
-void PhysicsObject::ResetPosition()
+void PhysicsObject::ApplyForce(const glm::vec2& force)
 {
 }
 
-void PhysicsObject::ApplyForce(const glm::vec2& force)
+void PhysicsObject::ApplyForce(float x, float y)
 {
 }
 
 void PhysicsObject::ApplyForceToActor(RigidBody* actor, const glm::vec2& force)
 {
-    throw std::exception("Not Implemented");
 }
 
-ShapeType PhysicsObject::GetShapeID() const
+void PhysicsObject::SetGravity(const glm::vec2& gravity)
 {
-    return m_shapeID;
 }
 
-void PhysicsObject::SetShapeID(ShapeType shapeID)
+void PhysicsObject::SetGravity(float x, float y)
 {
-    m_shapeID = shapeID;
+}
+
+void PhysicsObject::ResetForces()
+{
+}
+
+void PhysicsObject::SetPosition(const glm::vec2& position)
+{
+    m_position = position;
+}
+
+void PhysicsObject::SetPosition(float x, float y)
+{
+    m_position.x = x;
+    m_position.y = y;
+}
+
+const glm::vec2& PhysicsObject::GetPosition() const
+{
+    return m_position;
+}
+
+void PhysicsObject::SetUpdateFn(std::function<void(float)> fn)
+{
+    m_updateFn = fn;
+}
+
+void PhysicsObject::SetActive(bool active)
+{
+    m_isActive = active;
+}
+
+bool PhysicsObject::IsActive() const
+{
+    return m_isActive;
 }

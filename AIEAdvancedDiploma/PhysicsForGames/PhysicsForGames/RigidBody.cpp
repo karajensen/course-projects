@@ -1,25 +1,32 @@
-////////////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////////
 // Kara Jensen - mail@karajensen.com - RigidBody.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "RigidBody.h"
+#include "Utilities.h"
+#include <algorithm>
 
 RigidBody::RigidBody(const glm::vec2& position, 
                      const glm::vec2& velocity, 
-                     float rotation,
                      float mass,
                      const glm::vec4& colour)
-    : PhysicsObject(colour)
-    , m_position(position)
+    : PhysicsObject(colour, position)
     , m_velocity(velocity)
-    , m_rotation2D(rotation)
-    , m_mass(mass)
 {
+    SetMass(mass);
 }
 
-void RigidBody::Update(float gravity, float timeStep)
+void RigidBody::Update(float timeStep)
 {
-    PhysicsObject::Update(gravity, timeStep);
+    PhysicsObject::Update(timeStep);
+
+    ApplyForce(m_gravity);
+
+    // Euler Integration: X(t + ∆t) = X(t) + X•(t)∆t
+    m_velocity = (m_velocity * m_damping) + (m_acceleration * timeStep);
+    m_position = m_position + (m_velocity * timeStep);
+
+    Utils::SetZero(m_acceleration);
 }
 
 void RigidBody::Debug()
@@ -27,39 +34,43 @@ void RigidBody::Debug()
     PhysicsObject::Debug();
 }
 
+void RigidBody::ApplyForce(float x, float y)
+{
+    ApplyForce(glm::vec2(x, y));
+}
+
 void RigidBody::ApplyForce(const glm::vec2& force)
 {
-    PhysicsObject::ApplyForce(force);
+    // F = ma
+    m_acceleration += force / m_mass; 
 }
 
 void RigidBody::ApplyForceToActor(RigidBody* otherActor, const glm::vec2& force)
 {
-
+    ApplyForce(-force);
+    otherActor->ApplyForce(force);
 }
 
-void RigidBody::SetPosition(const glm::vec2& position)
+void RigidBody::SetGravity(const glm::vec2& gravity)
 {
-    m_position = position;
+    m_gravity = gravity;
 }
 
-void RigidBody::SetVelocity(const glm::vec2& velocity)
+void RigidBody::SetGravity(float x, float y)
 {
-    m_velocity = velocity;
+    m_gravity.x = x;
+    m_gravity.y = y;
+}
+
+void RigidBody::ResetForces()
+{
+    Utils::SetZero(m_acceleration);
+    Utils::SetZero(m_velocity);
 }
 
 void RigidBody::SetMass(float mass)
 {
-    m_mass = mass;
-}
-
-void RigidBody::SetRotation2D(float rotation)
-{
-    m_rotation2D = rotation;
-}
-
-float RigidBody::GetRotation2D() const
-{
-    return m_rotation2D;
+    m_mass = std::max(std::numeric_limits<float>::min(), mass);
 }
 
 float RigidBody::GetMass() const
@@ -67,12 +78,12 @@ float RigidBody::GetMass() const
     return m_mass;
 }
 
-const glm::vec2& RigidBody::GetPosition() const
+void RigidBody::SetDamping(float damping)
 {
-    return m_position;
+    m_damping = damping;
 }
 
-const glm::vec2& RigidBody::GetVelocity() const
+float RigidBody::GetDamping() const
 {
-    return m_velocity;
+    return m_damping;
 }

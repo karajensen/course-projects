@@ -15,11 +15,14 @@ public:
                float radius, 
                const glm::vec4& colour);
 
-    virtual void Update(float gravity, float timeStep) override;
+    virtual void Update(float timeStep) override;
     virtual void Draw(aie::Renderer2D* renderer) override;
     virtual void Debug() override;
     void SetRadius(float radius);
 
 private:
+    CircleBody(const CircleBody&) = delete;
+    CircleBody& operator=(const CircleBody&) = delete;
+
     float m_radius = 0.0f;  
 };
