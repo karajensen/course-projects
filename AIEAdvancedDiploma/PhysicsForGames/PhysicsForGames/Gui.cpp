@@ -40,6 +40,26 @@ Gui::Gui(TutorialCreator& tutorials,
 
     m_mousePosition.x = m_input.getMouseX();
     m_mousePosition.y = m_input.getMouseY();
+
+    m_keyState[aie::INPUT_KEY_0] = KeyState('0');
+    m_keyState[aie::INPUT_KEY_1] = KeyState('1');
+    m_keyState[aie::INPUT_KEY_2] = KeyState('2');
+    m_keyState[aie::INPUT_KEY_3] = KeyState('3');
+    m_keyState[aie::INPUT_KEY_4] = KeyState('4');
+    m_keyState[aie::INPUT_KEY_5] = KeyState('5');
+    m_keyState[aie::INPUT_KEY_6] = KeyState('6');
+    m_keyState[aie::INPUT_KEY_7] = KeyState('7');
+    m_keyState[aie::INPUT_KEY_8] = KeyState('8');
+    m_keyState[aie::INPUT_KEY_9] = KeyState('9');
+    m_keyState[aie::INPUT_KEY_PERIOD] = KeyState('.');
+    m_keyState[aie::INPUT_KEY_MINUS] = KeyState('-');
+    m_keyState[aie::INPUT_KEY_ENTER] = KeyState(TW_KEY_RETURN);
+    m_keyState[aie::INPUT_KEY_LEFT] = KeyState(TW_KEY_LEFT);
+    m_keyState[aie::INPUT_KEY_RIGHT] = KeyState(TW_KEY_RIGHT);
+    m_keyState[aie::INPUT_KEY_TAB] = KeyState(TW_KEY_TAB);
+    m_keyState[aie::INPUT_KEY_END] = KeyState(TW_KEY_END);
+    m_keyState[aie::INPUT_KEY_HOME] = KeyState(TW_KEY_HOME);
+    m_keyState[aie::INPUT_KEY_BACKSPACE] = KeyState(TW_KEY_BACKSPACE);
 }
 
 Gui::~Gui()
@@ -73,54 +93,36 @@ void Gui::UpdateMouse()
     const int x = m_input.getMouseX();
     const int y = m_input.getMouseY();
     const bool hasMouseMoved = x != m_mousePosition.x || y != m_mousePosition.y;
-    const bool isMouseDown = m_input.wasMouseButtonPressed(aie::INPUT_MOUSE_BUTTON_LEFT);
 
     if (x != m_mousePosition.x || y != m_mousePosition.y)
     {
         TwMouseMotion(x, y);
     }
-    
-    if(isMouseDown && !m_mouseDown)
+
+    const bool isMouseDown = m_input.wasMouseButtonPressed(aie::INPUT_MOUSE_BUTTON_LEFT);
+    if(isMouseDown && !m_mouseState)
     {
         TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_LEFT);
     }
-    else if (!isMouseDown && m_mouseDown)
+    else if (!isMouseDown && m_mouseState)
     {
         TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_LEFT);
     }
 
-    m_mouseDown = isMouseDown;
+    m_mouseState = isMouseDown;
     m_mousePosition.x = x;
     m_mousePosition.y = y;
 }
 
 void Gui::UpdateKeys()
 {
-    auto UpdateKey = [this](unsigned int key, unsigned int code)
+    for (auto& key : m_keyState)
     {
-        if (m_input.wasKeyPressed(key))
+        const bool keyPressed = m_input.wasKeyPressed(key.first);
+        if (keyPressed && !key.second.down)
         {
-            TwKeyPressed(code, 0);
+            TwKeyPressed(key.second.code, 0);
         }
-    };
-
-    UpdateKey(aie::INPUT_KEY_0, '0');
-    UpdateKey(aie::INPUT_KEY_1, '1');
-    UpdateKey(aie::INPUT_KEY_2, '2');
-    UpdateKey(aie::INPUT_KEY_3, '3');
-    UpdateKey(aie::INPUT_KEY_4, '4');
-    UpdateKey(aie::INPUT_KEY_5, '5');
-    UpdateKey(aie::INPUT_KEY_6, '6');
-    UpdateKey(aie::INPUT_KEY_7, '7');
-    UpdateKey(aie::INPUT_KEY_8, '8');
-    UpdateKey(aie::INPUT_KEY_9, '9');
-    UpdateKey(aie::INPUT_KEY_PERIOD, '.');
-    UpdateKey(aie::INPUT_KEY_MINUS, '-');
-    UpdateKey(aie::INPUT_KEY_ENTER, TW_KEY_RETURN);
-    UpdateKey(aie::INPUT_KEY_LEFT, TW_KEY_LEFT);
-    UpdateKey(aie::INPUT_KEY_RIGHT, TW_KEY_RIGHT);
-    UpdateKey(aie::INPUT_KEY_TAB, TW_KEY_TAB);
-    UpdateKey(aie::INPUT_KEY_END, TW_KEY_END);
-    UpdateKey(aie::INPUT_KEY_HOME, TW_KEY_HOME);
-    UpdateKey(aie::INPUT_KEY_BACKSPACE, TW_KEY_BACKSPACE);
+        key.second.down = keyPressed;
+    }
 }

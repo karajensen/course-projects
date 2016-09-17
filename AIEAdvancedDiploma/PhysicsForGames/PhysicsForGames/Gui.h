@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include <map>
 #include <functional>
 #include "glm/vec2.hpp"
 
@@ -36,10 +37,23 @@ private:
     void UpdateMouse();
     void UpdateKeys();
 
+    struct KeyState
+    {
+        KeyState() = default;
+        KeyState(int c) :
+            code(c)
+        {
+        }
+
+        bool down = false;
+        int code = 0;
+    };
+
     aie::Input& m_input;
     CTwBar* m_tweakbar = nullptr;
     std::unique_ptr<Tweaker> m_tweaker;
     TutorialCreator& m_tutorials;
     glm::ivec2 m_mousePosition;
-    bool m_mouseDown = false;
+    bool m_mouseState = false;
+    std::map<int, KeyState> m_keyState;
 };                     

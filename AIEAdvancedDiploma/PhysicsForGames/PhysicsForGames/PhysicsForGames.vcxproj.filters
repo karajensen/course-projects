@@ -51,6 +51,9 @@
     <ClCompile Include="TutorialCreator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tutorial1.cpp">
+      <Filter>Tutorials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PhysicsForGamesApp.h">
@@ -85,9 +88,6 @@
     </ClInclude>
     <ClInclude Include="TutorialCreator.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Tutorial1.h">
-      <Filter>Tutorials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

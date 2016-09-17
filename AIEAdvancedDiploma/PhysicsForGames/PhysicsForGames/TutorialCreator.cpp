@@ -6,8 +6,7 @@
 #include "PhysicsScene.h"
 #include "Input.h"
 #include "Tweaker.h"
-
-#include "Tutorial1.h"
+#include "Utilities.h"
 
 TutorialCreator::TutorialCreator(aie::Input& input, PhysicsScene& scene, const glm::ivec2& size)
     : m_scene(scene)

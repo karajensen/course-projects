@@ -26,4 +26,9 @@ public:
         vec.x = 0.0f;
         vec.y = 0.0f;
     }
+
+    static bool IsZero(glm::vec2& vec)
+    {
+        return vec.x == 0.0f && vec.y == 0.0f;
+    }
 };  

@@ -102,6 +102,7 @@
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="CircleBody.cpp" />
+    <ClCompile Include="Tutorial1.cpp" />
     <ClCompile Include="TutorialCreator.cpp" />
     <ClCompile Include="Tweaker.cpp" />
   </ItemGroup>
@@ -114,7 +115,6 @@
     <ClInclude Include="Plane.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="CircleBody.h" />
-    <ClInclude Include="Tutorial1.h" />
     <ClInclude Include="TutorialCreator.h" />
     <ClInclude Include="Tweaker.h" />
     <ClInclude Include="Utilities.h" />

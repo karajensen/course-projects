@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////
-// Kara Jensen - mail@karajensen.com - TutorialCreator.cpp
+// Kara Jensen - mail@karajensen.com - Tutorial1.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialCreator.h"
@@ -10,76 +10,7 @@
 #include "Utilities.h"
 #include "Input.h"
 #include "Tweaker.h"
-
-TutorialCreator::TutorialCreator(aie::Input& input, PhysicsScene& scene, const glm::ivec2& size)
-    : m_scene(scene)
-    , m_size(size)
-    , m_input(input)
-{
-}
-
-Tutorial TutorialCreator::Selected() const
-{
-    return m_currentTutorial;
-}
-
-void TutorialCreator::AddToTweaker(Tweaker& tweaker)
-{
-    tweaker.SetGroup("Tutorials");
-
-    std::vector<const char*> tutorials;
-    for (int i = 0; i < Tutorial::TUTORIAL_COUNT; ++i)
-    {
-        tutorials.push_back(GetName(i));
-    }
-
-    tweaker.AddEnumEntry("Selected Tutorial",
-        [this]()->int { return m_currentTutorial;  },
-        [this, &tweaker](int value) { Create(tweaker, value);  },
-        tutorials);
-
-    tweaker.AddButton("Reset Tutorial", [this, &tweaker]()
-    {
-        Create(tweaker, m_currentTutorial);
-    });
-}
-
-const char* TutorialCreator::GetName(int tutorial) const
-{
-    switch (tutorial)
-    {
-    case TUTORIAL_NONE:
-        return "No Tutorial";
-    case TUTORIAL_1:
-        return "Tutorial 1";
-    default:
-        return "Unknown";
-    }
-}
-
-void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
-{
-    tweaker.Reset();
-    m_scene.Reset();
-    m_flts.clear();
-    m_ints.clear();
-
-    tweaker.SetGroup("Tutorials");
-
-    switch (tutorial)
-    {
-    case TUTORIAL_NONE:
-        break;
-    case TUTORIAL_1:
-        CreateTutorial1(tweaker);
-        break;
-    default:
-        tutorial = TUTORIAL_NONE;
-        LogError("Unsupported tutorial");
-    }
-
-    m_currentTutorial = static_cast<Tutorial>(tutorial);
-}
+#include "glm/glm.hpp"
 
 void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
 {
@@ -142,11 +73,10 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
             m_scene.AddActor(std::move(exhaust));
         }
 
-        std::unique_ptr<SquareBody> rocket(new SquareBody(
+        std::unique_ptr<CircleBody> rocket(new CircleBody(
             glm::vec2(middleX, 100.0f),
             glm::vec2(0.0f, 0.0f),
-            3.0f,
-            glm::vec2(50.0f, 100.0f),
+            3.0f, 40.0f,
             glm::vec4(1, 0, 1, 1)));
 
         rocket->SetGravity(0.0f, -9.8f);
@@ -154,7 +84,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
 
         m_flts["time"] = 0.0f;
         m_flts["fuel"] = 10.0f;
-        m_flts["forceX"] = 0.0f;
+        m_flts["forceX"] = 25.0f;
         m_flts["forceY"] = 100.0f;
         m_ints["index"] = 0;
 
@@ -177,6 +107,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
             {
                 return;
             }
+
             fuel -= 0.01f;
 
             const auto& forceX = m_flts.at("forceX");
@@ -189,9 +120,15 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                 timepassed = 0.0f;
                 auto& index = m_ints.at("index");
 
-                const auto& position = obj->GetPosition();
+                glm::vec2 position = obj->GetPosition();
+                glm::vec2 direction(forceX, forceY);
+                if (!Utils::IsZero(direction))
+                {
+                    position -= glm::normalize(direction) * 40.0f;
+                }
+
                 particles[index]->SetActive(true);
-                particles[index]->SetPosition(position.x, position.y - 50.0f);
+                particles[index]->SetPosition(position.x, position.y);
                 particles[index]->ResetForces();
                 obj->ApplyForceToActor(particles[index], glm::vec2(forceX, forceY));
                 
@@ -209,7 +146,6 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                     particle->SetActive(false);
                 }
             }
-
         });
 
         m_scene.AddActor(std::move(rocket));
