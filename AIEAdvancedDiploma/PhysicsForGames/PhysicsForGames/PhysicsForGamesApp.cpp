@@ -31,7 +31,6 @@ bool PhysicsForGamesApp::startup()
 
     m_physicsScene.reset(new PhysicsScene());
     m_2dRenderer.reset(new aie::Renderer2D());
-    m_font.reset(new aie::Font("./font/consolas.ttf", 16));
     m_tutorials.reset(new TutorialCreator(input, *m_physicsScene, m_size));
     m_gui.reset(new Gui(*m_tutorials, input, m_size));
     m_tutorials->Create(m_gui->GetTweaker(), Tutorial::TUTORIAL_1);

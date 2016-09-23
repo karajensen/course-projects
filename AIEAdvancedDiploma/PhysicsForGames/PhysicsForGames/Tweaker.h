@@ -188,6 +188,10 @@ public:
     };
 
 private:
+
+    /**
+    * Prevent Copying
+    */
     Tweaker(const Tweaker&) = delete;
     Tweaker& operator=(const Tweaker&) = delete;
 
@@ -302,5 +306,5 @@ private:
     std::vector<std::unique_ptr<Label>> m_labels;       ///< Data for the tweak bar strings
     std::vector<std::unique_ptr<Button>> m_buttons;     ///< Data for the tweak bar buttons
     std::vector<std::unique_ptr<Entry>> m_entries;      ///< Data for the tweak bar getter/setters
-    std::function<void(void)> m_resetFn = nullptr;
+    std::function<void(void)> m_resetFn = nullptr;      ///< Callback to reset the tweak bar
 };

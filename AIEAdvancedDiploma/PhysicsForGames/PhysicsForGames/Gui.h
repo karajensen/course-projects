@@ -21,20 +21,53 @@ class TutorialCreator;
 class Gui
 {
 public:
+
+    /**
+    * Constructor
+    * @param tutorials The creator for switching tutorial scenes
+    * @param input For querying user input
+    * @param size The window size
+    */
     Gui(TutorialCreator& tutorials,
         aie::Input& input,
         const glm::ivec2& size);
+
+    /**
+    * Destructor
+    */
     ~Gui();
 
+    /**
+    * Renders the GUI tweak bar
+    */
     void Render();
+
+    /**
+    * Updates the GUI tweak bar
+    */
     void Update();
+
+    /**
+    * @return the GUI tweak bar
+    */
     Tweaker& GetTweaker();
 
 private:
+
+    /**
+    * Prevent Copying
+    */
     Gui(const Gui&) = delete;
     Gui& operator=(const Gui&) = delete;
 
+    /**
+    * Updates the cachedmouse state
+    */
     void UpdateMouse();
+
+    /**
+    * Updates the cached keys state
+    */
     void UpdateKeys();
 
     struct KeyState
@@ -49,11 +82,11 @@ private:
         int code = 0;
     };
 
-    aie::Input& m_input;
-    CTwBar* m_tweakbar = nullptr;
-    std::unique_ptr<Tweaker> m_tweaker;
-    TutorialCreator& m_tutorials;
-    glm::ivec2 m_mousePosition;
-    bool m_mouseState = false;
-    std::map<int, KeyState> m_keyState;
+    aie::Input& m_input;                    ///< For querying user input
+    CTwBar* m_tweakbar = nullptr;           ///< Internal tweak bar
+    std::unique_ptr<Tweaker> m_tweaker;     ///< Wrapper for adding parameters to the tweak bar
+    TutorialCreator& m_tutorials;           ///< The creator for switching tutorial scenes
+    glm::ivec2 m_mousePosition;             ///< Last position of the mouse
+    bool m_mouseState = false;              ///< Last click state of the mouse
+    std::map<int, KeyState> m_keyState;     ///< Last press state of the keys
 };                     
