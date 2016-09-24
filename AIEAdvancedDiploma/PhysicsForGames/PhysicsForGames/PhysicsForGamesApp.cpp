@@ -32,8 +32,8 @@ bool PhysicsForGamesApp::startup()
     m_physicsScene.reset(new PhysicsScene());
     m_2dRenderer.reset(new aie::Renderer2D());
     m_tutorials.reset(new TutorialCreator(input, *m_physicsScene, m_size));
-    m_gui.reset(new Gui(*m_tutorials, input, m_size));
-    m_tutorials->Create(m_gui->GetTweaker(), Tutorial::TUTORIAL_1);
+    m_gui.reset(new Gui(*m_physicsScene, *m_tutorials, input, m_size));
+    m_tutorials->Create(m_gui->GetTweaker(), Tutorial::TUTORIAL_2);
 
     return true;
 }

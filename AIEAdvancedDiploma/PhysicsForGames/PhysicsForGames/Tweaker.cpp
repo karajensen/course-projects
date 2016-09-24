@@ -184,7 +184,8 @@ void Tweaker::AddFltEntry(std::string label,
 void Tweaker::AddFltEntry(std::string label,
                           std::function<const float(void)> getter,
                           std::function<void(const float)> setter,
-                          float step)
+                          float step,
+                          int precision)
 {
     const auto index = m_entries.size();
     auto entry = std::make_unique<TweakableEntry<float>>();
@@ -193,7 +194,7 @@ void Tweaker::AddFltEntry(std::string label,
     m_entries.emplace_back(std::move(entry));
     
     TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, SetCallback,
-        GetCallback, m_entries[index].get(), Definition(label, step, 0).c_str());
+        GetCallback, m_entries[index].get(), Definition(label, step, precision).c_str());
 
     LogTweakError();
 }

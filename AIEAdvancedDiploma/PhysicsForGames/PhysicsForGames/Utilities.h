@@ -4,8 +4,27 @@
 
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include "glm/vec2.hpp"
 #include <iostream>
+#include <math.h>
+
+/**
+* Convert degrees to radians
+*/
+template<typename T> T DegToRad(T degrees)
+{
+    return static_cast<T>(M_PI / 180.0) * degrees;
+}
+
+/**
+* Convert radians to degrees
+*/
+template<typename T> T RadToDeg(T radians)
+{
+    return static_cast<T>(180.0 / M_PI) * radians;
+}
 
 /**
 * Logs an error to the console

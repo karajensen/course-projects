@@ -69,6 +69,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                 1.0f, 10,
                 glm::vec4(0.8, 0.8, 0.8, 1)));
             exhaust->SetActive(false);
+            exhaust->SetVisible(false);
             particles.push_back(exhaust.get());
             m_scene.AddActor(std::move(exhaust));
         }
@@ -88,17 +89,9 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
         m_flts["forceY"] = 100.0f;
         m_ints["index"] = 0;
 
-        tweaker.AddFltEntry("Rocket Fuel Level",
-            [this]() { return m_flts.at("fuel"); },
-            [this](float value) { m_flts.at("fuel") = value; }, 3);
-
-        tweaker.AddFltEntry("Rocket Force X",
-            [this]() { return m_flts.at("forceX"); },
-            [this](float value) { m_flts.at("forceX") = value; }, 1);
-
-        tweaker.AddFltEntry("Rocket Force Y",
-            [this]() { return m_flts.at("forceY"); },
-            [this](float value) { m_flts.at("forceY") = value; }, 1);
+        AddTweakableFlt(tweaker, "fuel", "Rocket Fuel Level", 0.1f, 3);
+        AddTweakableFlt(tweaker, "forceX", "Rocket Force X", 0.1f, 1);
+        AddTweakableFlt(tweaker, "forceY", "Rocket Force Yl", 0.1f, 1);
 
         rocket->SetUpdateFn([this, particles, obj = rocket.get()](float timestep)
         {
@@ -128,6 +121,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                 }
 
                 particles[index]->SetActive(true);
+                particles[index]->SetVisible(true);
                 particles[index]->SetPosition(position.x, position.y);
                 particles[index]->ResetForces();
                 obj->ApplyForceToActor(particles[index], glm::vec2(forceX, forceY));
@@ -144,6 +138,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                 for (auto* particle : particles)
                 {
                     particle->SetActive(false);
+                    particle->SetVisible(false);
                 }
             }
         });

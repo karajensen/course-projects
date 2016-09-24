@@ -5,14 +5,17 @@
 #include "Gui.h"
 #include "Tweaker.h"
 #include "TutorialCreator.h"
+#include "PhysicsScene.h"
 #include "Input.h"
 #include <sstream>
 
-Gui::Gui(TutorialCreator& tutorials,
+Gui::Gui(PhysicsScene& scene,
+         TutorialCreator& tutorials,
          aie::Input& input,
          const glm::ivec2& size)
     : m_tutorials(tutorials)
     , m_input(input)
+    , m_scene(scene)
 {
     TwInit(TW_OPENGL_CORE, nullptr);
     TwWindowSize(size.x, size.y);
@@ -33,6 +36,7 @@ Gui::Gui(TutorialCreator& tutorials,
 
     auto resetTweakBar = [this]()
     {
+        m_scene.AddToTweaker(GetTweaker());
         m_tutorials.AddToTweaker(GetTweaker());
     };
 

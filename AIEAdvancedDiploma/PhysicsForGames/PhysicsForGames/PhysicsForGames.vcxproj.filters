@@ -54,6 +54,9 @@
     <ClCompile Include="Tutorial1.cpp">
       <Filter>Tutorials</Filter>
     </ClCompile>
+    <ClCompile Include="Tutorial2.cpp">
+      <Filter>Tutorials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PhysicsForGamesApp.h">

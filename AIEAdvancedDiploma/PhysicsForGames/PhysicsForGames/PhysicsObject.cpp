@@ -89,3 +89,13 @@ bool PhysicsObject::IsActive() const
 {
     return m_isActive;
 }
+
+void PhysicsObject::SetVisible(bool visible)
+{
+    m_isVisible = visible;
+}
+
+bool PhysicsObject::IsVisible() const
+{
+    return m_isVisible;
+}

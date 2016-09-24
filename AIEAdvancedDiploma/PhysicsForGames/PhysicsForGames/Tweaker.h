@@ -116,11 +116,13 @@ public:
     * @param getter Callback to get the value
     * @param setter Callback for set the value
     * @param step The differece between values
+    * @param precision The amount of decimal points to display
     */
     void AddFltEntry(std::string label, 
                      std::function<const float(void)> getter,
                      std::function<void(const float)> setter,
-                     float step);
+                     float step,
+                     int precision);
 
     /**
     * Creates a new tweakable entry

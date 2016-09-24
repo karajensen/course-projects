@@ -91,15 +91,27 @@ public:
 
     /**
     * Sets the body as active or not
-    * @note bodies not active will not render or take part in the physics scene
+    * @note bodies not active will not take part in the physics scene
     */
     void SetActive(bool active);
 
     /**
     * @return if the body as active or not
-    * @note bodies not active will not render or take part in the physics scene
+    * @note bodies not active will not take part in the physics scene
     */
     bool IsActive() const;
+
+    /**
+    * Sets the body as visible or not
+    * @note bodies not visible will not be rendered
+    */
+    void SetVisible(bool visible);
+
+    /**
+    * @return if the body as visible or not
+    * @note bodies not visible will not be rendered
+    */
+    bool IsVisible() const;
 
     /**
     * Explicitly sets the position of the body
@@ -124,7 +136,8 @@ public:
     void SetUpdateFn(std::function<void(float)> fn);
 
 protected:
-    bool m_isActive = true;                          ///< Whether the body is active or not
+    bool m_isActive = true;                          ///< Whether the body is active in the physics world
+    bool m_isVisible = true;                         ///< Whether the body is visible or not
     glm::vec4 m_colour;                              ///< Colour to render the body
     glm::vec2 m_position;                            ///< Position of the body
     std::function<void(float)> m_updateFn = nullptr; ///< Callback to fire when the body is being updated

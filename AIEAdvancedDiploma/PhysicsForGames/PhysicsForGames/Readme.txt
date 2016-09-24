@@ -1,6 +1,3 @@
-
-- Try changing the direction of the force you apply to steer the rocket around the screen
-
 =================================================================
 AIE Advanced Diploma - Physics For Games Unit
 =================================================================

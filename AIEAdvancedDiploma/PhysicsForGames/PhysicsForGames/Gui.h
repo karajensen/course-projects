@@ -17,6 +17,7 @@ namespace aie
 struct CTwBar;
 class Tweaker;
 class TutorialCreator;
+class PhysicsScene;
 
 class Gui
 {
@@ -24,11 +25,13 @@ public:
 
     /**
     * Constructor
+    * @param scene Physics scene manager
     * @param tutorials The creator for switching tutorial scenes
     * @param input For querying user input
     * @param size The window size
     */
-    Gui(TutorialCreator& tutorials,
+    Gui(PhysicsScene& scene,
+        TutorialCreator& tutorials,
         aie::Input& input,
         const glm::ivec2& size);
 
@@ -86,6 +89,7 @@ private:
     CTwBar* m_tweakbar = nullptr;           ///< Internal tweak bar
     std::unique_ptr<Tweaker> m_tweaker;     ///< Wrapper for adding parameters to the tweak bar
     TutorialCreator& m_tutorials;           ///< The creator for switching tutorial scenes
+    PhysicsScene& m_scene;                  ///< Physics scene manager
     glm::ivec2 m_mousePosition;             ///< Last position of the mouse
     bool m_mouseState = false;              ///< Last click state of the mouse
     std::map<int, KeyState> m_keyState;     ///< Last press state of the keys

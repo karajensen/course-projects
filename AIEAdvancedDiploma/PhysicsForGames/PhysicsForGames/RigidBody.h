@@ -88,6 +88,25 @@ public:
     */
     float GetDamping() const;
 
+    /**
+    * Sets the velocity of the body
+    * @param velocity The velocity to set
+    */
+    void SetVelocity(const glm::vec2& velocity);
+
+    /**
+    * Predicts the position of projectile motion at the given time passed
+    * @param gravity The gravity to apply to the body in the y direction
+    * @param angle The angle of elevation launched at relative to horizontal in degrees
+    * @param speed The speed of the projectile
+    * @param timepassed The time to predict at
+    */
+    static glm::vec2 PredictProjectilePosition(float gravity,
+                                               float angle, 
+                                               float speed, 
+                                               float timepassed);
+
+
 protected:
     glm::vec2 m_velocity;       ///< Current velocity of the body
     glm::vec2 m_acceleration;   ///< Current accerleration of the body

@@ -103,6 +103,7 @@
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="CircleBody.cpp" />
     <ClCompile Include="Tutorial1.cpp" />
+    <ClCompile Include="Tutorial2.cpp" />
     <ClCompile Include="TutorialCreator.cpp" />
     <ClCompile Include="Tweaker.cpp" />
   </ItemGroup>

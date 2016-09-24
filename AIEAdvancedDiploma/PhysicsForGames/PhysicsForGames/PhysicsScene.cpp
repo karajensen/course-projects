@@ -5,6 +5,7 @@
 #include "PhysicsScene.h"
 #include "PhysicsObject.h"
 #include "Utilities.h"
+#include "Tweaker.h"
 
 #include <algorithm>
 #include <vector>
@@ -26,6 +27,12 @@ void PhysicsScene::Reset()
 void PhysicsScene::AddActor(std::unique_ptr<PhysicsObject> actor)
 {
     m_actors.push_back(std::move(actor));
+}
+
+void PhysicsScene::RemoveActor(PhysicsObject* actor)
+{
+    auto fn = [actor](const std::unique_ptr<PhysicsObject>& a) { return a.get() == actor; };
+    m_actors.erase(std::remove_if(m_actors.begin(), m_actors.end(), fn), m_actors.end());
 }
 
 void PhysicsScene::Update()
@@ -51,7 +58,7 @@ void PhysicsScene::Draw(aie::Renderer2D* renderer)
 {
     for (auto& actor : m_actors)
     {
-        if (actor->IsActive())
+        if (actor->IsVisible())
         {
             actor->Draw(renderer);
         }
@@ -82,4 +89,9 @@ void PhysicsScene::SetTimeStep(float timeStep)
 float PhysicsScene::GetTimeStep() const
 {
     return m_timeStep;
+}
+
+void PhysicsScene::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddFltEntry("Time Step", &m_timeStep, 0.01f, 3);
 }

@@ -13,6 +13,7 @@ namespace aie
     class Renderer2D;
 }
 
+class Tweaker;
 class PhysicsObject;
 
 class PhysicsScene
@@ -33,6 +34,12 @@ public:
     * Adds a new actor to the scene
     */
     void AddActor(std::unique_ptr<PhysicsObject> actor);
+
+    /**
+    * Removes an actor to the scene
+    * @note do not call this during an update or render call
+    */
+    void RemoveActor(PhysicsObject* actor);
 
     /**
     * Updates the scene
@@ -76,6 +83,11 @@ public:
     * Resets the scene
     */
     void Reset();
+
+    /**
+    * Adds the tutorial creator to the tweakbar
+    */
+    void AddToTweaker(Tweaker& tweaker);
 
 private:
 

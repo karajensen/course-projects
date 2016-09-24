@@ -87,3 +87,21 @@ float RigidBody::GetDamping() const
 {
     return m_damping;
 }
+
+void RigidBody::SetVelocity(const glm::vec2& velocity)
+{
+    m_velocity = velocity;
+}
+
+glm::vec2 RigidBody::PredictProjectilePosition(float gravity,
+                                               float angle,
+                                               float speed, 
+                                               float timepassed)
+{
+    // x = x₀ + stcosӨ
+    // y = y₀ + stsinӨ - ¹/₂gt²
+    const float rad = DegToRad(angle);
+    const float x = speed * timepassed * cos(rad);
+    const float y = speed * timepassed * sin(rad) - (0.5f * gravity * (timepassed * timepassed));
+    return glm::vec2(x, y);
+}
