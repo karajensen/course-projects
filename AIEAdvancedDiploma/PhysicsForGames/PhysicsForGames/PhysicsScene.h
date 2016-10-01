@@ -15,6 +15,7 @@ namespace aie
 
 class Tweaker;
 class PhysicsObject;
+class CollisionSolver;
 
 class PhysicsScene
 {
@@ -97,6 +98,12 @@ private:
     PhysicsScene(const PhysicsScene&) = delete;
     PhysicsScene& operator=(const PhysicsScene&) = delete;
 
+    /**
+    * Checks for collisions between actors
+    */
+    void CheckForCollision();
+
+    std::unique_ptr<CollisionSolver> m_solver;              ///< Actor collision solver
     std::vector<std::unique_ptr<PhysicsObject>> m_actors;   ///< All registered actors in the scene
     float m_timeStep = 0.0f;                                ///< The time to pass between updates on actors
 };

@@ -93,6 +93,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CollisionSolver.cpp" />
     <ClCompile Include="Gui.cpp" />
     <ClCompile Include="SquareBody.cpp" />
     <ClCompile Include="PhysicsForGamesApp.cpp" />
@@ -104,10 +105,12 @@
     <ClCompile Include="CircleBody.cpp" />
     <ClCompile Include="Tutorial1.cpp" />
     <ClCompile Include="Tutorial2.cpp" />
+    <ClCompile Include="Tutorial3.cpp" />
     <ClCompile Include="TutorialCreator.cpp" />
     <ClCompile Include="Tweaker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CollisionSolver.h" />
     <ClInclude Include="Gui.h" />
     <ClInclude Include="SquareBody.h" />
     <ClInclude Include="PhysicsForGamesApp.h" />

@@ -93,7 +93,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
         AddTweakableFlt(tweaker, "forceX", "Rocket Force X", 0.1f, 1);
         AddTweakableFlt(tweaker, "forceY", "Rocket Force Yl", 0.1f, 1);
 
-        rocket->SetUpdateFn([this, particles, obj = rocket.get()](float timestep)
+        rocket->SetPreUpdateFn([this, particles, obj = rocket.get()](float timestep)
         {
             float& fuel = m_flts.at("fuel");
             if (fuel <= 0.0f)
@@ -124,6 +124,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                 particles[index]->SetVisible(true);
                 particles[index]->SetPosition(position.x, position.y);
                 particles[index]->ResetForces();
+                particles[index]->ResetVelocity();
                 obj->ApplyForceToActor(particles[index], glm::vec2(forceX, forceY));
                 
                 index = index + 1 >= static_cast<int>(particles.size()) ? 0 : index + 1;

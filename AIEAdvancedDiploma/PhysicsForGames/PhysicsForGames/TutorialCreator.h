@@ -7,6 +7,7 @@
 #include "glm/vec2.hpp"
 #include <map>
 #include <functional>
+#include <vector>
 
 class PhysicsScene;
 class Tweaker;
@@ -21,6 +22,7 @@ enum Tutorial
     TUTORIAL_NONE,
     TUTORIAL_1,
     TUTORIAL_2,
+    TUTORIAL_3,
     TUTORIAL_COUNT
 };
 
@@ -132,12 +134,17 @@ private:
     */
     void CreateTutorial1(Tweaker& tweaker);
     void CreateTutorial2(Tweaker& tweaker);
+    void CreateTutorial3(Tweaker& tweaker);
 
-    aie::Input& m_input;                                    ///< For querying user input
-    PhysicsScene& m_scene;                                  ///< Physics scene manager
-    const glm::ivec2& m_size;                               ///< Size of the window
-    Tutorial m_currentTutorial = TUTORIAL_NONE;             ///< Currently selected tutorial
-    std::map<const char*, float> m_flts;                    ///< Current tutorial specific parameters
-    std::map<const char*, int> m_ints;                      ///< Current tutorial specific parameters
-    std::function<void(void)> m_resetTweaker = nullptr;     ///< Callback to reset the tweak bar
+    aie::Input& m_input;                                  ///< For querying user input
+    PhysicsScene& m_scene;                                ///< Physics scene manager
+    const glm::ivec2& m_size;                             ///< Size of the window
+    Tutorial m_currentTutorial = TUTORIAL_NONE;           ///< Currently selected tutorial
+    std::map<const char*, float> m_flts;                  ///< Current tutorial specific parameters
+    std::map<const char*, int> m_ints;                    ///< Current tutorial specific parameters
+    std::function<void(void)> m_resetTweaker = nullptr;   ///< Callback to reset the tweak bar
+
+    typedef void(TutorialCreator::*CreateFn)(Tweaker&);
+    std::vector<CreateFn> m_createTutorial;               ///< Callback for creating a tutorial
+    std::vector<const char*> m_tutorialNames;             ///< Tutorial names
 };

@@ -6,12 +6,14 @@
 #include "PhysicsObject.h"
 #include "Utilities.h"
 #include "Tweaker.h"
+#include "CollisionSolver.h"
 
 #include <algorithm>
 #include <vector>
 
 PhysicsScene::PhysicsScene()
     : m_timeStep(1.0f / 60.0f)
+    , m_solver(new CollisionSolver())
 {
 }
 
@@ -41,7 +43,18 @@ void PhysicsScene::Update()
     {
         if (actor->IsActive())
         {
+            actor->PreUpdate(m_timeStep);
             actor->Update(m_timeStep);
+        }
+    }
+
+    CheckForCollision();
+
+    for (auto& actor : m_actors)
+    {
+        if (actor->IsActive())
+        {
+            actor->PostUpdate(m_timeStep);
         }
     }
 }
@@ -94,4 +107,20 @@ float PhysicsScene::GetTimeStep() const
 void PhysicsScene::AddToTweaker(Tweaker& tweaker)
 {
     tweaker.AddFltEntry("Time Step", &m_timeStep, 0.01f, 3);
+}
+
+void PhysicsScene::CheckForCollision()
+{
+    size_t actorCount = m_actors.size();
+
+    //need to check for collisions against all objects except this one
+    for (size_t outer = 0; outer < actorCount - 1; outer++)
+    {
+        for (size_t inner = outer + 1; inner < actorCount; inner++)
+        {
+            PhysicsObject& object1 = *m_actors[outer];
+            PhysicsObject& object2 = *m_actors[inner];
+            m_solver->SolveCollision(object1, object2);
+        }
+    }
 }

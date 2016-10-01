@@ -38,7 +38,7 @@ void TutorialCreator::CreateTutorial2(Tweaker& tweaker)
             glm::vec4(0, 1, 0, 1)));
 
         ball->SetGravity(0.0f, -9.8f);
-        ball->SetUpdateFn([size = m_size, obj = ball.get(), velocity](float timestep)
+        ball->SetPreUpdateFn([size = m_size, obj = ball.get(), velocity](float timestep)
         {
             const auto buffer = 10;
             const auto& position = obj->GetPosition();

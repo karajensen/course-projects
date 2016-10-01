@@ -46,6 +46,11 @@ public:
     */
     void SetRadius(float radius);
 
+    /**
+    * @return the size of the circle
+    */
+    float GetRadius() const;
+
 private:
 
     /**

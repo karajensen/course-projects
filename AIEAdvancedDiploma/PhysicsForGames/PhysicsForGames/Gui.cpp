@@ -26,7 +26,7 @@ Gui::Gui(PhysicsScene& scene,
     
     const int border = 10;
     std::ostringstream stream;
-    stream << barname << " label='Games For Physics' " 
+    stream << barname << " label='Physics For Games' " 
         << "position='" << border << " " << border << "' "
         << "size='250 450' "
         << "alpha=180 text=light valueswidth=80 color='0 0 0' "

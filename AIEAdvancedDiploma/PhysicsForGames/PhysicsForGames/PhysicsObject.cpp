@@ -7,22 +7,34 @@
 #include "Renderer2D.h"
 #include <exception>
 
-PhysicsObject::PhysicsObject(const glm::vec4& colour)
+PhysicsObject::PhysicsObject(ID id, const glm::vec4& colour)
     : m_colour(colour)
+    , m_id(id)
 {
 }
 
-PhysicsObject::PhysicsObject(const glm::vec4& colour, const glm::vec2& position)
+PhysicsObject::PhysicsObject(ID id, const glm::vec4& colour, const glm::vec2& position)
     : m_colour(colour)
     , m_position(position)
+    , m_id(id)
 {
 }
 
-void PhysicsObject::Update(float timeStep)
+void PhysicsObject::PreUpdate(float timeStep)
 {
-    if (m_updateFn != nullptr)
+    m_inCollision = false;
+
+    if (m_preUpdate)
     {
-        m_updateFn(timeStep);
+        m_preUpdate(timeStep);
+    }
+}
+
+void PhysicsObject::PostUpdate(float timeStep)
+{
+    if (m_postUpdate)
+    {
+        m_postUpdate(timeStep);
     }
 }
 
@@ -55,10 +67,6 @@ void PhysicsObject::SetGravity(float x, float y)
 {
 }
 
-void PhysicsObject::ResetForces()
-{
-}
-
 void PhysicsObject::SetPosition(const glm::vec2& position)
 {
     m_position = position;
@@ -75,9 +83,14 @@ const glm::vec2& PhysicsObject::GetPosition() const
     return m_position;
 }
 
-void PhysicsObject::SetUpdateFn(std::function<void(float)> fn)
+void PhysicsObject::SetPreUpdateFn(std::function<void(float)> fn)
 {
-    m_updateFn = fn;
+    m_preUpdate = fn;
+}
+
+void PhysicsObject::SetPostUpdateFn(std::function<void(float)> fn)
+{
+    m_postUpdate = fn;
 }
 
 void PhysicsObject::SetActive(bool active)
@@ -98,4 +111,24 @@ void PhysicsObject::SetVisible(bool visible)
 bool PhysicsObject::IsVisible() const
 {
     return m_isVisible;
+}
+
+PhysicsObject::ID PhysicsObject::GetID() const
+{
+    return m_id;
+}
+
+void PhysicsObject::SetColliding()
+{
+    m_inCollision = true;
+}
+
+bool PhysicsObject::IsColliding() const
+{
+    return m_inCollision;
+}
+
+void PhysicsObject::SetColor(const glm::vec4& colour)
+{
+    m_colour = colour;
 }

@@ -20,17 +20,30 @@ class PhysicsObject
 public:
 
     /**
-    * Constructor
-    * @param colour What colour to render the body with
+    * Types of supported physics objects
     */
-    PhysicsObject(const glm::vec4& colour);
+    enum ID
+    {
+        PLANE,
+        CIRCLE,
+        SQUARE,
+        MAX_IDS
+    };
 
     /**
     * Constructor
+    * @param id The type of object this is
+    * @param colour What colour to render the body with
+    */
+    PhysicsObject(ID id, const glm::vec4& colour);
+                  
+    /**
+    * Constructor
+    * @param id The type of object this is
     * @param colour What colour to render the body with
     * @param position The position to initialise the body at
     */
-    PhysicsObject(const glm::vec4& colour, const glm::vec2& position);
+    PhysicsObject(ID id, const glm::vec4& colour, const glm::vec2& position);
 
     /**
     * Destructor
@@ -38,10 +51,22 @@ public:
     virtual ~PhysicsObject() {}
 
     /**
+    * Pre-updates the body
+    * @param timeStep The time between each update call
+    */
+    void PreUpdate(float timeStep);
+
+    /**
     * Updates the body
     * @param timeStep The time between each update call
     */
-    virtual void Update(float timeStep);
+    virtual void Update(float timeStep) = 0;
+
+    /**
+    * Post-updates the body
+    * @param timeStep The time between each update call
+    */
+    void PostUpdate(float timeStep);
 
     /**
     * Renders the body
@@ -53,11 +78,6 @@ public:
     * Outputs debug information about the body
     */
     virtual void Debug();
-
-    /**
-    * Resets any current forces on the body
-    */
-    virtual void ResetForces();
 
     /**
     * Applies a force to the body
@@ -131,17 +151,42 @@ public:
     const glm::vec2& GetPosition() const;
 
     /**
-    * Sets a callback to fire when the body is being updated
+    * Sets a callback to fire before the body is updated
     */
-    void SetUpdateFn(std::function<void(float)> fn);
+    void SetPreUpdateFn(std::function<void(float)> fn);
+
+    /**
+    * Sets a callback to fire after the body is updated
+    */
+    void SetPostUpdateFn(std::function<void(float)> fn);
+
+    /**
+    * @return the type of physics body this is
+    */
+    ID GetID() const;
+
+    /**
+    * Sets that the object is currently in collision this tick
+    */
+    void SetColliding();
+
+    /**
+    * @return whetherthe object is currently in collision this tick
+    */
+    bool IsColliding() const;
+
+    /**
+    * Sets the colour to render the body with
+    */
+    void SetColor(const glm::vec4& colour);
 
 protected:
-    bool m_isActive = true;                          ///< Whether the body is active in the physics world
-    bool m_isVisible = true;                         ///< Whether the body is visible or not
-    glm::vec4 m_colour;                              ///< Colour to render the body
-    glm::vec2 m_position;                            ///< Position of the body
-    std::function<void(float)> m_updateFn = nullptr; ///< Callback to fire when the body is being updated
 
+    bool m_isActive = true;    ///< Whether the body is active in the physics world
+    bool m_isVisible = true;   ///< Whether the body is visible or not
+    glm::vec4 m_colour;        ///< Colour to render the body
+    glm::vec2 m_position;      ///< Position of the body
+                               
 private:
 
     /**
@@ -149,4 +194,9 @@ private:
     */
     PhysicsObject(const PhysicsObject&) = delete;
     PhysicsObject& operator=(const PhysicsObject&) = delete;
+
+    const ID m_id;                                     ///< The type of physics object this is
+    std::function<void(float)> m_preUpdate = nullptr;  ///< Callback to fire before the body is updated
+    std::function<void(float)> m_postUpdate = nullptr; ///< Callback to fire after the body is updated
+    bool m_inCollision = false;                        ///< Whether this object is in collision this tick
 };

@@ -6,19 +6,21 @@
 #include "Utilities.h"
 #include <algorithm>
 
-RigidBody::RigidBody(const glm::vec2& position, 
+RigidBody::RigidBody(ID id,
+                     const glm::vec2& position, 
                      const glm::vec2& velocity, 
                      float mass,
                      const glm::vec4& colour)
-    : PhysicsObject(colour, position)
+    : PhysicsObject(id, colour, position)
     , m_velocity(velocity)
+    , m_previousPosition(position)
 {
     SetMass(mass);
 }
 
 void RigidBody::Update(float timeStep)
 {
-    PhysicsObject::Update(timeStep);
+    m_previousPosition = m_position;
 
     ApplyForce(m_gravity);
 
@@ -65,6 +67,10 @@ void RigidBody::SetGravity(float x, float y)
 void RigidBody::ResetForces()
 {
     Utils::SetZero(m_acceleration);
+}
+
+void RigidBody::ResetVelocity()
+{
     Utils::SetZero(m_velocity);
 }
 
@@ -91,6 +97,17 @@ float RigidBody::GetDamping() const
 void RigidBody::SetVelocity(const glm::vec2& velocity)
 {
     m_velocity = velocity;
+}
+
+void RigidBody::SetVelocity(float x, float y)
+{
+    m_velocity.x = x;
+    m_velocity.y = y;
+}
+
+const glm::vec2& RigidBody::GetPreviousPosition() const
+{
+    return m_previousPosition;
 }
 
 glm::vec2 RigidBody::PredictProjectilePosition(float gravity,

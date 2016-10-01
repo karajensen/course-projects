@@ -12,12 +12,14 @@ public:
 
     /**
     * Constructor
+    * @param id The type of physics body this is
     * @param position The position to initialise the body at
     * @param velocity The initial velocity of the body
     * @param mass The mass of the body
     * @param colour What colour to render the body with
     */
-    RigidBody(const glm::vec2& position, 
+    RigidBody(ID id,
+              const glm::vec2& position, 
               const glm::vec2& velocity, 
               float mass,
               const glm::vec4& colour);
@@ -32,11 +34,6 @@ public:
     * Outputs debug information about the body
     */
     virtual void Debug() override;
-
-    /**
-    * Resets any current forces on the body
-    */
-    virtual void ResetForces() override;
 
     /**
     * Applies a force to the body
@@ -69,6 +66,16 @@ public:
     virtual void SetGravity(float x, float y) override;
 
     /**
+    * Resets any current forces on the body
+    */
+    void ResetForces();
+
+    /**
+    * Reset the velocity to zero on a body
+    */
+    void ResetVelocity();
+
+    /**
     * Sets the mass of the body
     */
     void SetMass(float mass);
@@ -95,6 +102,17 @@ public:
     void SetVelocity(const glm::vec2& velocity);
 
     /**
+    * Sets the velocity of the body
+    * @param x/y The velocity components to set
+    */
+    void SetVelocity(float x, float y);
+
+    /**
+    * @return the position of the body from last tick
+    */
+    const glm::vec2& GetPreviousPosition() const;
+
+    /**
     * Predicts the position of projectile motion at the given time passed
     * @param gravity The gravity to apply to the body in the y direction
     * @param angle The angle of elevation launched at relative to horizontal in degrees
@@ -108,11 +126,12 @@ public:
 
 
 protected:
-    glm::vec2 m_velocity;       ///< Current velocity of the body
-    glm::vec2 m_acceleration;   ///< Current accerleration of the body
-    glm::vec2 m_gravity;        ///< Gravity force to apply per update
-    float m_mass = 0.0f;        ///< Mass of the body
-    float m_damping = 1.0f;     ///< How much the velocity of the body will dampen as time passes
+    glm::vec2 m_velocity;            ///< Current velocity of the body
+    glm::vec2 m_acceleration;        ///< Current accerleration of the body
+    glm::vec2 m_gravity;             ///< Gravity force to apply per update
+    glm::vec2 m_previousPosition;    ///< Position of the body from last update
+    float m_mass = 0.0f;             ///< Mass of the body
+    float m_damping = 1.0f;          ///< How much the velocity of the body will dampen as time passes
 
 private:
 

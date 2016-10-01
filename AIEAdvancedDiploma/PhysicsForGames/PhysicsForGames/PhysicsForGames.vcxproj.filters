@@ -57,6 +57,12 @@
     <ClCompile Include="Tutorial2.cpp">
       <Filter>Tutorials</Filter>
     </ClCompile>
+    <ClCompile Include="Tutorial3.cpp">
+      <Filter>Tutorials</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionSolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PhysicsForGamesApp.h">
@@ -90,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TutorialCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

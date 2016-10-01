@@ -10,7 +10,7 @@ SquareBody::SquareBody(const glm::vec2& position,
                        float mass,
                        const glm::vec2& size,
                        const glm::vec4& colour)
-    : RigidBody(position, velocity, mass, colour)
+    : RigidBody(SQUARE, position, velocity, mass, colour)
     , m_size(size)
 {
 }

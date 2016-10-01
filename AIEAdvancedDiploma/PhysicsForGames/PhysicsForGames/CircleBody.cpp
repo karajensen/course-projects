@@ -10,7 +10,7 @@ CircleBody::CircleBody(const glm::vec2& position,
                        float mass, 
                        float radius, 
                        const glm::vec4& colour)
-    : RigidBody(position, velocity, mass, colour)
+    : RigidBody(CIRCLE, position, velocity, mass, colour)
     , m_radius(radius)
 {
 }
@@ -30,6 +30,11 @@ void CircleBody::Draw(aie::Renderer2D* renderer)
 void CircleBody::SetRadius(float radius)
 {
     m_radius = radius;
+}
+
+float CircleBody::GetRadius() const
+{
+    return m_radius;
 }
 
 void CircleBody::Debug()

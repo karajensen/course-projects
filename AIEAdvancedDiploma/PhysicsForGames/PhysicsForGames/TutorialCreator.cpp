@@ -14,6 +14,21 @@ TutorialCreator::TutorialCreator(aie::Input& input, PhysicsScene& scene, const g
     , m_size(size)
     , m_input(input)
 {
+    m_createTutorial = 
+    {
+        nullptr,
+        &TutorialCreator::CreateTutorial1,
+        &TutorialCreator::CreateTutorial2,
+        &TutorialCreator::CreateTutorial3
+    };
+
+    m_tutorialNames =
+    {
+        "No Tutorial",
+        "Tutorial 01",
+        "Tutorial 02",
+        "Tutorial 03"
+    };
 }
 
 Tutorial TutorialCreator::Selected() const
@@ -42,17 +57,7 @@ void TutorialCreator::AddToTweaker(Tweaker& tweaker)
 
 const char* TutorialCreator::GetName(int tutorial) const
 {
-    switch (tutorial)
-    {
-    case TUTORIAL_NONE:
-        return "No Tutorial";
-    case TUTORIAL_1:
-        return "Tutorial 1";
-    case TUTORIAL_2:
-        return "Tutorial 2";
-    default:
-        return "Unknown";
-    }
+    return m_tutorialNames.at(tutorial);
 }
 
 void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
@@ -62,19 +67,9 @@ void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
     m_flts.clear();
     m_ints.clear();
 
-    switch (tutorial)
+    if (tutorial != TUTORIAL_NONE)
     {
-    case TUTORIAL_NONE:
-        break;
-    case TUTORIAL_1:
-        CreateTutorial1(tweaker);
-        break;
-    case TUTORIAL_2:
-        CreateTutorial2(tweaker);
-        break;
-    default:
-        tutorial = TUTORIAL_NONE;
-        LogError("Unsupported tutorial");
+        (this->*m_createTutorial.at(tutorial))(tweaker);
     }
 
     m_currentTutorial = static_cast<Tutorial>(tutorial);
