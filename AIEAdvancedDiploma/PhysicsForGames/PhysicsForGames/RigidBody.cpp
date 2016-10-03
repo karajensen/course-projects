@@ -6,12 +6,12 @@
 #include "Utilities.h"
 #include <algorithm>
 
-RigidBody::RigidBody(ID id,
+RigidBody::RigidBody(Shape shape,
                      const glm::vec2& position, 
                      const glm::vec2& velocity, 
                      float mass,
                      const glm::vec4& colour)
-    : PhysicsObject(id, colour, position)
+    : PhysicsObject(shape, colour, position)
     , m_velocity(velocity)
     , m_previousPosition(position)
 {
@@ -103,6 +103,11 @@ void RigidBody::SetVelocity(float x, float y)
 {
     m_velocity.x = x;
     m_velocity.y = y;
+}
+
+const glm::vec2& RigidBody::GetVelocity() const
+{
+    return m_velocity;
 }
 
 const glm::vec2& RigidBody::GetPreviousPosition() const

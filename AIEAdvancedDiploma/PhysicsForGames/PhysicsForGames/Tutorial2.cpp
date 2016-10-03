@@ -3,16 +3,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialCreator.h"
+#include "TutorialTweaker.h"
 #include "PhysicsScene.h"
 #include "CircleBody.h"
 #include "SquareBody.h"
 #include "Plane.h"
 #include "Utilities.h"
 #include "Input.h"
-#include "Tweaker.h"
 #include "glm/glm.hpp"
 
-void TutorialCreator::CreateTutorial2(Tweaker& tweaker)
+void TutorialCreator::CreateTutorial2()
 {
     m_ints["step_count"] = 20;
     m_flts["step_size"] = 0.1f;
@@ -37,6 +37,7 @@ void TutorialCreator::CreateTutorial2(Tweaker& tweaker)
             1.0f, 20,
             glm::vec4(0, 1, 0, 1)));
 
+        ball->SetCollidable(false);
         ball->SetGravity(0.0f, -9.8f);
         ball->SetPreUpdateFn([size = m_size, obj = ball.get(), velocity](float timestep)
         {
@@ -63,15 +64,16 @@ void TutorialCreator::CreateTutorial2(Tweaker& tweaker)
                 glm::vec4(1, 0, 0, 1)));
         
             step->SetActive(false);
+            step->SetCollidable(false);
             m_scene.AddActor(std::move(step));
         }
     };
 
-    tweaker.SetGroup("Prediction Curve");
-    AddTweakableFlt(tweaker, "step_angle", "Step Angle", 0.1f, 3, resetTutorial);
-    AddTweakableFlt(tweaker, "step_speed", "Step Speed", 0.1f, 3, resetTutorial);
-    AddTweakableFlt(tweaker, "step_size", "Step Size", 0.1f, 0.1f, 1.0f, 3, resetTutorial);
-    AddTweakableInt(tweaker, "step_count", "Step Count", 0, 100, resetTutorial);
+    m_tweaker->SetGroup("Prediction Curve");
+    m_tweaker->AddTweakableFlt("step_angle", "Step Angle", 0.1f, 3, resetTutorial);
+    m_tweaker->AddTweakableFlt("step_speed", "Step Speed", 0.1f, 3, resetTutorial);
+    m_tweaker->AddTweakableFlt("step_size", "Step Size", 0.1f, 0.1f, 1.0f, 3, resetTutorial);
+    m_tweaker->AddTweakableInt("step_count", "Step Count", 0, 100, resetTutorial);
 
     resetTutorial();
 }

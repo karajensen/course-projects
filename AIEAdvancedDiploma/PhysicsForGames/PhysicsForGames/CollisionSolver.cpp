@@ -29,11 +29,16 @@ bool CollisionSolver::SolveCollision(PhysicsObject& obj1, PhysicsObject& obj2)
         &CollisionSolver::SolveSquareSquareCollision,
     };
 
-    PhysicsObject::ID shapeID1 = obj1.GetID();
-    PhysicsObject::ID shapeID2 = obj2.GetID();
+    if (!obj1.IsCollidable() || !obj2.IsCollidable())
+    {
+        return false;
+    }
+
+    PhysicsObject::Shape shape1 = obj1.GetShape();
+    PhysicsObject::Shape shape2 = obj2.GetShape();
 
     // using function pointers
-    const int index = (shapeID1 * PhysicsObject::MAX_IDS) + shapeID2;
+    const int index = (shape1 * PhysicsObject::MAX_SHAPES) + shape2;
     assert(index >= 0 && index < (int)collisionfunctionArray.size());
 
     CollisionFn collisionFunctionPtr = collisionfunctionArray[index];
@@ -58,17 +63,52 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
 
     const auto& position1 = circle1.GetPosition();
     const auto& position2 = circle2.GetPosition();
-    const float distance = glm::length(position1 - position2);
+    const auto delta = position2 - position1;
+    const float distance = glm::length(delta);
+    const float intersection = body1.GetRadius() + body2.GetRadius() - distance;
 
-    if (distance <= body1.GetRadius() + body2.GetRadius())
+    if (intersection <= 0)
     {
-        body1.ResetForces();
-        body2.ResetForces();
-        body1.SetPosition(body1.GetPreviousPosition());
-        body2.SetPosition(body2.GetPreviousPosition());
-        return true;
+        return false;
     }
-    return false;
+
+    const auto response1 = circle1.GetCollisionResponse(circle2.GetID());
+    const auto response2 = circle2.GetCollisionResponse(circle1.GetID());
+        
+    if (response1 == PhysicsObject::COLLIDE || response2 == PhysicsObject::COLLIDE)
+    {
+        const glm::vec2 collisionNormal = glm::normalize(delta);
+        const glm::vec2 relativeVelocity = body1.GetVelocity() - body2.GetVelocity();
+        const glm::vec2 collisionVector = collisionNormal * glm::dot(relativeVelocity, collisionNormal);
+        const glm::vec2 force = 2.0f * (collisionVector * 1.0f / (1.0f / body1.GetMass() + 1.0f / body2.GetMass()));
+        const glm::vec2 seperationVector = collisionNormal * intersection * 0.5f;
+
+        if (response1 == PhysicsObject::COLLIDE)
+        {
+            body1.ApplyForce(-force);
+            body1.SetPosition(body1.GetPosition() - seperationVector);
+        }
+
+        if (response2 == PhysicsObject::COLLIDE)
+        {
+            body2.ApplyForce(force);
+            body2.SetPosition(body2.GetPosition() + seperationVector);
+        }
+    }
+
+    if (response1 == PhysicsObject::STOP)
+    {
+        body1.ResetVelocity();
+        body1.SetPosition(body1.GetPreviousPosition());
+    }
+
+    if (response2 == PhysicsObject::STOP)
+    {
+        body2.ResetForces();
+        body2.SetPosition(body2.GetPreviousPosition());
+    }
+
+    return true;
 }
 
 bool CollisionSolver::SolveSquareSquareCollision(PhysicsObject& square1, PhysicsObject& square2)
@@ -81,26 +121,39 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
     auto& planeBody = dynamic_cast<Plane&>(plane);
     auto& circleBody = dynamic_cast<CircleBody&>(circle);
 
-    // after casting our collision objects to their correct type we do the following
-    glm::vec2 normal = planeBody.GetNormal();
-    float sphereToPlane = glm::dot(circle.GetPosition(), normal) - planeBody.GetDistance();
+    const auto& normal = planeBody.GetNormal();
+    glm::vec2 collisionNormal = normal;
+    float sphereToPlane = glm::dot(circleBody.GetPosition(), normal) - planeBody.GetDistance();
+    if (sphereToPlane < 0.0f) 
+    { 
+        // planes are infintely thin, double sided, objects so if we are behind it we flip the normal 
+        collisionNormal *= -1.0f;
+        sphereToPlane *= -1.0f;
+    } 
 
-    if (sphereToPlane < 0)
+    const float intersection = circleBody.GetRadius() - sphereToPlane;
+    if (intersection <= 0)
     {
-        // if we are behind plane then we flip the normal
-        normal *= -1;
-        sphereToPlane *= -1;
+        return false;
     }
 
-    float intersection = circleBody.GetRadius() - sphereToPlane;
-    if (intersection > 0)
+    // Response for plane currently not supported
+    const auto responseCircle = circle.GetCollisionResponse(plane.GetID());
+    if (responseCircle == PhysicsObject::COLLIDE)
+    {
+        const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *
+            collisionNormal * (glm::dot(collisionNormal, circleBody.GetVelocity()));
+
+        circleBody.ApplyForce(2.0f * forceVector);
+        circleBody.SetPosition(circleBody.GetPosition() + collisionNormal * intersection * 0.5f);
+    }
+    else if (responseCircle == PhysicsObject::STOP)
     {
         circleBody.ResetForces();
         circleBody.SetPosition(circleBody.GetPreviousPosition());
-        return true;
     }
 
-    return false;
+    return true; 
 }
 
 bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsObject& square)

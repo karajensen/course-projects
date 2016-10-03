@@ -319,6 +319,35 @@ void Tweaker::LogTweakError() const
     }
 }
 
+void Tweaker::AddColorEntry(std::string label,
+                            std::function<const glm::vec4(void)> getter,
+                            std::function<void(const glm::vec4)> setter)
+{
+    typedef std::array<float, 4> Colour;
+
+    const auto index = m_entries.size();
+    auto entry = std::make_unique<TweakableEntry<Colour>>();
+
+    entry->getter = [getter]() -> const Colour
+    {
+        const glm::vec4 colour = getter();
+        return { colour.r, colour.g, colour.b, colour.a };
+    };
+    
+    entry->setter = [setter](const Colour value)
+    {
+        setter(glm::vec4(value[0], value[1], value[2], value[3]));
+    };
+
+    m_entries.emplace_back(std::move(entry));
+
+    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_COLOR4F,
+        SetCallback, GetCallback, m_entries[index].get(),
+        Definition(label).c_str());
+
+    LogTweakError();
+}
+
 void Tweaker::AddEnumEntry(std::string label,
                            std::function<const int(void)> getter,
                            std::function<void(const int)> setter,

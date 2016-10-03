@@ -17,6 +17,18 @@ Plane::Plane(const glm::vec2& normal,
     SetNormal(normal);
 }
 
+Plane::Plane(const glm::vec2& start,
+             const glm::vec2& end,
+             const glm::vec4& colour)
+    : PhysicsObject(PLANE, colour)
+{
+    const glm::vec2 direction = end - start;
+    const glm::vec2 centerPoint = start + (direction * 0.5f);
+    SetNormal(direction.y, -direction.x);
+    m_size = glm::length(direction);
+    m_distance = glm::dot(m_normal, centerPoint);
+}
+
 void Plane::Update(float timeStep)
 {
 }
@@ -58,6 +70,13 @@ const glm::vec2& Plane::GetNormal() const
 void Plane::SetNormal(const glm::vec2& normal)
 {
     m_normal = glm::normalize(normal);
+}
+
+void Plane::SetNormal(float x, float y)
+{
+    m_normal.x = x;
+    m_normal.y = y;
+    m_normal = glm::normalize(m_normal);
 }
 
 void Plane::SetSize(float size)

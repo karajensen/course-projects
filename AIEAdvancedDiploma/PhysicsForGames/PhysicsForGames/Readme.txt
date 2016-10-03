@@ -1,3 +1,7 @@
+
+- Fix crash in AIE renderer when lots of spheres are added
+- Finish tutorial 4
+
 =================================================================
 AIE Advanced Diploma - Physics For Games Unit
 =================================================================

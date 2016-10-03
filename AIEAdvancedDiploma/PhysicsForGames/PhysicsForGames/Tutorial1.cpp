@@ -3,16 +3,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialCreator.h"
+#include "TutorialTweaker.h"
 #include "PhysicsScene.h"
 #include "CircleBody.h"
 #include "SquareBody.h"
 #include "Plane.h"
 #include "Utilities.h"
 #include "Input.h"
-#include "Tweaker.h"
 #include "glm/glm.hpp"
 
-void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
+void TutorialCreator::CreateTutorial1()
 {
     const int middleX = m_size.x / 2;
     const int middleY = m_size.y / 2;
@@ -23,6 +23,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
             glm::vec2(3.0f, 0),
             3.0f, 40,
             glm::vec4(1, 0, 0, 1)));
+        ball->SetCollidable(false);
         m_scene.AddActor(std::move(ball));
     }
 
@@ -33,6 +34,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
             10.0f, 40,
             glm::vec4(0, 1, 0, 1)));
         ball->SetGravity(0.0f, -9.8f);
+        ball->SetCollidable(false);
         m_scene.AddActor(std::move(ball));
     }
 
@@ -49,12 +51,14 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
             6.0f, 40,
             glm::vec4(0, 1, 1, 1)));
 
-        tweaker.AddButton("Demonstrate Third Law", 
+        m_tweaker->AddButton("Demonstrate Third Law", 
             [obj1 = ball1.get(), obj2 = ball2.get()]()
             {
                 obj2->ApplyForceToActor(obj1, glm::vec2(1000.0f, 0.0));
             });
 
+        ball1->SetCollidable(false);
+        ball2->SetCollidable(false);
         m_scene.AddActor(std::move(ball1));
         m_scene.AddActor(std::move(ball2));
     }
@@ -70,6 +74,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
                 glm::vec4(0.8, 0.8, 0.8, 1)));
             exhaust->SetActive(false);
             exhaust->SetVisible(false);
+            exhaust->SetCollidable(false);
             particles.push_back(exhaust.get());
             m_scene.AddActor(std::move(exhaust));
         }
@@ -80,6 +85,7 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
             3.0f, 40.0f,
             glm::vec4(1, 0, 1, 1)));
 
+        rocket->SetCollidable(false);
         rocket->SetGravity(0.0f, -9.8f);
         rocket->SetDamping(0.98f);
 
@@ -89,9 +95,9 @@ void TutorialCreator::CreateTutorial1(Tweaker& tweaker)
         m_flts["forceY"] = 100.0f;
         m_ints["index"] = 0;
 
-        AddTweakableFlt(tweaker, "fuel", "Rocket Fuel Level", 0.1f, 3);
-        AddTweakableFlt(tweaker, "forceX", "Rocket Force X", 0.1f, 1);
-        AddTweakableFlt(tweaker, "forceY", "Rocket Force Yl", 0.1f, 1);
+        m_tweaker->AddTweakableFlt("fuel", "Rocket Fuel Level", 0.1f, 3);
+        m_tweaker->AddTweakableFlt("forceX", "Rocket Force X", 0.1f, 1);
+        m_tweaker->AddTweakableFlt("forceY", "Rocket Force Y", 0.1f, 1);
 
         rocket->SetPreUpdateFn([this, particles, obj = rocket.get()](float timestep)
         {

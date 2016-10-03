@@ -31,3 +31,19 @@ void SquareBody::Debug()
 {
     RigidBody::Debug();
 }
+
+void SquareBody::SetSize(const glm::vec2& size)
+{
+    m_size = size;
+}
+
+void SquareBody::SetSize(float x, float y)
+{
+    m_size.x = x;
+    m_size.y = y;
+}
+
+const glm::vec2& SquareBody::GetSize() const
+{
+    return m_size;
+}

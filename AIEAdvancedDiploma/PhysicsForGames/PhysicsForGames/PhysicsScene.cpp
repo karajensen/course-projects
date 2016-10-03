@@ -111,12 +111,12 @@ void PhysicsScene::AddToTweaker(Tweaker& tweaker)
 
 void PhysicsScene::CheckForCollision()
 {
-    size_t actorCount = m_actors.size();
+    const int actorCount = static_cast<int>(m_actors.size());
 
-    //need to check for collisions against all objects except this one
-    for (size_t outer = 0; outer < actorCount - 1; outer++)
+    // need to check for collisions against all objects except this one
+    for (int outer = 0; outer < actorCount - 1; outer++)
     {
-        for (size_t inner = outer + 1; inner < actorCount; inner++)
+        for (int inner = outer + 1; inner < actorCount; inner++)
         {
             PhysicsObject& object1 = *m_actors[outer];
             PhysicsObject& object2 = *m_actors[inner];

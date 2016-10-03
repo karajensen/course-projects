@@ -3,57 +3,39 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialCreator.h"
+#include "TutorialTweaker.h"
 #include "PhysicsScene.h"
 #include "CircleBody.h"
 #include "SquareBody.h"
 #include "Plane.h"
 #include "Utilities.h"
 #include "Input.h"
-#include "Tweaker.h"
 #include "glm/glm.hpp"
 
-void TutorialCreator::CreateTutorial3(Tweaker& tweaker)
+void TutorialCreator::CreateTutorial3()
 {
-    tweaker.SetGroup("Planes");
-
-    auto addPlaneToTweaker = [&tweaker](Plane* p, const std::string& name)
-    {
-        tweaker.AddFltEntry((name + " Normal X").c_str(),
-            [p](){ return p->GetNormal().x; },
-            [p](float value){ p->SetNormalX(value); },
-            0.1f, 3);
-
-        tweaker.AddFltEntry((name + " Normal Y").c_str(),
-            [p](){ return p->GetNormal().y; },
-            [p](float value){ p->SetNormalY(value); },
-            0.1f, 3);
-
-        tweaker.AddFltEntry((name + " Distance").c_str(),
-            [p]() { return p->GetDistance(); },
-            [p](float value) { p->SetDistance(value); },
-            0.1f, 3);
-
-        tweaker.AddFltEntry((name + " Size").c_str(),
-            [p]() { return p->GetSize(); },
-            [p](float value) { p->SetSize(value); },
-            0.1f, 3);
-    };
+    m_tweaker->SetGroup("Planes");
 
     std::unique_ptr<Plane> plane1(new Plane(
         glm::vec2(0.565f, 0.825f), 300.0f, 500.0f,
         glm::vec4(1.0f, 1.0f, 1.0f, 1.0)));
     plane1->SetActive(false);
-    addPlaneToTweaker(plane1.get(), "P1");
+    m_tweaker->AddTweakblePlane(plane1.get(), "P1");
     m_scene.AddActor(std::move(plane1));
 
     std::unique_ptr<Plane> plane2(new Plane(
         glm::vec2(-0.290f, 0.957f), -100.0f, 1500.0f,
         glm::vec4(1.0f, 1.0f, 1.0f, 1.0)));
     plane2->SetActive(false);
-    addPlaneToTweaker(plane2.get(), "P2");
+    m_tweaker->AddTweakblePlane(plane2.get(), "P2");
     m_scene.AddActor(std::move(plane2));
 
-    auto createBall = [this](float radius, float pX, float pY, float vX, float vY, bool gravity)
+    auto createBall = [this](float radius, 
+                             float pX, 
+                             float pY, 
+                             float vX, 
+                             float vY, 
+                             bool gravity)
     {
         const glm::vec4 normalColor(1.0f, 0.0f, 0.0f, 1.0f);
         const glm::vec4 collisionColor(0.0f, 1.0f, 0.0f, 1.0f);
@@ -68,6 +50,8 @@ void TutorialCreator::CreateTutorial3(Tweaker& tweaker)
             ball->SetGravity(glm::vec2(0.0f, -9.8f));
         }
         
+        ball->SetCollisionResponse(PhysicsObject::STOP);
+
         ball->SetPostUpdateFn([normalColor, collisionColor, obj = ball.get()](float timestep)
         {
             obj->SetColor(obj->IsColliding() ? collisionColor : normalColor);
@@ -100,7 +84,6 @@ void TutorialCreator::CreateTutorial3(Tweaker& tweaker)
         }
     };
 
-    tweaker.AddButton("Spawn Balls", spawnBalls);
-
+    m_tweaker->AddButton("Spawn Balls", spawnBalls);
     spawnBalls();
 }

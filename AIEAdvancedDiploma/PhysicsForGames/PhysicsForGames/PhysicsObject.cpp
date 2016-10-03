@@ -7,16 +7,20 @@
 #include "Renderer2D.h"
 #include <exception>
 
-PhysicsObject::PhysicsObject(ID id, const glm::vec4& colour)
+unsigned int PhysicsObject::sm_idCounter = 0;
+
+PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour)
     : m_colour(colour)
-    , m_id(id)
+    , m_shape(shape)
+    , m_id(sm_idCounter++)
 {
 }
 
-PhysicsObject::PhysicsObject(ID id, const glm::vec4& colour, const glm::vec2& position)
+PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour, const glm::vec2& position)
     : m_colour(colour)
     , m_position(position)
-    , m_id(id)
+    , m_shape(shape)
+    , m_id(sm_idCounter++)
 {
 }
 
@@ -113,9 +117,9 @@ bool PhysicsObject::IsVisible() const
     return m_isVisible;
 }
 
-PhysicsObject::ID PhysicsObject::GetID() const
+PhysicsObject::Shape PhysicsObject::GetShape() const
 {
-    return m_id;
+    return m_shape;
 }
 
 void PhysicsObject::SetColliding()
@@ -131,4 +135,40 @@ bool PhysicsObject::IsColliding() const
 void PhysicsObject::SetColor(const glm::vec4& colour)
 {
     m_colour = colour;
+}
+
+const glm::vec4& PhysicsObject::GetColour() const
+{
+    return m_colour;
+}
+
+void PhysicsObject::SetCollisionResponse(CollisionResponse response)
+{
+    m_defaultResponse = response;
+}
+
+void PhysicsObject::SetCollisionResponse(unsigned int id, CollisionResponse response)
+{
+    m_response[id] = response;
+}
+
+PhysicsObject::CollisionResponse PhysicsObject::GetCollisionResponse(unsigned int id) const
+{
+    return m_response.find(id) != m_response.end() 
+        ? m_response.at(id) : m_defaultResponse;
+}
+
+unsigned int PhysicsObject::GetID() const
+{
+    return m_id;
+}
+
+void PhysicsObject::SetCollidable(bool isCollidable)
+{
+    m_isCollidable = isCollidable;
+}
+
+bool PhysicsObject::IsCollidable() const
+{
+    return m_isCollidable;
 }

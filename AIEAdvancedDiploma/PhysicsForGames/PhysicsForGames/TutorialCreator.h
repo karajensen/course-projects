@@ -8,9 +8,11 @@
 #include <map>
 #include <functional>
 #include <vector>
+#include <memory>
 
 class PhysicsScene;
 class Tweaker;
+class TutorialTweaker;
 
 namespace aie
 {
@@ -23,6 +25,7 @@ enum Tutorial
     TUTORIAL_1,
     TUTORIAL_2,
     TUTORIAL_3,
+    TUTORIAL_4,
     TUTORIAL_COUNT
 };
 
@@ -37,6 +40,11 @@ public:
     * @param size Window dimensions
     */
     TutorialCreator(aie::Input& input, PhysicsScene& scene, const glm::ivec2& size);
+
+    /**
+    * Destructor
+    */
+    ~TutorialCreator();
 
     /**
     * Creates a new tutorial scene
@@ -70,71 +78,32 @@ private:
     TutorialCreator& operator=(const TutorialCreator&) = delete;
 
     /**
-    * Adds a tweakable float value to the tweak bar
-    * @param tweaker The tweak bar to add to
-    * @param name The name of the value to add
-    * @param label The label to show on the tweak bar
-    * @param precision The number of decimal points to show
-    * @param onSet Callback to use when value is set
+    * Sets tutorial int data
     */
-    void AddTweakableFlt(Tweaker& tweaker, 
-                         const char* name, 
-                         const char* label,
-                         float step,
-                         int precision,
-                         std::function<void(void)> onSet = nullptr);
+    void SetInt(const char* name, int value);
 
     /**
-    * Adds a tweakable int value to the tweak bar
-    * @param tweaker The tweak bar to add to
-    * @param name The name of the value to add
-    * @param label The label to show on the tweak bar
-    * @param onSet Callback to use when value is set
+    * Sets tutorial float data
     */
-    void AddTweakableInt(Tweaker& tweaker, 
-                         const char* name, 
-                         const char* label,
-                         std::function<void(void)> onSet = nullptr);
+    void SetFlt(const char* name, float value);
 
     /**
-    * Adds a tweakable float value to the tweak bar
-    * @param tweaker The tweak bar to add to
-    * @param name The name of the value to add
-    * @param label The label to show on the tweak bar
-    * @param precision The number of decimal points to show
-    * @param min/max The min and max values to go to
-    * @param onSet Callback to use when value is set
+    * Gets tutorial int data
     */
-    void AddTweakableFlt(Tweaker& tweaker, 
-                         const char* name, 
-                         const char* label,
-                         float step,
-                         float min,
-                         float max,
-                         int precision,
-                         std::function<void(void)> onSet = nullptr);
+    int GetInt(const char* name) const;
 
     /**
-    * Adds a tweakable int value to the tweak bar
-    * @param tweaker The tweak bar to add to
-    * @param name The name of the value to add
-    * @param label The label to show on the tweak bar
-    * @param min/max The min and max values to go to
-    * @param onSet Callback to use when value is set
+    * Gets tutorial float data
     */
-    void AddTweakableInt(Tweaker& tweaker, 
-                         const char* name, 
-                         const char* label,
-                         int min,
-                         int max,
-                         std::function<void(void)> onSet = nullptr);
+    float GetFlt(const char* name) const;
 
     /**
     * Create the scene for each tutorial
     */
-    void CreateTutorial1(Tweaker& tweaker);
-    void CreateTutorial2(Tweaker& tweaker);
-    void CreateTutorial3(Tweaker& tweaker);
+    void CreateTutorial1();
+    void CreateTutorial2();
+    void CreateTutorial3();
+    void CreateTutorial4();
 
     aie::Input& m_input;                                  ///< For querying user input
     PhysicsScene& m_scene;                                ///< Physics scene manager
@@ -143,8 +112,9 @@ private:
     std::map<const char*, float> m_flts;                  ///< Current tutorial specific parameters
     std::map<const char*, int> m_ints;                    ///< Current tutorial specific parameters
     std::function<void(void)> m_resetTweaker = nullptr;   ///< Callback to reset the tweak bar
+    std::unique_ptr<TutorialTweaker> m_tweaker;           ///< Tweak bar wrapper for tutorials
 
-    typedef void(TutorialCreator::*CreateFn)(Tweaker&);
+    typedef void(TutorialCreator::*CreateFn)();
     std::vector<CreateFn> m_createTutorial;               ///< Callback for creating a tutorial
-    std::vector<const char*> m_tutorialNames;             ///< Tutorial names
+    std::vector<const char*> m_tutorialNames;             ///< Names for each tutorial
 };

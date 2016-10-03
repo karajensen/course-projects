@@ -7,6 +7,7 @@
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 #include <functional>
+#include <map>
 
 namespace aie
 {
@@ -22,28 +23,38 @@ public:
     /**
     * Types of supported physics objects
     */
-    enum ID
+    enum Shape
     {
         PLANE,
         CIRCLE,
         SQUARE,
-        MAX_IDS
+        MAX_SHAPES
+    };
+
+    /**
+    * Types of supported collision responses
+    */
+    enum CollisionResponse
+    {
+        NONE,
+        STOP,
+        COLLIDE
     };
 
     /**
     * Constructor
-    * @param id The type of object this is
+    * @param shape The type of object this is
     * @param colour What colour to render the body with
     */
-    PhysicsObject(ID id, const glm::vec4& colour);
+    PhysicsObject(Shape shape, const glm::vec4& colour);
                   
     /**
     * Constructor
-    * @param id The type of object this is
+    * @param shape The type of object this is
     * @param colour What colour to render the body with
     * @param position The position to initialise the body at
     */
-    PhysicsObject(ID id, const glm::vec4& colour, const glm::vec2& position);
+    PhysicsObject(Shape shape, const glm::vec4& colour, const glm::vec2& position);
 
     /**
     * Destructor
@@ -163,7 +174,7 @@ public:
     /**
     * @return the type of physics body this is
     */
-    ID GetID() const;
+    Shape GetShape() const;
 
     /**
     * Sets that the object is currently in collision this tick
@@ -180,6 +191,46 @@ public:
     */
     void SetColor(const glm::vec4& colour);
 
+    /**
+    * @return the colour to render the body with
+    */
+    const glm::vec4& GetColour() const;
+
+    /**
+    * Sets whether this body can be collided with
+    */
+    void SetCollidable(bool isCollidable);
+
+    /**
+    * @return whether this body can be collided with
+    */
+    bool IsCollidable() const;
+
+    /**
+    * Sets the type of collision response to perform 
+    * when colliding with the object of the given ID
+    * @param id The ID of the body colliding with
+    * @Param response The type of response to the collision
+    */
+    void SetCollisionResponse(unsigned int id, CollisionResponse response);
+
+    /**
+    * Sets the default type of collision response to perform
+    * when colliding with the object of any ID
+    */
+    void SetCollisionResponse(CollisionResponse response);
+
+    /**
+    * @return the type of response to the given object ID
+    * @note will default to collide if no response has been set
+    */
+    CollisionResponse GetCollisionResponse(unsigned int id) const;
+
+    /**
+    * @return the unique ID of the body
+    */
+    unsigned int GetID() const;
+
 protected:
 
     bool m_isActive = true;    ///< Whether the body is active in the physics world
@@ -195,8 +246,13 @@ private:
     PhysicsObject(const PhysicsObject&) = delete;
     PhysicsObject& operator=(const PhysicsObject&) = delete;
 
-    const ID m_id;                                     ///< The type of physics object this is
-    std::function<void(float)> m_preUpdate = nullptr;  ///< Callback to fire before the body is updated
-    std::function<void(float)> m_postUpdate = nullptr; ///< Callback to fire after the body is updated
-    bool m_inCollision = false;                        ///< Whether this object is in collision this tick
+    const Shape m_shape;                                    ///< The type of physics object this is
+    const unsigned int m_id;                                ///< The unique ID of the object
+    std::function<void(float)> m_preUpdate = nullptr;       ///< Callback to fire before the body is updated
+    std::function<void(float)> m_postUpdate = nullptr;      ///< Callback to fire after the body is updated
+    bool m_inCollision = false;                             ///< Whether this object is in collision this tick
+    bool m_isCollidable = true;                             ///< Whether this object can be collided with
+    std::map<unsigned int, CollisionResponse> m_response;   ///< Type of response when colliding with another object
+    CollisionResponse m_defaultResponse = COLLIDE;          ///< Type of response when no id is set
+    static unsigned int sm_idCounter;                       ///< Counter for unique physics objects
 };

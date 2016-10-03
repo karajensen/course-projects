@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialCreator.h"
+#include "TutorialTweaker.h"
 #include "PhysicsScene.h"
 #include "Input.h"
 #include "Tweaker.h"
@@ -19,16 +20,23 @@ TutorialCreator::TutorialCreator(aie::Input& input, PhysicsScene& scene, const g
         nullptr,
         &TutorialCreator::CreateTutorial1,
         &TutorialCreator::CreateTutorial2,
-        &TutorialCreator::CreateTutorial3
+        &TutorialCreator::CreateTutorial3,
+        &TutorialCreator::CreateTutorial4
     };
 
-    m_tutorialNames =
+    m_tutorialNames = 
     {
         "No Tutorial",
         "Tutorial 01",
         "Tutorial 02",
-        "Tutorial 03"
+        "Tutorial 03",
+        "Tutorial 04"
     };
+}
+
+TutorialCreator::~TutorialCreator()
+{
+
 }
 
 Tutorial TutorialCreator::Selected() const
@@ -62,6 +70,16 @@ const char* TutorialCreator::GetName(int tutorial) const
 
 void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
 {
+    if (!m_tweaker)
+    {
+        using namespace std::placeholders;
+        m_tweaker.reset(new TutorialTweaker(tweaker,
+            std::bind(&TutorialCreator::SetInt, this, _1, _2),
+            std::bind(&TutorialCreator::SetFlt, this, _1, _2),
+            std::bind(&TutorialCreator::GetInt, this, _1),
+            std::bind(&TutorialCreator::GetFlt, this, _1)));
+    }
+
     tweaker.Reset();
     m_scene.Reset();
     m_flts.clear();
@@ -69,77 +87,28 @@ void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
 
     if (tutorial != TUTORIAL_NONE)
     {
-        (this->*m_createTutorial.at(tutorial))(tweaker);
+        (this->*m_createTutorial.at(tutorial))();
     }
 
     m_currentTutorial = static_cast<Tutorial>(tutorial);
 }
 
-void TutorialCreator::AddTweakableFlt(Tweaker& tweaker,
-                                      const char* name, 
-                                      const char* label, 
-                                      float step,
-                                      int precision,
-                                      std::function<void(void)> onSet)
+void TutorialCreator::SetInt(const char* name, int value)
 {
-    AddTweakableFlt(tweaker, name, label, step, -FLT_MAX, FLT_MAX, precision, onSet);
+    m_ints.at(name) = value;
 }
 
-void TutorialCreator::AddTweakableFlt(Tweaker& tweaker,
-                                      const char* name, 
-                                      const char* label, 
-                                      float step,
-                                      float min,
-                                      float max,
-                                      int precision,
-                                      std::function<void(void)> onSet)
+void TutorialCreator::SetFlt(const char* name, float value)
 {
-    assert(m_flts.find(name) != m_flts.end());
-
-    auto setFlt = [this, name, onSet, min, max](float value)
-    {
-        m_flts.at(name) = std::max(std::min(value, max), min);
-
-        if (onSet)
-        {
-            onSet();
-        }
-    };
-
-    tweaker.AddFltEntry(label,
-        [this, name]() { return m_flts.at(name); },
-        setFlt, step, precision);
+    m_flts.at(name) = value;
 }
 
-void TutorialCreator::AddTweakableInt(Tweaker& tweaker,
-                                      const char* name, 
-                                      const char* label,
-                                      std::function<void(void)> onSet)
+int TutorialCreator::GetInt(const char* name) const
 {
-    AddTweakableInt(tweaker, name, label, INT_MIN, INT_MAX, onSet);
+    return m_ints.at(name);
 }
 
-void TutorialCreator::AddTweakableInt(Tweaker& tweaker,
-                                      const char* name, 
-                                      const char* label,
-                                      int min, 
-                                      int max,
-                                      std::function<void(void)> onSet)
+float TutorialCreator::GetFlt(const char* name) const
 {
-    assert(m_ints.find(name) != m_ints.end());
-
-    auto setInt = [this, name, onSet, min, max](int value)
-    {
-        m_ints.at(name) = std::max(std::min(value, max), min);
-
-        if (onSet)
-        {
-            onSet();
-        }
-    };
-
-    assert(m_ints.find(name) != m_ints.end());
-    tweaker.AddIntEntry(label,
-        [this, name]() { return m_ints.at(name); },
-        setInt, INT_MAX);
+    return m_flts.at(name);
 }

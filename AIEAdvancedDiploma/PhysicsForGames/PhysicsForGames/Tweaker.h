@@ -8,7 +8,9 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <array>
 #include "AntTweakBar.h"
+#include "glm/vec4.hpp"
 
 class Tweaker
 {
@@ -73,11 +75,22 @@ public:
     * Creates a new readonly entry for displaying a string
     * @param label What to display the entry as
     * @param getter function to retrieve the string value
+    * @param getter function to set the string value
     */
     void AddEnumEntry(std::string label, 
                       std::function<const int(void)> getter,
                       std::function<void(const int)> setter,
                       const std::vector<const char*>& values);
+
+    /**
+    * Creates a new tweakable entry for a colour
+    * @param label What to display the entry as
+    * @param getter function to retrieve the color value
+    * @param setter function to set the color value
+    */
+    void AddColorEntry(std::string label,
+                       std::function<const glm::vec4(void)> getter,
+                       std::function<void(const glm::vec4)> setter);
 
     /**
     * Creates a new tweakable entry for an index

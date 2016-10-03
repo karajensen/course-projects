@@ -12,13 +12,13 @@ public:
 
     /**
     * Constructor
-    * @param id The type of physics body this is
+    * @param shape The type of physics body this is
     * @param position The position to initialise the body at
     * @param velocity The initial velocity of the body
     * @param mass The mass of the body
     * @param colour What colour to render the body with
     */
-    RigidBody(ID id,
+    RigidBody(Shape shape,
               const glm::vec2& position, 
               const glm::vec2& velocity, 
               float mass,
@@ -106,6 +106,11 @@ public:
     * @param x/y The velocity components to set
     */
     void SetVelocity(float x, float y);
+
+    /**
+    * @return the velocity of the body
+    */
+    const glm::vec2& GetVelocity() const;
 
     /**
     * @return the position of the body from last tick

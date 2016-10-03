@@ -41,6 +41,21 @@ public:
     */
     virtual void Debug() override;
 
+    /**
+    * Sets the size of the square body
+    */
+    void SetSize(const glm::vec2& size);
+
+    /**
+    * Sets the size of the square body
+    */
+    void SetSize(float x, float y);
+
+    /**
+    * @return the size of the square body
+    */
+    const glm::vec2& GetSize() const;
+
 private:
 
     /**
