@@ -104,33 +104,55 @@ void TutorialTweaker::AddTweakbleSquare(SquareBody* obj,
 {
     AddTweakbleObject(obj, label, onSet);
 
+    if (!onSet)
+    {
+        onSet = [](){};
+    }
+
     m_tweaker.AddFltEntry((label + "Size X").c_str(),
         [obj]() { return obj->GetSize().x; },
-        [obj](float value) { obj->SetSize(value, obj->GetSize().y); },
+        [obj, onSet](float value) { obj->SetSize(value, obj->GetSize().y); onSet(); },
         1.0f, 1);
 
     m_tweaker.AddFltEntry((label + "Size Y").c_str(),
         [obj]() { return obj->GetSize().y; },
-        [obj](float value) { obj->SetSize(obj->GetSize().x, value); },
+        [obj, onSet](float value) { obj->SetSize(obj->GetSize().x, value); onSet(); },
         1.0f, 1);
+}
+
+void TutorialTweaker::AddTweakbleColor(PhysicsObject* obj, 
+                                       const std::string& label,
+                                       std::function<void(void)> onSet)
+{
+    if (!onSet)
+    {
+        onSet = []() {};
+    }
+
+    m_tweaker.AddColorEntry((label + "Colour").c_str(),
+        [obj]() { return obj->GetColour(); },
+        [obj, onSet](const glm::vec4 value) { obj->SetColor(value); onSet(); });
 }
 
 void TutorialTweaker::AddTweakbleObject(PhysicsObject* obj, 
                                         const std::string& label,
                                         std::function<void(void)> onSet)
 {
-    m_tweaker.AddColorEntry((label + "Colour").c_str(),
-        [obj]() { return obj->GetColour(); },
-        [obj](const glm::vec4 value) { obj->SetColor(value); });
+    if (!onSet)
+    {
+        onSet = []() {};
+    }
+
+    AddTweakbleColor(obj, label, onSet);
 
     m_tweaker.AddFltEntry((label + "Position X").c_str(),
         [obj]() { return obj->GetPosition().x; },
-        [obj](float value) { obj->SetPosition(value, obj->GetPosition().y); },
+        [obj, onSet](float value) { obj->SetPosition(value, obj->GetPosition().y); onSet(); },
         1.0f, 1);
 
     m_tweaker.AddFltEntry((label + "Position Y").c_str(),
         [obj]() { return obj->GetPosition().y; },
-        [obj](float value) { obj->SetPosition(obj->GetPosition().x, value); },
+        [obj, onSet](float value) { obj->SetPosition(obj->GetPosition().x, value); onSet(); },
         1.0f, 1);
 }
 
@@ -138,23 +160,28 @@ void TutorialTweaker::AddTweakblePlane(Plane* obj,
                                        const std::string& label,
                                        std::function<void(void)> onSet)
 {
+    if (!onSet)
+    {
+        onSet = []() {};
+    }
+
     m_tweaker.AddFltEntry((label + " Normal X").c_str(),
         [obj]() { return obj->GetNormal().x; },
-        [obj](float value) { obj->SetNormalX(value); },
+        [obj, onSet](float value) { obj->SetNormalX(value); onSet(); },
         0.1f, 3);
 
     m_tweaker.AddFltEntry((label + " Normal Y").c_str(),
         [obj]() { return obj->GetNormal().y; },
-        [obj](float value) { obj->SetNormalY(value); },
+        [obj, onSet](float value) { obj->SetNormalY(value); onSet(); },
         0.1f, 3);
 
     m_tweaker.AddFltEntry((label + " Distance").c_str(),
         [obj]() { return obj->GetDistance(); },
-        [obj](float value) { obj->SetDistance(value); },
+        [obj, onSet](float value) { obj->SetDistance(value); onSet(); },
         0.1f, 3);
 
     m_tweaker.AddFltEntry((label + " Size").c_str(),
         [obj]() { return obj->GetSize(); },
-        [obj](float value) { obj->SetSize(value); },
+        [obj, onSet](float value) { obj->SetSize(value); onSet(); },
         0.1f, 3);
 }

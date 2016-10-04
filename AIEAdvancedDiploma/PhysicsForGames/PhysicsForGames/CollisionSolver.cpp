@@ -75,7 +75,7 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
     const auto response1 = circle1.GetCollisionResponse(circle2.GetID());
     const auto response2 = circle2.GetCollisionResponse(circle1.GetID());
         
-    if (response1 == PhysicsObject::COLLIDE || response2 == PhysicsObject::COLLIDE)
+    if (response1.first || response2.first)
     {
         const glm::vec2 collisionNormal = glm::normalize(delta);
         const glm::vec2 relativeVelocity = body1.GetVelocity() - body2.GetVelocity();
@@ -83,29 +83,27 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         const glm::vec2 force = 2.0f * (collisionVector * 1.0f / (1.0f / body1.GetMass() + 1.0f / body2.GetMass()));
         const glm::vec2 seperationVector = collisionNormal * intersection * 0.5f;
 
-        if (response1 == PhysicsObject::COLLIDE)
+        if (response1.first)
         {
             body1.ApplyForce(-force);
             body1.SetPosition(body1.GetPosition() - seperationVector);
         }
 
-        if (response2 == PhysicsObject::COLLIDE)
+        if (response2.first)
         {
             body2.ApplyForce(force);
             body2.SetPosition(body2.GetPosition() + seperationVector);
         }
     }
 
-    if (response1 == PhysicsObject::STOP)
+    if (response1.second)
     {
-        body1.ResetVelocity();
-        body1.SetPosition(body1.GetPreviousPosition());
+        response1.second();
     }
 
-    if (response2 == PhysicsObject::STOP)
+    if (response2.second)
     {
-        body2.ResetForces();
-        body2.SetPosition(body2.GetPreviousPosition());
+        response2.second();
     }
 
     return true;
@@ -139,7 +137,7 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
 
     // Response for plane currently not supported
     const auto responseCircle = circle.GetCollisionResponse(plane.GetID());
-    if (responseCircle == PhysicsObject::COLLIDE)
+    if (responseCircle.first)
     {
         const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *
             collisionNormal * (glm::dot(collisionNormal, circleBody.GetVelocity()));
@@ -147,10 +145,10 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
         circleBody.ApplyForce(2.0f * forceVector);
         circleBody.SetPosition(circleBody.GetPosition() + collisionNormal * intersection * 0.5f);
     }
-    else if (responseCircle == PhysicsObject::STOP)
+
+    if (responseCircle.second)
     {
-        circleBody.ResetForces();
-        circleBody.SetPosition(circleBody.GetPreviousPosition());
+        responseCircle.second();
     }
 
     return true; 

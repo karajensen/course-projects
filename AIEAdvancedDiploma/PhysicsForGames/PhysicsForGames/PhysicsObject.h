@@ -32,16 +32,6 @@ public:
     };
 
     /**
-    * Types of supported collision responses
-    */
-    enum CollisionResponse
-    {
-        NONE,
-        STOP,
-        COLLIDE
-    };
-
-    /**
     * Constructor
     * @param shape The type of object this is
     * @param colour What colour to render the body with
@@ -177,16 +167,6 @@ public:
     Shape GetShape() const;
 
     /**
-    * Sets that the object is currently in collision this tick
-    */
-    void SetColliding();
-
-    /**
-    * @return whetherthe object is currently in collision this tick
-    */
-    bool IsColliding() const;
-
-    /**
     * Sets the colour to render the body with
     */
     void SetColor(const glm::vec4& colour);
@@ -207,24 +187,40 @@ public:
     bool IsCollidable() const;
 
     /**
+    * Sets that the object is currently in collision this tick
+    */
+    void SetColliding();
+
+    /**
+    * @return whetherthe object is currently in collision this tick
+    */
+    bool IsColliding() const;
+
+    /**
     * Sets the type of collision response to perform 
     * when colliding with the object of the given ID
     * @param id The ID of the body colliding with
-    * @Param response The type of response to the collision
+    * @Param shouldCollide Whether the body should respond with force
+    * @param fn An optional callback to trigger on collision
     */
-    void SetCollisionResponse(unsigned int id, CollisionResponse response);
+    void SetCollisionResponse(unsigned int id,
+                              bool shouldCollide,
+                              std::function<void(void)> fn = nullptr);
 
     /**
-    * Sets the default type of collision response to perform
-    * when colliding with the object of any ID
+    * Sets the type of collision response to perform
+    * @Param shouldCollide Whether the body should respond with force
+    * @param fn An optional callback to trigger on collision
     */
-    void SetCollisionResponse(CollisionResponse response);
+    void SetCollisionResponse(bool shouldCollide,
+                              std::function<void(void)> fn = nullptr);
 
     /**
     * @return the type of response to the given object ID
     * @note will default to collide if no response has been set
     */
-    CollisionResponse GetCollisionResponse(unsigned int id) const;
+    typedef std::pair<bool, std::function<void(void)>> CollisionResponse;
+    const CollisionResponse& GetCollisionResponse(unsigned int id) const;
 
     /**
     * @return the unique ID of the body
@@ -253,6 +249,6 @@ private:
     bool m_inCollision = false;                             ///< Whether this object is in collision this tick
     bool m_isCollidable = true;                             ///< Whether this object can be collided with
     std::map<unsigned int, CollisionResponse> m_response;   ///< Type of response when colliding with another object
-    CollisionResponse m_defaultResponse = COLLIDE;          ///< Type of response when no id is set
+    CollisionResponse m_defaultResponse;                    ///< Type of response when no id is set
     static unsigned int sm_idCounter;                       ///< Counter for unique physics objects
 };

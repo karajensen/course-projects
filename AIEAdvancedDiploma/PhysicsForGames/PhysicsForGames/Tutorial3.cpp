@@ -50,7 +50,11 @@ void TutorialCreator::CreateTutorial3()
             ball->SetGravity(glm::vec2(0.0f, -9.8f));
         }
         
-        ball->SetCollisionResponse(PhysicsObject::STOP);
+        ball->SetCollisionResponse(false, [obj = ball.get()]()
+        {
+            obj->ResetVelocity();
+            obj->SetPosition(obj->GetPreviousPosition());
+        });
 
         ball->SetPostUpdateFn([normalColor, collisionColor, obj = ball.get()](float timestep)
         {

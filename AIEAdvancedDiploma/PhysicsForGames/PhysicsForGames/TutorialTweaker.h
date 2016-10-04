@@ -117,6 +117,16 @@ public:
                            std::function<void(void)> onSet = nullptr);
 
     /**
+    * Adds a body's colour to the tweak bar
+    * @param obj The body to add
+    * @param label The label to show on the tweak bar
+    * @param onSet Callback to use when value is set
+    */
+    void AddTweakbleColor(PhysicsObject* obj,
+                          const std::string& label,
+                          std::function<void(void)> onSet = nullptr);
+
+    /**
     * Adds a plane to the tweak bar
     * @param obj The body to add
     * @param label The label to show on the tweak bar

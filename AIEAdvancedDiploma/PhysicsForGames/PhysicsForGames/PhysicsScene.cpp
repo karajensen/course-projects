@@ -69,11 +69,12 @@ void PhysicsScene::DebugScene()
 
 void PhysicsScene::Draw(aie::Renderer2D* renderer)
 {
-    for (auto& actor : m_actors)
+    // Draw in reverse order to preserve depth
+    for (auto itr = m_actors.rbegin(); itr != m_actors.rend(); ++itr)
     {
-        if (actor->IsVisible())
+        if ((*itr)->IsVisible())
         {
-            actor->Draw(renderer);
+            (*itr)->Draw(renderer);
         }
     }
 }

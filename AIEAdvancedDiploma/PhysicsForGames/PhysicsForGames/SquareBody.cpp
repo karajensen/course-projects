@@ -24,7 +24,8 @@ void SquareBody::Draw(aie::Renderer2D* renderer)
 {
     RigidBody::Draw(renderer);
 
-    renderer->drawBox(m_position.x, m_position.y, m_size.x, m_size.y);
+    renderer->drawBox(std::round(m_position.x), 
+        std::round(m_position.y), std::round(m_size.x), std::round(m_size.y));
 }
 
 void SquareBody::Debug()

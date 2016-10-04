@@ -13,6 +13,7 @@ PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour)
     : m_colour(colour)
     , m_shape(shape)
     , m_id(sm_idCounter++)
+    , m_defaultResponse(std::make_pair(true, nullptr))
 {
 }
 
@@ -21,6 +22,7 @@ PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour, const glm::ve
     , m_position(position)
     , m_shape(shape)
     , m_id(sm_idCounter++)
+    , m_defaultResponse(std::make_pair(true, nullptr))
 {
 }
 
@@ -142,17 +144,20 @@ const glm::vec4& PhysicsObject::GetColour() const
     return m_colour;
 }
 
-void PhysicsObject::SetCollisionResponse(CollisionResponse response)
+void PhysicsObject::SetCollisionResponse(bool shouldCollide,
+                                         std::function<void(void)> fn)
 {
-    m_defaultResponse = response;
+    m_defaultResponse = std::make_pair(shouldCollide, fn);
 }
 
-void PhysicsObject::SetCollisionResponse(unsigned int id, CollisionResponse response)
+void PhysicsObject::SetCollisionResponse(unsigned int id, 
+                                         bool shouldCollide,
+                                         std::function<void(void)> fn)
 {
-    m_response[id] = response;
+    m_response[id] = std::make_pair(shouldCollide, fn);
 }
 
-PhysicsObject::CollisionResponse PhysicsObject::GetCollisionResponse(unsigned int id) const
+const PhysicsObject::CollisionResponse& PhysicsObject::GetCollisionResponse(unsigned int id) const
 {
     return m_response.find(id) != m_response.end() 
         ? m_response.at(id) : m_defaultResponse;
