@@ -172,6 +172,11 @@ public:
     void SetColor(const glm::vec4& colour);
 
     /**
+    * Sets the colour to render the body with
+    */
+    void SetColor(float r, float g, float b, float a);
+
+    /**
     * @return the colour to render the body with
     */
     const glm::vec4& GetColour() const;

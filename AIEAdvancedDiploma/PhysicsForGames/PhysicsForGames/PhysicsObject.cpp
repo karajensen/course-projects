@@ -139,6 +139,14 @@ void PhysicsObject::SetColor(const glm::vec4& colour)
     m_colour = colour;
 }
 
+void PhysicsObject::SetColor(float r, float g, float b, float a)
+{
+    m_colour.r = r;
+    m_colour.g = g;
+    m_colour.b = b;
+    m_colour.a = a;
+}
+
 const glm::vec4& PhysicsObject::GetColour() const
 {
     return m_colour;

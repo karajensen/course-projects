@@ -72,8 +72,8 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         return false;
     }
 
-    const auto response1 = circle1.GetCollisionResponse(circle2.GetID());
-    const auto response2 = circle2.GetCollisionResponse(circle1.GetID());
+    const auto& response1 = circle1.GetCollisionResponse(circle2.GetID());
+    const auto& response2 = circle2.GetCollisionResponse(circle1.GetID());
         
     if (response1.first || response2.first)
     {
@@ -136,7 +136,7 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
     }
 
     // Response for plane currently not supported
-    const auto responseCircle = circle.GetCollisionResponse(plane.GetID());
+    const auto& responseCircle = circle.GetCollisionResponse(plane.GetID());
     if (responseCircle.first)
     {
         const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *

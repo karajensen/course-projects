@@ -60,12 +60,15 @@ struct PoolTable
         barriers.assign(barriers.size(), nullptr);
         pockets.resize(Pocket::Max);
         pockets.assign(pockets.size(), nullptr);
+        balls.resize(16);
+        balls.assign(balls.size(), nullptr);
     }
 
     SquareBody* center = nullptr;       ///< Center backdrop of table
     std::vector<SquareBody*> barriers;  ///< Barrier backdrop of table
     std::vector<CircleBody*> pockets;   ///< Pocket bodies of table
     std::vector<CircleBody*> balls;     ///< Balls of the table
+    CircleBody* playerBall = nullptr;   ///< Ball player can interact with
 };
 
 void TutorialCreator::CreateTutorial4()
@@ -73,8 +76,10 @@ void TutorialCreator::CreateTutorial4()
     PoolTable table;
     m_flts["barrier_size"] = 20.0f;
     m_flts["pocket_size"] = 40.0f;
-    m_flts["ball_size"] = 10.0f;
+    m_flts["ball_size"] = 11.0f;
     m_flts["ball_mass"] = 1.0f;
+    m_flts["player_start"] = 120.0f;
+    m_flts["balls_start"] = -120.0f;
 
     std::unique_ptr<SquareBody> center(new SquareBody(
         glm::vec2(m_size.x / 2.0f, m_size.y / 2.0f),
@@ -111,11 +116,15 @@ void TutorialCreator::CreateTutorial4()
         m_scene.AddActor(std::move(pocket));
     }
 
+    bool isRed = true;
+    const glm::vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
+    const glm::vec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
+
     for (int i = 0; i < int(table.balls.size()); ++i)
     {
         std::unique_ptr<CircleBody> ball(new CircleBody(
             glm::vec2(0, 0), glm::vec2(0, 0),
-            0.0f, 0.0f, glm::vec4(1, 0, 0, 1)));
+            0.0f, 0.0f, glm::vec4(0, 0, 0, 1)));
 
         for (auto* pocket : table.pockets)
         {
@@ -128,9 +137,17 @@ void TutorialCreator::CreateTutorial4()
             });
         }
 
+        if (i > 0 && i != 5)
+        {
+            ball->SetColor(isRed ? red : blue);
+            isRed = !isRed;
+        }
+
         table.balls[i] = ball.get();
         m_scene.AddActor(std::move(ball));
     }
+    table.playerBall = table.balls[0];
+    table.playerBall->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     auto resetTutorial = [this, table]()
     {
@@ -180,20 +197,48 @@ void TutorialCreator::CreateTutorial4()
         table.barriers[Barrier::BotRight]->SetSize(horizontalSize, barrierSize);
     };
 
-    auto resetBallPositions = [this, balls = table.balls]()
+    auto resetBallPositions = [this, table]()
     {
-        for (auto* ball : balls)
+        const glm::vec2& size = table.center->GetSize();
+        const glm::vec2& position = table.center->GetPosition();
+        const float ballStart = m_flts.at("balls_start");
+        const float playerStart = m_flts.at("player_start");
+        const float ballSize = m_flts.at("ball_size") * 2.0f;
+        const float halfSize = size.x * 0.5f;
+        const float xOffset = -3.0f;
+
+        for (auto* ball : table.balls)
         {
+            ball->ResetForces();
+            ball->ResetVelocity();
             ball->SetVisible(true);
             ball->SetCollidable(true);
             ball->SetActive(true);
         }
+
+        int counter = 0;
+        float xPosition = position.x + halfSize + ballStart;
+        for (int i = 1; i < (int)table.balls.size(); i += counter)
+        {
+            counter++;
+            const float height = counter * ballSize;
+            float yPosition = position.y + (height * 0.5f) - (ballSize * 0.5f);
+            for (int j = 0; j < counter; ++j)
+            {
+                const int index = i + j;
+                table.balls[index]->SetPosition(xPosition, yPosition);
+                yPosition -= ballSize;
+            }
+            xPosition += ballSize + xOffset;
+        }
+
+        table.playerBall->SetPosition(position.x - halfSize + playerStart, position.y);
     };
 
     auto resetBallValues = [this, balls = table.balls]()
     {
         const float ballSize = m_flts.at("ball_size");
-        const float ballMass = m_flts.at("ball_size");
+        const float ballMass = m_flts.at("ball_mass");
 
         for(auto* ball : balls)
         {
@@ -211,6 +256,8 @@ void TutorialCreator::CreateTutorial4()
     m_tweaker->AddButton("Reset", resetBallPositions);
     m_tweaker->AddTweakableFlt("ball_mass", "Ball Mass", 0.1f, 3, resetBallValues);
     m_tweaker->AddTweakableFlt("ball_size", "Ball Size", 0.1f, 3, resetBallValues);
+    m_tweaker->AddTweakableFlt("player_start", "Player Start", 0.1f, 3, resetBallPositions);
+    m_tweaker->AddTweakableFlt("balls_start", "Balls Start", 0.1f, 3, resetBallPositions);
 
     resetTutorial();
     resetBallValues();
