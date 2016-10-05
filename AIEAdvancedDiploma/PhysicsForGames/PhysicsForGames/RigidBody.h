@@ -66,6 +66,23 @@ public:
     virtual void SetGravity(float x, float y) override;
 
     /**
+    * Explicitly sets the position of the body
+    * @param position The position to set
+    */
+    void SetPosition(const glm::vec2& position);
+
+    /**
+    * Explicitly sets the position of the body
+    * @param x/y The components of the position to set
+    */
+    void SetPosition(float x, float y);
+
+    /**
+    * @return the current position of the body
+    */
+    const glm::vec2& GetPosition() const;
+
+    /**
     * Resets any current forces on the body
     */
     void ResetForces();
@@ -128,9 +145,9 @@ public:
                                                float angle, 
                                                float speed, 
                                                float timepassed);
-
-
 protected:
+
+    glm::vec2 m_position;      ///< Position of the body
     glm::vec2 m_velocity;            ///< Current velocity of the body
     glm::vec2 m_acceleration;        ///< Current accerleration of the body
     glm::vec2 m_gravity;             ///< Gravity force to apply per update

@@ -11,9 +11,10 @@ RigidBody::RigidBody(Shape shape,
                      const glm::vec2& velocity, 
                      float mass,
                      const glm::vec4& colour)
-    : PhysicsObject(shape, colour, position)
+    : PhysicsObject(shape, colour)
     , m_velocity(velocity)
     , m_previousPosition(position)
+    , m_position(position)
 {
     SetMass(mass);
 }
@@ -126,4 +127,20 @@ glm::vec2 RigidBody::PredictProjectilePosition(float gravity,
     const float x = speed * timepassed * cos(rad);
     const float y = speed * timepassed * sin(rad) - (0.5f * gravity * (timepassed * timepassed));
     return glm::vec2(x, y);
+}
+
+void RigidBody::SetPosition(const glm::vec2& position)
+{
+    m_position = position;
+}
+
+void RigidBody::SetPosition(float x, float y)
+{
+    m_position.x = x;
+    m_position.y = y;
+}
+
+const glm::vec2& RigidBody::GetPosition() const
+{
+    return m_position;
 }

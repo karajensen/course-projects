@@ -17,15 +17,6 @@ PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour)
 {
 }
 
-PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour, const glm::vec2& position)
-    : m_colour(colour)
-    , m_position(position)
-    , m_shape(shape)
-    , m_id(sm_idCounter++)
-    , m_defaultResponse(std::make_pair(true, nullptr))
-{
-}
-
 void PhysicsObject::PreUpdate(float timeStep)
 {
     m_inCollision = false;
@@ -71,22 +62,6 @@ void PhysicsObject::SetGravity(const glm::vec2& gravity)
 
 void PhysicsObject::SetGravity(float x, float y)
 {
-}
-
-void PhysicsObject::SetPosition(const glm::vec2& position)
-{
-    m_position = position;
-}
-
-void PhysicsObject::SetPosition(float x, float y)
-{
-    m_position.x = x;
-    m_position.y = y;
-}
-
-const glm::vec2& PhysicsObject::GetPosition() const
-{
-    return m_position;
 }
 
 void PhysicsObject::SetPreUpdateFn(std::function<void(float)> fn)

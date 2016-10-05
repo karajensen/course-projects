@@ -1,6 +1,6 @@
 
 - Fix crash in AIE renderer when lots of spheres are added
-- Add collision detection sphere-box
+- Sphere-box collision cull to plane ends
 - Add pool cue where mouse is
 
 =================================================================

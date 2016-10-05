@@ -118,20 +118,16 @@ void TutorialTweaker::AddTweakbleSquare(SquareBody* obj,
         [obj]() { return obj->GetSize().y; },
         [obj, onSet](float value) { obj->SetSize(obj->GetSize().x, value); onSet(); },
         1.0f, 1);
-}
 
-void TutorialTweaker::AddTweakbleColor(PhysicsObject* obj, 
-                                       const std::string& label,
-                                       std::function<void(void)> onSet)
-{
-    if (!onSet)
-    {
-        onSet = []() {};
-    }
+    m_tweaker.AddFltEntry((label + "Position X").c_str(),
+        [obj]() { return obj->GetPosition().x; },
+        [obj, onSet](float value) { obj->SetPosition(value, obj->GetPosition().y); onSet(); },
+        1.0f, 1);
 
-    m_tweaker.AddColorEntry((label + "Colour").c_str(),
-        [obj]() { return obj->GetColour(); },
-        [obj, onSet](const glm::vec4 value) { obj->SetColor(value); onSet(); });
+    m_tweaker.AddFltEntry((label + "Position Y").c_str(),
+        [obj]() { return obj->GetPosition().y; },
+        [obj, onSet](float value) { obj->SetPosition(obj->GetPosition().x, value); onSet(); },
+        1.0f, 1);
 }
 
 void TutorialTweaker::AddTweakbleObject(PhysicsObject* obj, 
@@ -143,17 +139,9 @@ void TutorialTweaker::AddTweakbleObject(PhysicsObject* obj,
         onSet = []() {};
     }
 
-    AddTweakbleColor(obj, label, onSet);
-
-    m_tweaker.AddFltEntry((label + "Position X").c_str(),
-        [obj]() { return obj->GetPosition().x; },
-        [obj, onSet](float value) { obj->SetPosition(value, obj->GetPosition().y); onSet(); },
-        1.0f, 1);
-
-    m_tweaker.AddFltEntry((label + "Position Y").c_str(),
-        [obj]() { return obj->GetPosition().y; },
-        [obj, onSet](float value) { obj->SetPosition(obj->GetPosition().x, value); onSet(); },
-        1.0f, 1);
+    m_tweaker.AddColorEntry((label + "Colour").c_str(),
+        [obj]() { return obj->GetColour(); },
+        [obj, onSet](const glm::vec4 value) { obj->SetColor(value); onSet(); });
 }
 
 void TutorialTweaker::AddTweakblePlane(Plane* obj,

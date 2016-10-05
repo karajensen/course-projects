@@ -61,8 +61,8 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
     auto& body1 = dynamic_cast<CircleBody&>(circle1);
     auto& body2 = dynamic_cast<CircleBody&>(circle2);
 
-    const auto& position1 = circle1.GetPosition();
-    const auto& position2 = circle2.GetPosition();
+    const auto& position1 = body1.GetPosition();
+    const auto& position2 = body2.GetPosition();
     const auto delta = position2 - position1;
     const float distance = glm::length(delta);
     const float intersection = body1.GetRadius() + body2.GetRadius() - distance;
@@ -156,7 +156,60 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
 
 bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsObject& square)
 {
-    return false;
+    auto& squareBody = dynamic_cast<SquareBody&>(square);
+    auto& circleBody = dynamic_cast<CircleBody&>(circle);
+
+    auto testSquareSide = [&squareBody, &circleBody](const glm::vec2& c1, const glm::vec2& c2) -> bool
+    {
+        const glm::vec2 direction = c2 - c1;
+        const glm::vec2 center = c2 + (direction * 0.5f);
+        const float distance = glm::length(direction);
+        const glm::vec2 normal(direction.y, -direction.x);
+
+        float sphereToPlane = glm::dot(circleBody.GetPosition() - c1, normal);
+        if (sphereToPlane < 0.0f)
+        {
+            return false;
+        }
+
+        const float intersection = circleBody.GetRadius() - sphereToPlane;
+        if (intersection <= 0)
+        {
+            return false;
+        }
+
+        // Response for square currently not supported
+        const auto& responseCircle = circleBody.GetCollisionResponse(squareBody.GetID());
+        if (responseCircle.first)
+        {
+            const glm::vec2 collisionNormal = glm::normalize(normal);
+            const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *
+                collisionNormal * (glm::dot(collisionNormal, circleBody.GetVelocity()));
+
+            circleBody.ApplyForce(2.0f * forceVector);
+            circleBody.SetPosition(circleBody.GetPosition() + collisionNormal * intersection * 0.5f);
+        }
+
+        if (responseCircle.second)
+        {
+            responseCircle.second();
+        }
+
+        return true;
+    };
+
+    const glm::vec2& position = squareBody.GetPosition();
+    const glm::vec2& size = squareBody.GetSize();
+    const glm::vec2 halfSize = size * 0.5f;
+    const glm::vec2 topLeft(position.x - halfSize.x, position.y + halfSize.y);
+    const glm::vec2 topRight(position.x + halfSize.x, position.y + halfSize.y);
+    const glm::vec2 botLeft(position.x - halfSize.x, position.y - halfSize.y);
+    const glm::vec2 botRight(position.x + halfSize.x, position.y - halfSize.y);
+
+    return testSquareSide(topLeft, topRight)  ||
+           testSquareSide(topRight, botRight) ||
+           testSquareSide(botRight, botLeft)  ||
+           testSquareSide(botLeft, topLeft);
 }
 
 bool CollisionSolver::SolvePlaneSquareCollision(PhysicsObject& plane, PhysicsObject& square)

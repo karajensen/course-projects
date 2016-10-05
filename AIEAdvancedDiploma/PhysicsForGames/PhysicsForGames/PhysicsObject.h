@@ -37,14 +37,6 @@ public:
     * @param colour What colour to render the body with
     */
     PhysicsObject(Shape shape, const glm::vec4& colour);
-                  
-    /**
-    * Constructor
-    * @param shape The type of object this is
-    * @param colour What colour to render the body with
-    * @param position The position to initialise the body at
-    */
-    PhysicsObject(Shape shape, const glm::vec4& colour, const glm::vec2& position);
 
     /**
     * Destructor
@@ -135,23 +127,6 @@ public:
     bool IsVisible() const;
 
     /**
-    * Explicitly sets the position of the body
-    * @param position The position to set
-    */
-    void SetPosition(const glm::vec2& position);
-
-    /**
-    * Explicitly sets the position of the body
-    * @param x/y The components of the position to set
-    */
-    void SetPosition(float x, float y);
-
-    /**
-    * @return the current position of the body
-    */
-    const glm::vec2& GetPosition() const;
-
-    /**
     * Sets a callback to fire before the body is updated
     */
     void SetPreUpdateFn(std::function<void(float)> fn);
@@ -237,7 +212,6 @@ protected:
     bool m_isActive = true;    ///< Whether the body is active in the physics world
     bool m_isVisible = true;   ///< Whether the body is visible or not
     glm::vec4 m_colour;        ///< Colour to render the body
-    glm::vec2 m_position;      ///< Position of the body
                                
 private:
 

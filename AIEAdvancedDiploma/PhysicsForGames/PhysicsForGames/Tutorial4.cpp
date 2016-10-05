@@ -149,7 +149,7 @@ void TutorialCreator::CreateTutorial4()
     table.playerBall = table.balls[0];
     table.playerBall->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    auto resetTutorial = [this, table]()
+    auto resetTable = [this, table]()
     {
         const glm::vec2& size = table.center->GetSize();
         const glm::vec2& position = table.center->GetPosition();
@@ -233,6 +233,7 @@ void TutorialCreator::CreateTutorial4()
         }
 
         table.playerBall->SetPosition(position.x - halfSize + playerStart, position.y);
+        table.playerBall->SetVelocity(-20.0f, 0.0f);
     };
 
     auto resetBallValues = [this, balls = table.balls]()
@@ -248,9 +249,9 @@ void TutorialCreator::CreateTutorial4()
     };
 
     m_tweaker->SetGroup("Table");
-    m_tweaker->AddTweakbleSquare(table.center, "Board", resetTutorial);
-    m_tweaker->AddTweakableFlt("barrier_size", "Barrier Size", 1.0f, 1, resetTutorial);
-    m_tweaker->AddTweakableFlt("pocket_size", "Pocket Size", 1.0f, 1, resetTutorial);
+    m_tweaker->AddTweakbleSquare(table.center, "Board", resetTable);
+    m_tweaker->AddTweakableFlt("barrier_size", "Barrier Size", 1.0f, 1, resetTable);
+    m_tweaker->AddTweakableFlt("pocket_size", "Pocket Size", 1.0f, 1, resetTable);
 
     m_tweaker->SetGroup("Balls");
     m_tweaker->AddButton("Reset", resetBallPositions);
@@ -259,7 +260,7 @@ void TutorialCreator::CreateTutorial4()
     m_tweaker->AddTweakableFlt("player_start", "Player Start", 0.1f, 3, resetBallPositions);
     m_tweaker->AddTweakableFlt("balls_start", "Balls Start", 0.1f, 3, resetBallPositions);
 
-    resetTutorial();
+    resetTable();
     resetBallValues();
     resetBallPositions();
 }

@@ -23,16 +23,6 @@ public:
           const glm::vec4& colour);
 
     /**
-    * Constructor
-    * @param start The coordinates to start the plane
-    * @param end The coordinates to end the plane
-    * @param colour What colour to render the body with
-    */
-    Plane(const glm::vec2& start,
-          const glm::vec2& end,
-          const glm::vec4& colour);
-
-    /**
     * Updates the body
     * @param timeStep The time between each update call
     */
