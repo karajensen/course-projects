@@ -11,12 +11,12 @@
 namespace aie
 {
     class Renderer2D;
-    class Font;
 }
 
 class Gui;
 class PhysicsScene;
 class TutorialCreator;
+class Input;
 
 class PhysicsForGamesApp : public aie::Application 
 {
@@ -75,4 +75,5 @@ private:
     std::unique_ptr<TutorialCreator> m_tutorials;   ///< Creates different tutorial scenes
     std::unique_ptr<Gui> m_gui;                     ///< Gui for the tweak bar
     std::unique_ptr<aie::Renderer2D> m_2dRenderer;  ///< Renderer for drawing 2D objects
+    std::unique_ptr<Input> m_input;                 ///< For querying user input
 };

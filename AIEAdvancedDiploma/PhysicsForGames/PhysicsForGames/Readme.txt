@@ -1,6 +1,6 @@
 
 - Fix crash in AIE renderer when lots of spheres are added
-- Add pool cue where mouse is
+- Test if plane does bounce correctly
 
 =================================================================
 AIE Advanced Diploma - Physics For Games Unit

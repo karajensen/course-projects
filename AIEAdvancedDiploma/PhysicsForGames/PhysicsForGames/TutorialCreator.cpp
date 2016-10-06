@@ -10,7 +10,7 @@
 #include "Utilities.h"
 #include <algorithm>
 
-TutorialCreator::TutorialCreator(aie::Input& input, PhysicsScene& scene, const glm::ivec2& size)
+TutorialCreator::TutorialCreator(Input& input, PhysicsScene& scene, const glm::ivec2& size)
     : m_scene(scene)
     , m_size(size)
     , m_input(input)

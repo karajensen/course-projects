@@ -13,11 +13,7 @@
 class PhysicsScene;
 class Tweaker;
 class TutorialTweaker;
-
-namespace aie
-{
-    class Input;
-}
+class Input;
 
 enum Tutorial
 {
@@ -39,7 +35,7 @@ public:
     * @param scene Physics scene manager
     * @param size Window dimensions
     */
-    TutorialCreator(aie::Input& input, PhysicsScene& scene, const glm::ivec2& size);
+    TutorialCreator(Input& input, PhysicsScene& scene, const glm::ivec2& size);
 
     /**
     * Destructor
@@ -105,7 +101,7 @@ private:
     void CreateTutorial3();
     void CreateTutorial4();
 
-    aie::Input& m_input;                                  ///< For querying user input
+    Input& m_input;                                       ///< For querying user input
     PhysicsScene& m_scene;                                ///< Physics scene manager
     const glm::ivec2& m_size;                             ///< Size of the window
     Tutorial m_currentTutorial = TUTORIAL_NONE;           ///< Currently selected tutorial

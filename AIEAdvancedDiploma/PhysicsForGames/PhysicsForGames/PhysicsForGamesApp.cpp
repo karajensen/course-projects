@@ -5,6 +5,7 @@
 #include "PhysicsForGamesApp.h"
 #include "Font.h"
 #include "Input.h"
+#include "../bootstrap/Input.h"
 #include "Renderer2D.h"
 #include "PhysicsScene.h"
 #include "TutorialCreator.h"
@@ -27,12 +28,11 @@ void PhysicsForGamesApp::start()
 bool PhysicsForGamesApp::startup() 
 {
     setBackgroundColour(0.2f, 0.2f, 0.2f);
-    auto& input = *aie::Input::getInstance();
-
+    m_input.reset(new Input(m_size, *aie::Input::getInstance()));
     m_2dRenderer.reset(new aie::Renderer2D());
     m_physicsScene.reset(new PhysicsScene(*m_2dRenderer));
-    m_tutorials.reset(new TutorialCreator(input, *m_physicsScene, m_size));
-    m_gui.reset(new Gui(*m_physicsScene, *m_tutorials, input, m_size));
+    m_tutorials.reset(new TutorialCreator(*m_input, *m_physicsScene, m_size));
+    m_gui.reset(new Gui(*m_physicsScene, *m_tutorials, *m_input, m_size));
 
     // Always create the latest tutorial
     m_tutorials->Create(m_gui->GetTweaker(), Tutorial::TUTORIAL_COUNT-1);
@@ -46,6 +46,7 @@ void PhysicsForGamesApp::shutdown()
 
 void PhysicsForGamesApp::update(float deltaTime) 
 {
+    m_input->Update();
     m_physicsScene->Update();
     m_gui->Update();
 

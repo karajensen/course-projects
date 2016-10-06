@@ -56,6 +56,24 @@ public:
     */
     const glm::vec2& GetSize() const;
 
+    /**
+    * Creates the position and size of the body from a line
+    * @param start The starting point of the line
+    * @param end The ending point of the line
+    * @param size The width of the line
+    */
+    void MakeFromLine(const glm::vec2& start, const glm::vec2& end, float size);
+
+    /**
+    * @return the rotation of the body
+    */
+    float GetRotation() const;
+
+    /**
+    * Sets the rotation of the body
+    */
+    void SetRotation(float rotation);
+
 private:
 
     /**
@@ -64,5 +82,6 @@ private:
     SquareBody(const SquareBody&) = delete;
     SquareBody& operator=(const SquareBody&) = delete;
 
-    glm::vec2 m_size;   ///< Dimensions of the body
+    glm::vec2 m_size;          ///< Dimensions of the body
+    float m_rotation = 0.0f;   ///< Rotation of the body
 };

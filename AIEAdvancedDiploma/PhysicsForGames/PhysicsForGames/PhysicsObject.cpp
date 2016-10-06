@@ -19,17 +19,26 @@ PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour)
 
 void PhysicsObject::PreUpdate(float timeStep)
 {
-    m_inCollision = false;
-
-    if (m_preUpdate)
+    if (m_isActive)
     {
-        m_preUpdate(timeStep);
+        m_inCollision = false;
+        if (m_preUpdate)
+        {
+            m_preUpdate(timeStep);
+        }
+    }
+    else
+    {
+        if (m_inactiveFn)
+        {
+            m_inactiveFn();
+        }
     }
 }
 
 void PhysicsObject::PostUpdate(float timeStep)
 {
-    if (m_postUpdate)
+    if (m_isActive && m_postUpdate)
     {
         m_postUpdate(timeStep);
     }
@@ -72,6 +81,11 @@ void PhysicsObject::SetPreUpdateFn(std::function<void(float)> fn)
 void PhysicsObject::SetPostUpdateFn(std::function<void(float)> fn)
 {
     m_postUpdate = fn;
+}
+
+void PhysicsObject::SetInactiveFn(std::function<void(void)> fn)
+{
+    m_inactiveFn = fn;
 }
 
 void PhysicsObject::SetActive(bool active)

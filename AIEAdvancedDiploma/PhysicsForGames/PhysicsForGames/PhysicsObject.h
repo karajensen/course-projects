@@ -137,6 +137,11 @@ public:
     void SetPostUpdateFn(std::function<void(float)> fn);
 
     /**
+    * Sets a callback to fire after the body is inactive
+    */
+    void SetInactiveFn(std::function<void(void)> fn);
+
+    /**
     * @return the type of physics body this is
     */
     Shape GetShape() const;
@@ -223,6 +228,7 @@ private:
 
     const Shape m_shape;                                    ///< The type of physics object this is
     const unsigned int m_id;                                ///< The unique ID of the object
+    std::function<void(void)> m_inactiveFn = nullptr;       ///< Callback to fire when inactive
     std::function<void(float)> m_preUpdate = nullptr;       ///< Callback to fire before the body is updated
     std::function<void(float)> m_postUpdate = nullptr;      ///< Callback to fire after the body is updated
     bool m_inCollision = false;                             ///< Whether this object is in collision this tick

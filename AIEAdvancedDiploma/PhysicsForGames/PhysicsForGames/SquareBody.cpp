@@ -4,6 +4,8 @@
 
 #include "SquareBody.h"
 #include "Renderer2D.h"
+#include "glm/glm.hpp"
+#include "Utilities.h"
 
 SquareBody::SquareBody(const glm::vec2& position,
                        const glm::vec2& velocity, 
@@ -15,6 +17,17 @@ SquareBody::SquareBody(const glm::vec2& position,
 {
 }
 
+void SquareBody::MakeFromLine(const glm::vec2& start, const glm::vec2& end, float size)
+{
+    const glm::vec2 direction(start - end);
+    m_position = end + (direction * 0.5f);
+    m_size.y = size;
+    m_size.x = glm::length(direction);
+
+    const float dot = glm::dot(direction, glm::vec2(direction.y < 0.0f ? -1.0f : 1.0f, 0.0f));
+    m_rotation = m_size.x == 0.0f ? 0.0f : acos(dot / m_size.x);
+}
+
 void SquareBody::Update(float timeStep)
 {
     RigidBody::Update(timeStep);
@@ -24,8 +37,8 @@ void SquareBody::Draw(aie::Renderer2D& renderer)
 {
     RigidBody::Draw(renderer);
 
-    renderer.drawBox(std::round(m_position.x), 
-        std::round(m_position.y), std::round(m_size.x), std::round(m_size.y));
+    renderer.drawBox(std::round(m_position.x), std::round(m_position.y), 
+        std::round(m_size.x), std::round(m_size.y), m_rotation);
 }
 
 void SquareBody::Debug()
@@ -47,4 +60,14 @@ void SquareBody::SetSize(float x, float y)
 const glm::vec2& SquareBody::GetSize() const
 {
     return m_size;
+}
+
+float SquareBody::GetRotation() const
+{
+    return m_rotation;
+}
+
+void SquareBody::SetRotation(float rotation)
+{
+    m_rotation = rotation;
 }

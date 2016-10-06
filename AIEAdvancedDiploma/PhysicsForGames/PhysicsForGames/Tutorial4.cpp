@@ -77,10 +77,13 @@ void TutorialCreator::CreateTutorial4()
     m_flts["barrier_size"] = 20.0f;
     m_flts["pocket_size"] = 40.0f;
     m_flts["ball_size"] = 11.0f;
-    m_flts["ball_mass"] = 1.0f;
+    m_flts["ball_mass"] = 0.5f;
     m_flts["player_start"] = 120.0f;
     m_flts["balls_start"] = -120.0f;
+    m_flts["cue_size"] = 10.0f;
+    m_flts["cue_force"] = 10.0f;
 
+    // Pool table center
     std::unique_ptr<SquareBody> center(new SquareBody(
         glm::vec2(m_size.x / 2.0f, m_size.y / 2.0f),
         glm::vec2(0, 0), 0.0f,
@@ -92,6 +95,7 @@ void TutorialCreator::CreateTutorial4()
     table.center = center.get();
     m_scene.AddActor(std::move(center));
 
+    // Pool table barriers
     for (int i = 0; i < int(table.barriers.size()); ++i)
     {
         std::unique_ptr<SquareBody> barrier(new SquareBody(
@@ -104,6 +108,7 @@ void TutorialCreator::CreateTutorial4()
         m_scene.AddActor(std::move(barrier));
     }
 
+    // Pool table pockets
     for (int i = 0; i < int(table.pockets.size()); ++i)
     {
         std::unique_ptr<CircleBody> pocket(new CircleBody(
@@ -116,10 +121,10 @@ void TutorialCreator::CreateTutorial4()
         m_scene.AddActor(std::move(pocket));
     }
 
+    // Pool balls
     bool isRed = true;
     const glm::vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
     const glm::vec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
-
     for (int i = 0; i < int(table.balls.size()); ++i)
     {
         std::unique_ptr<CircleBody> ball(new CircleBody(
@@ -148,6 +153,55 @@ void TutorialCreator::CreateTutorial4()
     }
     table.playerBall = table.balls[0];
     table.playerBall->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+    // Player cue
+    std::unique_ptr<SquareBody> cue(new SquareBody(
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(0, 0), 0.0f,
+        glm::vec2(0.0f, 0.0f),
+        glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)));
+
+    std::unique_ptr<SquareBody> cuetip(new SquareBody(
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(0, 0), 0.0f,
+        glm::vec2(0.0f, 0.0f),
+        glm::vec4(1.0f, 0.75f, 0.0f, 1.0f)));
+
+    cuetip->SetActive(false);
+    cuetip->SetCollidable(false);
+    cue->SetActive(false);
+    cue->SetCollidable(false);
+    cue->SetInactiveFn([this, ball = table.playerBall, obj = cue.get(), tip = cuetip.get()]()
+    {
+        obj->SetVisible(false);
+        tip->SetVisible(false);
+
+        if (m_input.IsMouseDown())
+        {
+            const float size = m_flts.at("cue_size");
+            const auto end = m_input.Convert(m_input.MouseDownPosition());
+            const auto start = m_input.Convert(m_input.MousePosition());
+            obj->MakeFromLine(start, end, size);
+            tip->SetPosition(start);
+            tip->SetSize(size, size);
+            tip->SetRotation(obj->GetRotation());
+            obj->SetVisible(true);
+            tip->SetVisible(true);
+        }
+        if (m_input.WasMouseReleased())
+        {
+            const auto hitBuffer = 30.0f;
+            const auto start = m_input.Convert(m_input.MousePosition());
+            if (glm::length(start - ball->GetPosition()) < ball->GetRadius() + hitBuffer)
+            {
+                const float force = m_flts.at("cue_force");
+                const auto end = m_input.Convert(m_input.MouseDownPosition());
+                ball->ApplyForce((start - end) * force);
+            }
+        }
+    });
+    m_scene.AddActor(std::move(cue));
+    m_scene.AddActor(std::move(cuetip));
 
     auto resetTable = [this, table]()
     {
@@ -233,7 +287,6 @@ void TutorialCreator::CreateTutorial4()
         }
 
         table.playerBall->SetPosition(position.x - halfSize + playerStart, position.y);
-        table.playerBall->SetVelocity(30.0f, 0.0f);
     };
 
     auto resetBallValues = [this, balls = table.balls]()
@@ -252,6 +305,10 @@ void TutorialCreator::CreateTutorial4()
     m_tweaker->AddTweakbleSquare(table.center, "Board", resetTable);
     m_tweaker->AddTweakableFlt("barrier_size", "Barrier Size", 1.0f, 1, resetTable);
     m_tweaker->AddTweakableFlt("pocket_size", "Pocket Size", 1.0f, 1, resetTable);
+
+    m_tweaker->SetGroup("Player");
+    m_tweaker->AddTweakableFlt("cue_size", "Cue Size", 1.0f, 1);
+    m_tweaker->AddTweakableFlt("cue_force", "Cue Force", 1.0f, 1);
 
     m_tweaker->SetGroup("Balls");
     m_tweaker->AddButton("Reset", resetBallPositions);
