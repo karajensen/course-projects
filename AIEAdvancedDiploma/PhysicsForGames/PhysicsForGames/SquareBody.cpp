@@ -20,11 +20,11 @@ void SquareBody::Update(float timeStep)
     RigidBody::Update(timeStep);
 }
 
-void SquareBody::Draw(aie::Renderer2D* renderer)
+void SquareBody::Draw(aie::Renderer2D& renderer)
 {
     RigidBody::Draw(renderer);
 
-    renderer->drawBox(std::round(m_position.x), 
+    renderer.drawBox(std::round(m_position.x), 
         std::round(m_position.y), std::round(m_size.x), std::round(m_size.y));
 }
 

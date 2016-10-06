@@ -11,9 +11,10 @@
 #include <algorithm>
 #include <vector>
 
-PhysicsScene::PhysicsScene()
+PhysicsScene::PhysicsScene(aie::Renderer2D& renderer)
     : m_timeStep(1.0f / 60.0f)
     , m_solver(new CollisionSolver())
+    , m_renderer(renderer)
 {
 }
 
@@ -67,14 +68,16 @@ void PhysicsScene::DebugScene()
     }
 }
 
-void PhysicsScene::Draw(aie::Renderer2D* renderer)
+void PhysicsScene::Draw()
 {
+    m_solver->Draw(m_renderer);
+
     // Draw in reverse order to preserve depth
     for (auto itr = m_actors.rbegin(); itr != m_actors.rend(); ++itr)
     {
         if ((*itr)->IsVisible())
         {
-            (*itr)->Draw(renderer);
+            (*itr)->Draw(m_renderer);
         }
     }
 }

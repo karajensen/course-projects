@@ -35,9 +35,9 @@ void PhysicsObject::PostUpdate(float timeStep)
     }
 }
 
-void PhysicsObject::Draw(aie::Renderer2D* renderer)
+void PhysicsObject::Draw(aie::Renderer2D& renderer)
 {
-    renderer->setRenderColour(m_colour.r, m_colour.g, m_colour.b, m_colour.a);
+    renderer.setRenderColour(m_colour.r, m_colour.g, m_colour.b, m_colour.a);
 }
 
 void PhysicsObject::Debug()

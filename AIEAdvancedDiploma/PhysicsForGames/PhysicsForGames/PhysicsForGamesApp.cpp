@@ -29,8 +29,8 @@ bool PhysicsForGamesApp::startup()
     setBackgroundColour(0.2f, 0.2f, 0.2f);
     auto& input = *aie::Input::getInstance();
 
-    m_physicsScene.reset(new PhysicsScene());
     m_2dRenderer.reset(new aie::Renderer2D());
+    m_physicsScene.reset(new PhysicsScene(*m_2dRenderer));
     m_tutorials.reset(new TutorialCreator(input, *m_physicsScene, m_size));
     m_gui.reset(new Gui(*m_physicsScene, *m_tutorials, input, m_size));
 
@@ -62,7 +62,7 @@ void PhysicsForGamesApp::draw()
 
     m_2dRenderer->begin();
 
-    m_physicsScene->Draw(m_2dRenderer.get());
+    m_physicsScene->Draw();
 
     m_2dRenderer->end();
 

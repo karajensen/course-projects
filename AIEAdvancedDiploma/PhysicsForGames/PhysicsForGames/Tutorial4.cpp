@@ -156,8 +156,8 @@ void TutorialCreator::CreateTutorial4()
         const glm::vec2 halfsize(size.x / 2.0f, size.y / 2.0f);
         const glm::vec2 edgeTop(position.x, position.y + halfsize.y);
         const glm::vec2 edgeBot(position.x, position.y - halfsize.y);
-        const glm::vec2 edgeLeft(position.x + halfsize.x, position.y);
-        const glm::vec2 edgeRight(position.x - halfsize.x, position.y);
+        const glm::vec2 edgeLeft(position.x - halfsize.x, position.y);
+        const glm::vec2 edgeRight(position.x + halfsize.x, position.y);
         const float barrierSize = m_flts.at("barrier_size");
         const float pocketSize = m_flts.at("pocket_size");
         const float verticalSize = size.y - pocketSize;
@@ -233,7 +233,7 @@ void TutorialCreator::CreateTutorial4()
         }
 
         table.playerBall->SetPosition(position.x - halfSize + playerStart, position.y);
-        table.playerBall->SetVelocity(-20.0f, 0.0f);
+        table.playerBall->SetVelocity(30.0f, 0.0f);
     };
 
     auto resetBallValues = [this, balls = table.balls]()

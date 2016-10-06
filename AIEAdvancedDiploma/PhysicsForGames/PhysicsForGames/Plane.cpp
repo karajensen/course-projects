@@ -21,7 +21,7 @@ void Plane::Update(float timeStep)
 {
 }
 
-void Plane::Draw(aie::Renderer2D* renderer)
+void Plane::Draw(aie::Renderer2D& renderer)
 {
     PhysicsObject::Draw(renderer);
 
@@ -32,7 +32,7 @@ void Plane::Draw(aie::Renderer2D* renderer)
     const glm::vec2 start = centrePoint + (parallel * m_size);
     const glm::vec2 end = centrePoint - (parallel * m_size);
 
-    renderer->drawLine(start.x, start.y, end.x, end.y, 1.0f, 0.0f);
+    renderer.drawLine(start.x, start.y, end.x, end.y, 1.0f, 0.0f);
 }
 
 void Plane::Debug()

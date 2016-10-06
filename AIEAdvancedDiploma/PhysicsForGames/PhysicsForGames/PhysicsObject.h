@@ -65,7 +65,7 @@ public:
     * Renders the body
     * @param renderer The 2D renderer for drawing the body
     */
-    virtual void Draw(aie::Renderer2D* renderer);
+    virtual void Draw(aie::Renderer2D& renderer);
 
     /**
     * Outputs debug information about the body

@@ -20,11 +20,11 @@ void CircleBody::Update(float timeStep)
     RigidBody::Update(timeStep);
 }
 
-void CircleBody::Draw(aie::Renderer2D* renderer)
+void CircleBody::Draw(aie::Renderer2D& renderer)
 {
     RigidBody::Draw(renderer);
 
-    renderer->drawCircle(m_position.x, m_position.y, m_radius);
+    renderer.drawCircle(m_position.x, m_position.y, m_radius);
 }
 
 void CircleBody::SetRadius(float radius)

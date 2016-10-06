@@ -8,8 +8,11 @@
 #include "SquareBody.h"
 #include "Plane.h"
 #include "Utilities.h"
+#include "Renderer2D.h"
 #include "glm/glm.hpp"
 #include <array>
+
+//#define SHOW_DIAGNOSTICS
 
 bool CollisionSolver::SolveCollision(PhysicsObject& obj1, PhysicsObject& obj2)
 {
@@ -159,14 +162,23 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
     auto& squareBody = dynamic_cast<SquareBody&>(square);
     auto& circleBody = dynamic_cast<CircleBody&>(circle);
 
-    auto testSquareSide = [&squareBody, &circleBody](const glm::vec2& c1, const glm::vec2& c2) -> bool
+    auto testSquareSide = [this, &squareBody, &circleBody](const glm::vec2& c1, const glm::vec2& c2) -> bool
     {
         const glm::vec2 direction = c2 - c1;
-        const glm::vec2 center = c2 + (direction * 0.5f);
+        const glm::vec2 center = c1 + (direction * 0.5f);
         const float distance = glm::length(direction);
-        const glm::vec2 normal(direction.y, -direction.x);
+        const glm::vec2 normal = -glm::normalize(glm::vec2(direction.y, -direction.x));
+        const auto& position = circleBody.GetPosition();
 
-        float sphereToPlane = glm::dot(circleBody.GetPosition() - c1, normal);
+        #ifdef SHOW_DIAGNOSTICS
+        AddDiagnostic(center + normal, 1.0f, 0.0f, 0.0f);
+        AddDiagnostic(position, 1.0f, 0.0f, 1.0f);
+        AddDiagnostic(c1, 1.0f, 1.0f, 0.0f);
+        AddDiagnostic(c2, 1.0f, 1.0f, 0.0f);
+        AddDiagnostic(center, 1.0f, 0.0f, 0.0f);
+        #endif
+
+        float sphereToPlane = glm::dot(position - c1, normal);
         if (sphereToPlane < 0.0f)
         {
             return false;
@@ -178,16 +190,25 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             return false;
         }
 
+        const glm::vec2 collisionPoint = position - (normal * sphereToPlane);
+        if (glm::length(center - collisionPoint) > distance * 0.5f)
+        {
+            return false;
+        }
+
+        #ifdef SHOW_DIAGNOSTICS
+        AddDiagnostic(collisionPoint, 1.0f, 0.0f, 1.0f);
+        #endif
+
         // Response for square currently not supported
         const auto& responseCircle = circleBody.GetCollisionResponse(squareBody.GetID());
         if (responseCircle.first)
         {
-            const glm::vec2 collisionNormal = glm::normalize(normal);
             const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *
-                collisionNormal * (glm::dot(collisionNormal, circleBody.GetVelocity()));
+                normal * (glm::dot(normal, circleBody.GetVelocity()));
 
             circleBody.ApplyForce(2.0f * forceVector);
-            circleBody.SetPosition(circleBody.GetPosition() + collisionNormal * intersection * 0.5f);
+            circleBody.SetPosition(circleBody.GetPosition() + normal * intersection * 0.5f);
         }
 
         if (responseCircle.second)
@@ -232,3 +253,23 @@ bool CollisionSolver::SolveSquarePlaneCollision(PhysicsObject& square, PhysicsOb
     return SolvePlaneSquareCollision(plane, square);
 }
 
+void CollisionSolver::Draw(aie::Renderer2D& renderer)
+{
+    if (!m_diagnostics.empty())
+    {
+        const float size = 10.0f;
+
+        for (const auto& pair : m_diagnostics)
+        {
+            renderer.setRenderColour(pair.second.r, pair.second.g, pair.second.b, 1.0f);
+            renderer.drawBox(pair.first.x, pair.first.y, size, size);
+        }
+
+        m_diagnostics.clear();
+    }
+}
+
+void CollisionSolver::AddDiagnostic(const glm::vec2& point, float r, float g, float b)
+{
+    m_diagnostics.push_back(std::make_pair(point, glm::vec3(r, g, b)));
+}
