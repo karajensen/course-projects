@@ -12,8 +12,6 @@
 #include "glm/glm.hpp"
 #include <array>
 
-//#define SHOW_DIAGNOSTICS
-
 bool CollisionSolver::SolveCollision(PhysicsObject& obj1, PhysicsObject& obj2)
 {
     // function pointer array for doing our collisions
@@ -142,11 +140,12 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
     const auto& responseCircle = circle.GetCollisionResponse(plane.GetID());
     if (responseCircle.first)
     {
-        const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *
-            collisionNormal * (glm::dot(collisionNormal, circleBody.GetVelocity()));
-
-        circleBody.ApplyForce(2.0f * forceVector);
-        circleBody.SetPosition(circleBody.GetPosition() + collisionNormal * intersection * 0.5f);
+        const auto& velocity = circleBody.GetVelocity();
+        const float dot = glm::dot(normal, velocity);
+        const float mass = std::max(circleBody.GetMass(), 0.001f);
+        const glm::vec2 reflection = (-2.0f / mass) * dot * normal + velocity;
+        circleBody.SetVelocity(reflection);
+        circleBody.SetPosition(circleBody.GetPosition() + normal * intersection * 0.5f);
     }
 
     if (responseCircle.second)
@@ -170,14 +169,6 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
         const glm::vec2 normal = -glm::normalize(glm::vec2(direction.y, -direction.x));
         const auto& position = circleBody.GetPosition();
 
-        #ifdef SHOW_DIAGNOSTICS
-        AddDiagnostic(center + normal, 1.0f, 0.0f, 0.0f);
-        AddDiagnostic(position, 1.0f, 0.0f, 1.0f);
-        AddDiagnostic(c1, 1.0f, 1.0f, 0.0f);
-        AddDiagnostic(c2, 1.0f, 1.0f, 0.0f);
-        AddDiagnostic(center, 1.0f, 0.0f, 0.0f);
-        #endif
-
         float sphereToPlane = glm::dot(position - c1, normal);
         if (sphereToPlane < 0.0f)
         {
@@ -196,19 +187,16 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             return false;
         }
 
-        #ifdef SHOW_DIAGNOSTICS
-        AddDiagnostic(collisionPoint, 1.0f, 0.0f, 1.0f);
-        #endif
-
         // Response for square currently not supported
         const auto& responseCircle = circleBody.GetCollisionResponse(squareBody.GetID());
         if (responseCircle.first)
         {
-            const glm::vec2 forceVector = -1.0f * circleBody.GetMass() *
-                normal * (glm::dot(normal, circleBody.GetVelocity()));
-
-            circleBody.ApplyForce(2.0f * forceVector);
-            circleBody.SetPosition(circleBody.GetPosition() + normal * intersection * 0.5f);
+            const auto& velocity = circleBody.GetVelocity();
+            const float dot = glm::dot(normal, velocity);
+            const float mass = std::max(circleBody.GetMass(), 0.001f);
+            const glm::vec2 reflection = (-2.0f / mass) * dot * normal + velocity;
+            circleBody.SetVelocity(reflection);
+            circleBody.SetPosition(position + normal * intersection * 0.5f);
         }
 
         if (responseCircle.second)

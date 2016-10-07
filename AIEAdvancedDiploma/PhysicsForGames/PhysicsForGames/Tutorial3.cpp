@@ -14,6 +14,8 @@
 
 void TutorialCreator::CreateTutorial3()
 {
+    m_data.ints["collision_response"] = 0;
+
     m_tweaker->SetGroup("Planes");
 
     std::unique_ptr<Plane> plane1(new Plane(
@@ -43,21 +45,25 @@ void TutorialCreator::CreateTutorial3()
         std::unique_ptr<CircleBody> ball(new CircleBody(
             glm::vec2(pX, pY),
             glm::vec2(vX, vY),
-            1.0f, radius, normalColor));
+            3.0f, radius, normalColor));
 
         if (gravity)
         {
             ball->SetGravity(glm::vec2(0.0f, -9.8f));
         }
-        
-        ball->SetCollisionResponse(false, [obj = ball.get()]()
-        {
-            obj->ResetVelocity();
-            obj->SetPosition(obj->GetPreviousPosition());
-        });
 
-        ball->SetPostUpdateFn([normalColor, collisionColor, obj = ball.get()](float timestep)
+        auto response = [this, gravity, obj = ball.get()]
         {
+            if (!gravity || m_data.ints.at("collision_response") == 0)
+            {
+                obj->ResetVelocity();
+                obj->SetPosition(obj->GetPreviousPosition());
+            }
+        };
+
+        ball->SetPostUpdateFn([this, gravity, response, normalColor, collisionColor, obj = ball.get()](float timestep)
+        {   
+            obj->SetCollisionResponse(gravity && m_data.ints.at("collision_response") != 0, response);
             obj->SetColor(obj->IsColliding() ? collisionColor : normalColor);
         });
 
@@ -88,6 +94,9 @@ void TutorialCreator::CreateTutorial3()
         }
     };
 
+    m_tweaker->SetGroup("Balls");
     m_tweaker->AddButton("Spawn Balls", spawnBalls);
+    m_tweaker->AddTweakableBool("collision_response", "Use Collision Response");
+
     spawnBalls();
 }

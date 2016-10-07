@@ -195,7 +195,7 @@ void PoolTable::Create(TutorialData& data)
     data.flts["barrier_size"] = 20.0f;
     data.flts["pocket_size"] = 40.0f;
     data.flts["ball_size"] = 11.0f;
-    data.flts["ball_mass"] = 0.5f;
+    data.flts["ball_mass"] = 1.0f;
     data.flts["player_start"] = 120.0f;
     data.flts["balls_start"] = -120.0f;
     data.flts["cue_size"] = 10.0f;
