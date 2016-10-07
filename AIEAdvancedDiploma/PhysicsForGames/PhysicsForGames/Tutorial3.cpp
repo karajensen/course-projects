@@ -21,14 +21,14 @@ void TutorialCreator::CreateTutorial3()
         glm::vec4(1.0f, 1.0f, 1.0f, 1.0)));
     plane1->SetActive(false);
     m_tweaker->AddTweakblePlane(plane1.get(), "P1");
-    m_scene.AddActor(std::move(plane1));
+    m_data.scene->AddActor(std::move(plane1));
 
     std::unique_ptr<Plane> plane2(new Plane(
         glm::vec2(-0.290f, 0.957f), -100.0f, 1500.0f,
         glm::vec4(1.0f, 1.0f, 1.0f, 1.0)));
     plane2->SetActive(false);
     m_tweaker->AddTweakblePlane(plane2.get(), "P2");
-    m_scene.AddActor(std::move(plane2));
+    m_data.scene->AddActor(std::move(plane2));
 
     auto createBall = [this](float radius, 
                              float pX, 
@@ -61,17 +61,17 @@ void TutorialCreator::CreateTutorial3()
             obj->SetColor(obj->IsColliding() ? collisionColor : normalColor);
         });
 
-        m_scene.AddActor(std::move(ball));
+        m_data.scene->AddActor(std::move(ball));
     };
 
-    createBall(20.0f, 0.0f, m_size.y - 40.0f, 30.0f, 0.0f, false);
-    createBall(30.0f, m_size.x + 30.0f, m_size.y - 60.0f, -30.0f, 0.0f, false);
+    createBall(20.0f, 0.0f, m_data.size.y - 40.0f, 30.0f, 0.0f, false);
+    createBall(30.0f, m_data.size.x + 30.0f, m_data.size.y - 60.0f, -30.0f, 0.0f, false);
 
     auto spawnBalls = [this, createBall]()
     {
         const int maxBalls = 5;
-        const float startY = m_size.y * 0.75f;
-        const float startX = m_size.x / static_cast<float>(maxBalls + 1);
+        const float startY = m_data.size.y * 0.75f;
+        const float startX = m_data.size.x / static_cast<float>(maxBalls + 1);
         const int minRadius = 30;
         const int maxRadius = 60;
 

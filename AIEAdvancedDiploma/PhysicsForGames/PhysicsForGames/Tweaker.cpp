@@ -242,6 +242,23 @@ void Tweaker::AddIntEntry(std::string label,
     LogTweakError();
 }
 
+void Tweaker::AddBoolEntry(std::string label,
+                           std::function<const bool(void)> getter,
+                           std::function<void(const bool)> setter)
+{
+    const auto index = m_entries.size();
+    auto entry = std::make_unique<TweakableEntry<bool>>();
+    entry->getter = getter;
+    entry->setter = setter;
+    m_entries.emplace_back(std::move(entry));
+
+    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_BOOLCPP,
+        SetCallback, GetCallback, m_entries[index].get(),
+        Definition(label).c_str());
+
+    LogTweakError();
+}
+
 void Tweaker::FillBufffer(Label& label)
 {
     for (unsigned int i = 0; i < label.value.size(); ++i)

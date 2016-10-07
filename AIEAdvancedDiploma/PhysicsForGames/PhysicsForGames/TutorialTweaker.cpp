@@ -98,6 +98,25 @@ void TutorialTweaker::AddTweakableInt(const char* name,
         setInt, INT_MAX);
 }
 
+void TutorialTweaker::AddTweakableBool(const char* name,
+                                       const char* label,
+                                       std::function<void(void)> onSet)
+{
+    auto setter = [this, name, onSet](bool value)
+    {
+        m_setInt(name, value != 0 ? 1 : 0);
+
+        if (onSet)
+        {
+            onSet();
+        }
+    };
+
+    m_tweaker.AddBoolEntry(label,
+        [this, name]() { return m_getInt(name) != 0; },
+        setter);
+}
+
 void TutorialTweaker::AddTweakbleSquare(SquareBody* obj, 
                                         const std::string& label,
                                         std::function<void(void)> onSet)

@@ -11,10 +11,11 @@
 #include <algorithm>
 
 TutorialCreator::TutorialCreator(Input& input, PhysicsScene& scene, const glm::ivec2& size)
-    : m_scene(scene)
-    , m_size(size)
-    , m_input(input)
 {
+    m_data.input = &input;
+    m_data.scene = &scene;
+    m_data.size = size;
+
     m_createTutorial = 
     {
         nullptr,
@@ -78,12 +79,13 @@ void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
             std::bind(&TutorialCreator::SetFlt, this, _1, _2),
             std::bind(&TutorialCreator::GetInt, this, _1),
             std::bind(&TutorialCreator::GetFlt, this, _1)));
+        m_data.tweaker = m_tweaker.get();
     }
 
     tweaker.Reset();
-    m_scene.Reset();
-    m_flts.clear();
-    m_ints.clear();
+    m_data.scene->Reset();
+    m_data.flts.clear();
+    m_data.ints.clear();
 
     if (tutorial != TUTORIAL_NONE)
     {
@@ -95,20 +97,20 @@ void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
 
 void TutorialCreator::SetInt(const char* name, int value)
 {
-    m_ints.at(name) = value;
+    m_data.ints.at(name) = value;
 }
 
 void TutorialCreator::SetFlt(const char* name, float value)
 {
-    m_flts.at(name) = value;
+    m_data.flts.at(name) = value;
 }
 
 int TutorialCreator::GetInt(const char* name) const
 {
-    return m_ints.at(name);
+    return m_data.ints.at(name);
 }
 
 float TutorialCreator::GetFlt(const char* name) const
 {
-    return m_flts.at(name);
+    return m_data.flts.at(name);
 }

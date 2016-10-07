@@ -97,6 +97,16 @@ public:
                          std::function<void(void)> onSet = nullptr);
 
     /**
+    * Adds a tweakable bool value to the tweak bar
+    * @param name The name of the value to add
+    * @param label The label to show on the tweak bar
+    * @param onSet Callback to use when value is set
+    */
+    void AddTweakableBool(const char* name, 
+                         const char* label,
+                         std::function<void(void)> onSet = nullptr);
+
+    /**
     * Adds a body to the tweak bar
     * @param obj The body to add
     * @param label The label to show on the tweak bar

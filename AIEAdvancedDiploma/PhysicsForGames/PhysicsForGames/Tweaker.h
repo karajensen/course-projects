@@ -177,6 +177,16 @@ public:
                      int precision = 0);
 
     /**
+    * Creates a new tweakable entry for a bool
+    * @param label What to display the entry as
+    * @param getter Callback to get the value
+    * @param setter Callback for set the value
+    */
+    void AddBoolEntry(std::string label,
+                      std::function<const bool(void)> getter,
+                      std::function<void(const bool)> setter);
+
+    /**
     * Creates a new tweakable entry
     * @param label What to display the entry as
     * @param entry The address of the entry to add

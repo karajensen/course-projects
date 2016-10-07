@@ -96,6 +96,7 @@
     <ClCompile Include="CollisionSolver.cpp" />
     <ClCompile Include="Gui.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="PoolTable.cpp" />
     <ClCompile Include="SquareBody.cpp" />
     <ClCompile Include="PhysicsForGamesApp.cpp" />
     <ClCompile Include="main.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="CollisionSolver.h" />
     <ClInclude Include="Gui.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="PoolTable.h" />
     <ClInclude Include="SquareBody.h" />
     <ClInclude Include="PhysicsForGamesApp.h" />
     <ClInclude Include="PhysicsObject.h" />
@@ -124,6 +126,7 @@
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="CircleBody.h" />
     <ClInclude Include="TutorialCreator.h" />
+    <ClInclude Include="TutorialData.h" />
     <ClInclude Include="TutorialTweaker.h" />
     <ClInclude Include="Tweaker.h" />
     <ClInclude Include="Utilities.h" />

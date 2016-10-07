@@ -4,16 +4,12 @@
 
 #pragma once
 
-#include "glm/vec2.hpp"
-#include <map>
+#include "TutorialData.h"
 #include <functional>
 #include <vector>
 #include <memory>
 
-class PhysicsScene;
 class Tweaker;
-class TutorialTweaker;
-class Input;
 
 enum Tutorial
 {
@@ -101,14 +97,10 @@ private:
     void CreateTutorial3();
     void CreateTutorial4();
 
-    Input& m_input;                                       ///< For querying user input
-    PhysicsScene& m_scene;                                ///< Physics scene manager
-    const glm::ivec2& m_size;                             ///< Size of the window
     Tutorial m_currentTutorial = TUTORIAL_NONE;           ///< Currently selected tutorial
-    std::map<const char*, float> m_flts;                  ///< Current tutorial specific parameters
-    std::map<const char*, int> m_ints;                    ///< Current tutorial specific parameters
     std::function<void(void)> m_resetTweaker = nullptr;   ///< Callback to reset the tweak bar
     std::unique_ptr<TutorialTweaker> m_tweaker;           ///< Tweak bar wrapper for tutorials
+    TutorialData m_data;                                  ///< Data for running tutorials
 
     typedef void(TutorialCreator::*CreateFn)();
     std::vector<CreateFn> m_createTutorial;               ///< Callback for creating a tutorial
