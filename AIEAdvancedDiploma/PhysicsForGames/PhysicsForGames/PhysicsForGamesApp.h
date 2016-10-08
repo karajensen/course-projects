@@ -13,7 +13,7 @@ namespace aie
     class Renderer2D;
 }
 
-class Gui;
+class Tweaker;
 class PhysicsScene;
 class TutorialCreator;
 class Input;
@@ -73,7 +73,7 @@ private:
     glm::ivec2 m_size;                              ///< Size of the window
     std::unique_ptr<PhysicsScene> m_physicsScene;   ///< Scene for manipulating physics actors
     std::unique_ptr<TutorialCreator> m_tutorials;   ///< Creates different tutorial scenes
-    std::unique_ptr<Gui> m_gui;                     ///< Gui for the tweak bar
+    std::unique_ptr<Tweaker> m_tweaker;             ///< Tweak bar for manipulating the scene
     std::unique_ptr<aie::Renderer2D> m_2dRenderer;  ///< Renderer for drawing 2D objects
     std::unique_ptr<Input> m_input;                 ///< For querying user input
 };

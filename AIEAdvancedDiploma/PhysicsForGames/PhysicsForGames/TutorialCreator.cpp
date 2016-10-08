@@ -10,12 +10,15 @@
 #include "Utilities.h"
 #include <algorithm>
 
-TutorialCreator::TutorialCreator(Input& input, PhysicsScene& scene, const glm::ivec2& size)
+TutorialCreator::TutorialCreator(Input& input, 
+                                 PhysicsScene& scene, 
+                                 Tweaker& tweaker,
+                                 const glm::ivec2& size)
 {
-    m_data.input = &input;
-    m_data.scene = &scene;
-    m_data.size = size;
-
+    m_tweaker.reset(new TutorialTweaker(tweaker));
+    m_data.reset(new TutorialData(input, scene, *m_tweaker, size));
+    m_tweaker->SetData(m_data.get());
+       
     m_createTutorial = 
     {
         nullptr,
@@ -55,12 +58,12 @@ void TutorialCreator::AddToTweaker(Tweaker& tweaker)
 
     tweaker.AddEnumEntry("Selected Tutorial",
         [this]()->int { return m_currentTutorial;  },
-        [this, &tweaker](int value) { Create(tweaker, value);  },
+        [this, &tweaker](int value) { Create(value);  },
         tutorials);
 
     tweaker.AddButton("Reset Tutorial", [this, &tweaker]()
     {
-        Create(tweaker, m_currentTutorial);
+        Create(m_currentTutorial);
     });
 }
 
@@ -69,23 +72,9 @@ const char* TutorialCreator::GetName(int tutorial) const
     return m_tutorialNames.at(tutorial);
 }
 
-void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
+void TutorialCreator::Create(int tutorial)
 {
-    if (!m_tweaker)
-    {
-        using namespace std::placeholders;
-        m_tweaker.reset(new TutorialTweaker(tweaker,
-            std::bind(&TutorialCreator::SetInt, this, _1, _2),
-            std::bind(&TutorialCreator::SetFlt, this, _1, _2),
-            std::bind(&TutorialCreator::GetInt, this, _1),
-            std::bind(&TutorialCreator::GetFlt, this, _1)));
-        m_data.tweaker = m_tweaker.get();
-    }
-
-    tweaker.Reset();
-    m_data.scene->Reset();
-    m_data.flts.clear();
-    m_data.ints.clear();
+    m_data->Reset();
 
     if (tutorial != TUTORIAL_NONE)
     {
@@ -93,24 +82,4 @@ void TutorialCreator::Create(Tweaker& tweaker, int tutorial)
     }
 
     m_currentTutorial = static_cast<Tutorial>(tutorial);
-}
-
-void TutorialCreator::SetInt(const char* name, int value)
-{
-    m_data.ints.at(name) = value;
-}
-
-void TutorialCreator::SetFlt(const char* name, float value)
-{
-    m_data.flts.at(name) = value;
-}
-
-int TutorialCreator::GetInt(const char* name) const
-{
-    return m_data.ints.at(name);
-}
-
-float TutorialCreator::GetFlt(const char* name) const
-{
-    return m_data.flts.at(name);
 }

@@ -4,13 +4,16 @@
 
 #pragma once
 
+#include "AntTweakBar.h"
 #include <string>
 #include <functional>
 #include <vector>
 #include <memory>
 #include <array>
-#include "AntTweakBar.h"
+#include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
+
+class Input;
 
 class Tweaker
 {
@@ -18,14 +21,19 @@ public:
 
     /**
     * Constructor
-    * @param tweakbar the tweak bar to fill in
+    * @param size The size of the window
     */
-    Tweaker(CTwBar* tweakbar);
+    Tweaker(const glm::ivec2& size);
 
     /**
     * Destructor
     */
     ~Tweaker();
+
+    /**
+    * Renders the GUI tweak bar
+    */
+    void Render();
 
     /**
     * Adds a callback on reset
@@ -40,7 +48,7 @@ public:
     /**
     * Updates the tweak bar
     */
-    void Update();
+    void Update(Input& input);
 
     /**
     * Sets the group used
@@ -63,13 +71,6 @@ public:
     */
     void AddStrEntry(std::string label, 
                      std::function<const std::string(void)> getter);
-
-    /**
-    * Creates a new readonly entry for displaying a string
-    * @param label What to display the entry as
-    * @param getter function to retrieve the string value
-    */
-    void AddStrEntry(std::string label, std::string entry);
 
     /**
     * Creates a new readonly entry for displaying a string
@@ -105,25 +106,6 @@ public:
                      unsigned int max);
 
     /**
-    * Creates a new tweakable entry for an int
-    * @param label What to display the entry as
-    * @param getter Callback to get the int
-    */
-    void AddIntEntry(std::string label, 
-                     std::function<const int(void)> getter);
-
-    /**
-    * Creates a new tweakable entry for an int
-    * @param label What to display the entry as
-    * @param entry The address of the entry to add
-    * @param min/max The range the value can be
-    */
-    void AddIntEntry(std::string label,
-                     void* entry, 
-                     int min,
-                     int max);
-
-    /**
     * Creates a new tweakable entry for an value
     * @param label What to display the entry as
     * @param getter Callback to get the value
@@ -138,45 +120,6 @@ public:
                      int precision);
 
     /**
-    * Creates a new tweakable entry
-    * @param label What to display the entry as
-    * @param entry The address of the entry to add
-    * @param type The type of entry it is
-    * @param step The differece between values
-    * @param precision The amount of decimal points to display
-    */
-    void AddFltEntry(std::string label,
-                     void* entry, 
-                     float step,
-                     int precision = 0);
-
-    /**
-    * Creates a new tweakable entry
-    * @param label What to display the entry as
-    * @param entry The address of the entry to add
-    * @param type The type of entry it is
-    * @param step The differece between values
-    * @param min/max The range the value can be
-    * @param precision The amount of decimal points to display
-    */
-    void AddFltEntry(std::string label,
-                     void* entry, 
-                     float step,
-                     float min,
-                     float max,
-                     int precision = 0);
-
-    /**
-    * Creates a new readonly tweakable entry
-    * @param label What to display the entry as
-    * @param entry The address of the entry to add
-    * @param precision The amount of decimal points to display
-    */
-    void AddFltEntry(std::string label,
-                     void* entry,
-                     int precision = 0);
-
-    /**
     * Creates a new tweakable entry for a bool
     * @param label What to display the entry as
     * @param getter Callback to get the value
@@ -187,24 +130,8 @@ public:
                       std::function<void(const bool)> setter);
 
     /**
-    * Creates a new tweakable entry
-    * @param label What to display the entry as
-    * @param entry The address of the entry to add
-    * @param type The type of entry it is
-    * @param readonly Whether this entry is readonly
-    */
-    void AddEntry(std::string label,
-                  void* entry, 
-                  TwType type, 
-                  bool readonly = false);
-
-    /**
-    * Clears all current entries
-    */
-    void ClearEntries();
-
-    /**
     * Base for a callback entry for allowing templating in cpp
+    * @note required to be public for templating
     */
     struct Entry
     {
@@ -223,9 +150,9 @@ private:
     /**
     * Fixed size of all string entries
     */
-    enum 
-    { 
-        STR_BUFFER_SIZE = 128 
+    enum
+    {
+        STR_BUFFER_SIZE = 128
     };
 
     /**
@@ -248,6 +175,11 @@ private:
         std::string value;
         std::function<const std::string(void)> getter = nullptr;
     };
+
+    /**
+    * Clears all current entries
+    */
+    void ClearEntries();
 
     /**
     * Fills the internal buffer of a label
@@ -282,22 +214,6 @@ private:
     std::string Definition(std::string label, float step, int precision) const;
 
     /**
-    * Helper function to get a definition for a tweakable entry
-    * @param label What to display the entry as
-    * @param step The differece between values
-    * @param min/max The range of values allowed
-    * @param precision The amount of decimal points to display
-    */
-    std::string Definition(std::string label, float step, float min, float max, int precision) const;
-
-    /**
-    * Helper function to get a definition for a tweakable entry
-    * @param label What to display the entry as
-    * @param precision The amount of decimal points to display
-    */
-    std::string Definition(std::string label, int precision) const;
-
-    /**
     * Determines if there is an error and logs
     */
     void LogTweakError() const;
@@ -327,9 +243,9 @@ private:
 
     int m_count = 0;                                    ///< Number of entries added
     std::string m_group;                                ///< Global group currently set
-    CTwBar* m_tweakBar = nullptr;                       ///< Tweak bar to fill in, not owned by this class
     std::vector<std::unique_ptr<Label>> m_labels;       ///< Data for the tweak bar strings
     std::vector<std::unique_ptr<Button>> m_buttons;     ///< Data for the tweak bar buttons
     std::vector<std::unique_ptr<Entry>> m_entries;      ///< Data for the tweak bar getter/setters
     std::function<void(void)> m_resetFn = nullptr;      ///< Callback to reset the tweak bar
+    CTwBar* m_tweakbar = nullptr;                       ///< Internal tweak bar
 };

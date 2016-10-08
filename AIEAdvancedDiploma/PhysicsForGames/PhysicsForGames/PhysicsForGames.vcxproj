@@ -94,7 +94,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CollisionSolver.cpp" />
-    <ClCompile Include="Gui.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="PoolTable.cpp" />
     <ClCompile Include="SquareBody.cpp" />
@@ -110,12 +109,12 @@
     <ClCompile Include="Tutorial3.cpp" />
     <ClCompile Include="Tutorial4.cpp" />
     <ClCompile Include="TutorialCreator.cpp" />
+    <ClCompile Include="TutorialData.cpp" />
     <ClCompile Include="TutorialTweaker.cpp" />
     <ClCompile Include="Tweaker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionSolver.h" />
-    <ClInclude Include="Gui.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="PoolTable.h" />
     <ClInclude Include="SquareBody.h" />

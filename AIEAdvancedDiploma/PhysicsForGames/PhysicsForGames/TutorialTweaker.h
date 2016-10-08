@@ -8,6 +8,7 @@
 #include <functional>
 #include <vector>
 
+class TutorialData;
 class PhysicsScene;
 class PhysicsObject;
 class SquareBody;
@@ -22,14 +23,8 @@ public:
     /**
     * Constructor
     * @param tweaker The tweak bar to add to
-    * @param setInt/setFlt Setters for tutorial data
-    * @param getInt/getFlt Getters for tutorial data
     */
-    TutorialTweaker(Tweaker& tweaker,
-                    std::function<void(const char*, int)> setInt,
-                    std::function<void(const char*, float)> setFlt,
-                    std::function<int(const char*)> getInt,
-                    std::function<float(const char*)> getFlt);
+    TutorialTweaker(Tweaker& tweaker);
 
     /**
     * Sets the group for the tweak bar
@@ -136,11 +131,18 @@ public:
                           const std::string& label,
                           std::function<void(void)> onSet = nullptr);
 
+    /**
+    * Sets the tutorial data to work with
+    */
+    void SetData(TutorialData* data);
+
+    /**
+    * Resets the tweak bar
+    */
+    void Reset();
+
 private:
 
-    std::function<void(const char*, int)> m_setInt = nullptr;
-    std::function<void(const char*, float)> m_setFlt = nullptr;
-    std::function<int(const char*)> m_getInt = nullptr;
-    std::function<float(const char*)> m_getFlt = nullptr;
+    TutorialData* m_data = nullptr;
     Tweaker& m_tweaker;
 };

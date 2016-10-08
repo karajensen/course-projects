@@ -14,8 +14,8 @@
 
 void TutorialCreator::CreateTutorial1()
 {
-    const int middleX = m_data.size.x / 2;
-    const int middleY = m_data.size.y / 2;
+    const int middleX = m_data->Size().x / 2;
+    const int middleY = m_data->Size().y / 2;
 
     {   // Showing 1st Law
         std::unique_ptr<CircleBody> ball(new CircleBody(
@@ -24,7 +24,7 @@ void TutorialCreator::CreateTutorial1()
             3.0f, 40,
             glm::vec4(1, 0, 0, 1)));
         ball->SetCollidable(false);
-        m_data.scene->AddActor(std::move(ball));
+        m_data->Scene().AddActor(std::move(ball));
     }
 
     {   // Showing 2nd Law
@@ -35,7 +35,7 @@ void TutorialCreator::CreateTutorial1()
             glm::vec4(0, 1, 0, 1)));
         ball->SetGravity(0.0f, -9.8f);
         ball->SetCollidable(false);
-        m_data.scene->AddActor(std::move(ball));
+        m_data->Scene().AddActor(std::move(ball));
     }
 
     {   // Showing 3rd Law
@@ -59,8 +59,8 @@ void TutorialCreator::CreateTutorial1()
 
         ball1->SetCollidable(false);
         ball2->SetCollidable(false);
-        m_data.scene->AddActor(std::move(ball1));
-        m_data.scene->AddActor(std::move(ball2));
+        m_data->Scene().AddActor(std::move(ball1));
+        m_data->Scene().AddActor(std::move(ball2));
     }
 
     { // Simulating a rocket motor
@@ -76,7 +76,7 @@ void TutorialCreator::CreateTutorial1()
             exhaust->SetVisible(false);
             exhaust->SetCollidable(false);
             particles.push_back(exhaust.get());
-            m_data.scene->AddActor(std::move(exhaust));
+            m_data->Scene().AddActor(std::move(exhaust));
         }
 
         std::unique_ptr<CircleBody> rocket(new CircleBody(
@@ -89,11 +89,11 @@ void TutorialCreator::CreateTutorial1()
         rocket->SetGravity(0.0f, -9.8f);
         rocket->SetDamping(0.98f);
 
-        m_data.flts["time"] = 0.0f;
-        m_data.flts["fuel"] = 10.0f;
-        m_data.flts["forceX"] = 25.0f;
-        m_data.flts["forceY"] = 100.0f;
-        m_data.ints["index"] = 0;
+        m_data->CreateFlt("time", 0.0f);
+        m_data->CreateFlt("fuel", 10.0f);
+        m_data->CreateFlt("forceX", 25.0f);
+        m_data->CreateFlt("forceY", 100.0f);
+        m_data->CreateInt("index", 0);
 
         m_tweaker->AddTweakableFlt("fuel", "Rocket Fuel Level", 0.1f, 3);
         m_tweaker->AddTweakableFlt("forceX", "Rocket Force X", 0.1f, 1);
@@ -101,23 +101,22 @@ void TutorialCreator::CreateTutorial1()
 
         rocket->SetPreUpdateFn([this, particles, obj = rocket.get()](float timestep)
         {
-            float& fuel = m_data.flts.at("fuel");
+            float fuel = m_data->GetFlt("fuel");
             if (fuel <= 0.0f)
             {
                 return;
             }
-
             fuel -= 0.01f;
 
-            const auto& forceX = m_data.flts.at("forceX");
-            const auto& forceY = m_data.flts.at("forceY");
-
-            auto& timepassed = m_data.flts.at("time");
+            const float forceX = m_data->GetFlt("forceX");
+            const float forceY = m_data->GetFlt("forceY");
+            float timepassed = m_data->GetFlt("time");
             timepassed += timestep;
+
             if(timepassed > 1.0f)
             {
                 timepassed = 0.0f;
-                auto& index = m_data.ints.at("index");
+                const auto index = m_data->GetInt("index");
 
                 glm::vec2 position = obj->GetPosition();
                 glm::vec2 direction(forceX, forceY);
@@ -133,7 +132,7 @@ void TutorialCreator::CreateTutorial1()
                 particles[index]->ResetVelocity();
                 obj->ApplyForceToActor(particles[index], glm::vec2(forceX, forceY));
                 
-                index = index + 1 >= static_cast<int>(particles.size()) ? 0 : index + 1;
+                m_data->SetInt("index", index + 1 >= static_cast<int>(particles.size()) ? 0 : index + 1);
             }
             else
             {
@@ -148,8 +147,11 @@ void TutorialCreator::CreateTutorial1()
                     particle->SetVisible(false);
                 }
             }
+
+            m_data->SetFlt("fuel", fuel);
+            m_data->SetFlt("time", timepassed);
         });
 
-        m_data.scene->AddActor(std::move(rocket));
+        m_data->Scene().AddActor(std::move(rocket));
     }
 }

@@ -9,7 +9,7 @@
 #include "Renderer2D.h"
 #include "PhysicsScene.h"
 #include "TutorialCreator.h"
-#include "Gui.h"
+#include "Tweaker.h"
 
 PhysicsForGamesApp::PhysicsForGamesApp() :
     m_size(1280, 720)
@@ -31,11 +31,19 @@ bool PhysicsForGamesApp::startup()
     m_input.reset(new Input(m_size, *aie::Input::getInstance()));
     m_2dRenderer.reset(new aie::Renderer2D());
     m_physicsScene.reset(new PhysicsScene(*m_2dRenderer));
-    m_tutorials.reset(new TutorialCreator(*m_input, *m_physicsScene, m_size));
-    m_gui.reset(new Gui(*m_physicsScene, *m_tutorials, *m_input, m_size));
+    m_tweaker.reset(new Tweaker(m_size));
+    m_tutorials.reset(new TutorialCreator(*m_input, *m_physicsScene, *m_tweaker, m_size));
+
+    m_tweaker->AddResetFn([this]()
+    {
+        m_physicsScene->AddToTweaker(*m_tweaker);
+        m_input->AddToTweaker(*m_tweaker);
+        m_tutorials->AddToTweaker(*m_tweaker);
+    });
+    m_tweaker->Reset();
 
     // Always create the latest tutorial
-    m_tutorials->Create(m_gui->GetTweaker(), Tutorial::TUTORIAL_COUNT-1);
+    m_tutorials->Create(Tutorial::TUTORIAL_COUNT-1);
 
     return true;
 }
@@ -48,7 +56,7 @@ void PhysicsForGamesApp::update(float deltaTime)
 {
     m_input->Update();
     m_physicsScene->Update();
-    m_gui->Update();
+    m_tweaker->Update(*m_input);
 
     aie::Input* input = aie::Input::getInstance();
     if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
@@ -67,5 +75,5 @@ void PhysicsForGamesApp::draw()
 
     m_2dRenderer->end();
 
-    m_gui->Render();
+    m_tweaker->Render();
 }

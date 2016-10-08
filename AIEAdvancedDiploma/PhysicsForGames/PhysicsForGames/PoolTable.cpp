@@ -51,7 +51,7 @@ void PoolTable::CreateBoard(TutorialData& data, Actors& actors)
 {
     // Pool table center
     std::unique_ptr<SquareBody> centerBody(new SquareBody(
-        glm::vec2(data.size.x / 2.0f, data.size.y / 2.0f),
+        glm::vec2(data.Size().x / 2.0f, data.Size().y / 2.0f),
         glm::vec2(0, 0), 0.0f,
         glm::vec2(700.0f, 350.0f),
         glm::vec4(0.0f, 0.85f, 0.0, 1.0f)));
@@ -59,7 +59,7 @@ void PoolTable::CreateBoard(TutorialData& data, Actors& actors)
     centerBody->SetActive(false);
     centerBody->SetCollidable(false);
     actors.center = centerBody.get();
-    data.scene->AddActor(std::move(centerBody));
+    data.Scene().AddActor(std::move(centerBody));
 
     // Pool table barriers
     for (int i = 0; i < int(actors.barriers.size()); ++i)
@@ -71,7 +71,7 @@ void PoolTable::CreateBoard(TutorialData& data, Actors& actors)
         barrier->SetActive(false);
         barrier->SetCollisionResponse(false);
         actors.barriers[i] = barrier.get();
-        data.scene->AddActor(std::move(barrier));
+        data.Scene().AddActor(std::move(barrier));
     }
 
     // Pool table pockets
@@ -84,7 +84,7 @@ void PoolTable::CreateBoard(TutorialData& data, Actors& actors)
         pocket->SetActive(false);
         pocket->SetCollisionResponse(false);
         actors.pockets[i] = pocket.get();
-        data.scene->AddActor(std::move(pocket));
+        data.Scene().AddActor(std::move(pocket));
     }
 }
 
@@ -118,7 +118,7 @@ void PoolTable::CreateBalls(TutorialData& data, Actors& actors)
         }
 
         actors.balls[i] = ball.get();
-        data.scene->AddActor(std::move(ball));
+        data.Scene().AddActor(std::move(ball));
     }
 
     actors.playerBall = actors.balls[0];
@@ -149,12 +149,12 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
         obj->SetVisible(false);
         tip->SetVisible(false);
 
-        if (data.input->IsMouseDown())
+        if (data.Input().IsMouseDown())
         {
-            const bool inverted = data.ints.at("cue_inverted") != 0;
-            const float size = data.flts.at("cue_size");
-            const auto end = data.input->Convert(data.input->MouseDownPosition());
-            const auto start = data.input->Convert(data.input->MousePosition());
+            const bool inverted = data.GetBool("cue_inverted");
+            const float size = data.GetFlt("cue_size");
+            const auto end = data.Input().Convert(data.Input().MouseDownPosition());
+            const auto start = data.Input().Convert(data.Input().MousePosition());
             obj->MakeFromLine(inverted ? start : end, inverted ? end : start, size);
             tip->SetPosition(inverted ? start : end);
             tip->SetSize(size, size);
@@ -163,23 +163,23 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
             tip->SetVisible(true);
         }
 
-        if (data.input->WasMouseReleased())
+        if (data.Input().WasMouseReleased())
         {
-            const bool inverted = data.ints.at("cue_inverted") != 0;
+            const bool inverted = data.GetBool("cue_inverted");
             const auto hitBuffer = 30.0f;
-            const auto start = data.input->Convert(data.input->MousePosition());
-            const auto end = data.input->Convert(data.input->MouseDownPosition());
+            const auto start = data.Input().Convert(data.Input().MousePosition());
+            const auto end = data.Input().Convert(data.Input().MouseDownPosition());
 
             if (glm::length((inverted ? start : end) - ball->GetPosition()) < ball->GetRadius() + hitBuffer)
             {
-                const float force = data.flts.at("cue_force");
+                const float force = data.GetFlt("cue_force");
                 ball->ApplyForce((inverted ? start - end : end - start) * force);
             }
         }
     });
 
-    data.scene->AddActor(std::move(cue));
-    data.scene->AddActor(std::move(cuetip));
+    data.Scene().AddActor(std::move(cue));
+    data.Scene().AddActor(std::move(cuetip));
 }
 
 void PoolTable::Create(TutorialData& data)
@@ -192,15 +192,15 @@ void PoolTable::Create(TutorialData& data)
     actors.balls.resize(16);
     actors.balls.assign(actors.balls.size(), nullptr);
 
-    data.flts["barrier_size"] = 20.0f;
-    data.flts["pocket_size"] = 40.0f;
-    data.flts["ball_size"] = 11.0f;
-    data.flts["ball_mass"] = 1.0f;
-    data.flts["player_start"] = 120.0f;
-    data.flts["balls_start"] = -120.0f;
-    data.flts["cue_size"] = 10.0f;
-    data.flts["cue_force"] = 10.0f;
-    data.ints["cue_inverted"] = 0;
+    data.CreateFlt("barrier_size", 20.0f);
+    data.CreateFlt("pocket_size", 40.0f);
+    data.CreateFlt("ball_size", 11.0f);
+    data.CreateFlt("ball_mass", 1.0f);
+    data.CreateFlt("player_start", 120.0f);
+    data.CreateFlt("balls_start", -120.0f);
+    data.CreateFlt("cue_size", 10.0f);
+    data.CreateFlt("cue_force", 10.0f);
+    data.CreateBool("cue_inverted", false);
 
     CreateBoard(data, actors);
     CreateBalls(data, actors);
@@ -215,8 +215,8 @@ void PoolTable::Create(TutorialData& data)
         const glm::vec2 edgeBot(position.x, position.y - halfsize.y);
         const glm::vec2 edgeLeft(position.x - halfsize.x, position.y);
         const glm::vec2 edgeRight(position.x + halfsize.x, position.y);
-        const float barrierSize = data.flts.at("barrier_size");
-        const float pocketSize = data.flts.at("pocket_size");
+        const float barrierSize = data.GetFlt("barrier_size");
+        const float pocketSize = data.GetFlt("pocket_size");
         const float verticalSize = size.y - pocketSize;
         const float horizontalSize = (size.x - (pocketSize * 2.0f)) * 0.5f;
         const float thirdSize = halfsize.x * 0.5f;
@@ -258,9 +258,9 @@ void PoolTable::Create(TutorialData& data)
     {
         const glm::vec2& size = actors.center->GetSize();
         const glm::vec2& position = actors.center->GetPosition();
-        const float ballStart = data.flts.at("balls_start");
-        const float playerStart = data.flts.at("player_start");
-        const float ballSize = data.flts.at("ball_size") * 2.0f;
+        const float ballStart = data.GetFlt("balls_start");
+        const float playerStart = data.GetFlt("player_start");
+        const float ballSize = data.GetFlt("ball_size") * 2.0f;
         const float halfSize = size.x * 0.5f;
         const float xOffset = -3.0f;
 
@@ -294,8 +294,8 @@ void PoolTable::Create(TutorialData& data)
 
     auto resetBallValues = [actors, &data]()
     {
-        const float ballSize = data.flts.at("ball_size");
-        const float ballMass = data.flts.at("ball_mass");
+        const float ballSize = data.GetFlt("ball_size");
+        const float ballMass = data.GetFlt("ball_mass");
 
         for(auto* ball : actors.balls)
         {
@@ -304,22 +304,24 @@ void PoolTable::Create(TutorialData& data)
         }
     };
 
-    data.tweaker->SetGroup("Table");
-    data.tweaker->AddTweakbleSquare(actors.center, "Board", resetTable);
-    data.tweaker->AddTweakableFlt("barrier_size", "Barrier Size", 1.0f, 1, resetTable);
-    data.tweaker->AddTweakableFlt("pocket_size", "Pocket Size", 1.0f, 1, resetTable);
+    auto& tweaker = data.Tweaker();
 
-    data.tweaker->SetGroup("Player");
-    data.tweaker->AddTweakableFlt("cue_size", "Cue Size", 1.0f, 1);
-    data.tweaker->AddTweakableFlt("cue_force", "Cue Force", 1.0f, 1);
-    data.tweaker->AddTweakableBool("cue_inverted", "Cue Inverted");
+    tweaker.SetGroup("Table");
+    tweaker.AddTweakbleSquare(actors.center, "Board", resetTable);
+    tweaker.AddTweakableFlt("barrier_size", "Barrier Size", 1.0f, 1, resetTable);
+    tweaker.AddTweakableFlt("pocket_size", "Pocket Size", 1.0f, 1, resetTable);
 
-    data.tweaker->SetGroup("Balls");
-    data.tweaker->AddButton("Reset", resetBallPositions);
-    data.tweaker->AddTweakableFlt("ball_mass", "Ball Mass", 0.1f, 3, resetBallValues);
-    data.tweaker->AddTweakableFlt("ball_size", "Ball Size", 0.1f, 3, resetBallValues);
-    data.tweaker->AddTweakableFlt("player_start", "Player Start", 0.1f, 3, resetBallPositions);
-    data.tweaker->AddTweakableFlt("balls_start", "Balls Start", 0.1f, 3, resetBallPositions);
+    tweaker.SetGroup("Player");
+    tweaker.AddTweakableFlt("cue_size", "Cue Size", 1.0f, 1);
+    tweaker.AddTweakableFlt("cue_force", "Cue Force", 1.0f, 1);
+    tweaker.AddTweakableBool("cue_inverted", "Cue Inverted");
+
+    tweaker.SetGroup("Balls");
+    tweaker.AddButton("Reset", resetBallPositions);
+    tweaker.AddTweakableFlt("ball_mass", "Ball Mass", 0.1f, 3, resetBallValues);
+    tweaker.AddTweakableFlt("ball_size", "Ball Size", 0.1f, 3, resetBallValues);
+    tweaker.AddTweakableFlt("player_start", "Player Start", 0.1f, 3, resetBallPositions);
+    tweaker.AddTweakableFlt("balls_start", "Balls Start", 0.1f, 3, resetBallPositions);
 
     resetTable();
     resetBallValues();

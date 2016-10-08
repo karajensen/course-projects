@@ -107,7 +107,10 @@ float PhysicsScene::GetTimeStep() const
 
 void PhysicsScene::AddToTweaker(Tweaker& tweaker)
 {
-    tweaker.AddFltEntry("Time Step", &m_timeStep, 0.01f, 3);
+    tweaker.AddFltEntry("Time Step", 
+        [this]() { return m_timeStep; },
+        [this](float value) { m_timeStep = value; },
+        0.01f, 3);
 }
 
 void PhysicsScene::CheckForCollision()

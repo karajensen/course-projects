@@ -4,7 +4,7 @@
 
 #include <vector>
 
-struct TutorialData;
+class TutorialData;
 class SquareBody;
 class CircleBody;
 

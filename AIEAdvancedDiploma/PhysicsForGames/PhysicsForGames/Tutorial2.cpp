@@ -14,19 +14,19 @@
 
 void TutorialCreator::CreateTutorial2()
 {
-    m_data.ints["step_count"] = 20;
-    m_data.flts["step_size"] = 0.1f;
-    m_data.flts["step_angle"] = 60.0f;
-    m_data.flts["step_speed"] = 115.0f;
+    m_data->CreateInt("step_count", 20);
+    m_data->CreateFlt("step_size", 0.1f);
+    m_data->CreateFlt("step_angle", 60.0f);
+    m_data->CreateFlt("step_speed", 115.0f);
 
     auto resetTutorial = [this]()
     {
-        m_data.scene->Reset();
+        m_data->Scene().Reset();
 
-        const auto steps = m_data.ints.at("step_count");
-        const auto stepSize = m_data.flts.at("step_size");
-        const auto angle = m_data.flts.at("step_angle");
-        const auto speed = m_data.flts.at("step_speed");
+        const auto steps = m_data->GetInt("step_count");
+        const auto stepSize = m_data->GetFlt("step_size");
+        const auto angle = m_data->GetFlt("step_angle");
+        const auto speed = m_data->GetFlt("step_speed");
 
         const auto rad = DegToRad(angle);
         const glm::vec2 velocity(speed * cos(rad), speed * sin(rad));
@@ -39,7 +39,7 @@ void TutorialCreator::CreateTutorial2()
 
         ball->SetCollidable(false);
         ball->SetGravity(0.0f, -9.8f);
-        ball->SetPreUpdateFn([size = m_data.size, obj = ball.get(), velocity](float timestep)
+        ball->SetPreUpdateFn([size = m_data->Size(), obj = ball.get(), velocity](float timestep)
         {
             const auto buffer = 10;
             const auto& position = obj->GetPosition();
@@ -53,7 +53,7 @@ void TutorialCreator::CreateTutorial2()
             }
         });
 
-        m_data.scene->AddActor(std::move(ball));
+        m_data->Scene().AddActor(std::move(ball));
 
         for (float i = 0; i < steps; i += stepSize)
         {
@@ -65,7 +65,7 @@ void TutorialCreator::CreateTutorial2()
         
             step->SetActive(false);
             step->SetCollidable(false);
-            m_data.scene->AddActor(std::move(step));
+            m_data->Scene().AddActor(std::move(step));
         }
     };
 

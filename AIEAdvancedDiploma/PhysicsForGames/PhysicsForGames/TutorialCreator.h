@@ -29,9 +29,13 @@ public:
     * Constructor
     * @param input For querying user input
     * @param scene Physics scene manager
+    * @param tweaker The tweak bar wrapper
     * @param size Window dimensions
     */
-    TutorialCreator(Input& input, PhysicsScene& scene, const glm::ivec2& size);
+    TutorialCreator(Input& input, 
+                    PhysicsScene& scene, 
+                    Tweaker& tweaker,
+                    const glm::ivec2& size);
 
     /**
     * Destructor
@@ -44,7 +48,7 @@ public:
     * @Param tutorial The tutorial to create
     * @note an invalid tutorial will create an empty scene
     */
-    void Create(Tweaker& tweaker, int tutorial);
+    void Create(int tutorial);
 
     /**
     * @return the name of the turorial
@@ -70,26 +74,6 @@ private:
     TutorialCreator& operator=(const TutorialCreator&) = delete;
 
     /**
-    * Sets tutorial int data
-    */
-    void SetInt(const char* name, int value);
-
-    /**
-    * Sets tutorial float data
-    */
-    void SetFlt(const char* name, float value);
-
-    /**
-    * Gets tutorial int data
-    */
-    int GetInt(const char* name) const;
-
-    /**
-    * Gets tutorial float data
-    */
-    float GetFlt(const char* name) const;
-
-    /**
     * Create the scene for each tutorial
     */
     void CreateTutorial1();
@@ -100,7 +84,7 @@ private:
     Tutorial m_currentTutorial = TUTORIAL_NONE;           ///< Currently selected tutorial
     std::function<void(void)> m_resetTweaker = nullptr;   ///< Callback to reset the tweak bar
     std::unique_ptr<TutorialTweaker> m_tweaker;           ///< Tweak bar wrapper for tutorials
-    TutorialData m_data;                                  ///< Data for running tutorials
+    std::unique_ptr<TutorialData> m_data;                 ///< Data for running tutorials
 
     typedef void(TutorialCreator::*CreateFn)();
     std::vector<CreateFn> m_createTutorial;               ///< Callback for creating a tutorial

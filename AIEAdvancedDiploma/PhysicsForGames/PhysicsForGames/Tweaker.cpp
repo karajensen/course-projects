@@ -4,8 +4,10 @@
 
 #include "Tweaker.h"
 #include "Utilities.h"
+#include "Input.h"
 #include <assert.h>
 #include <algorithm>
+#include <sstream>
 
 namespace
 {
@@ -30,14 +32,37 @@ namespace
     };
 }
 
-Tweaker::Tweaker(CTwBar* tweakbar) :
-    m_tweakBar(tweakbar)
+Tweaker::Tweaker(const glm::ivec2& size)
 {
+    TwInit(TW_OPENGL_CORE, nullptr);
+    TwWindowSize(size.x, size.y);
+
+    const std::string barname = "GamesForPhysics";
+    m_tweakbar = TwNewBar(barname.c_str());
+
+    const int border = 10;
+    std::ostringstream stream;
+    stream << barname << " label='Physics For Games' "
+        << "position='" << border << " " << border << "' "
+        << "size='250 450' "
+        << "alpha=180 text=light valueswidth=80 color='0 0 0' "
+        << "refresh=0.05 iconified=false resizable=true "
+        << "fontsize=2 fontresizable=false ";
+    TwDefine(stream.str().c_str());
 }
 
 Tweaker::~Tweaker()
 {
+    if (m_tweakbar)
+    {
+        TwDeleteBar(m_tweakbar);
+    }
+    TwTerminate();
+}
 
+void Tweaker::Render()
+{
+    TwDraw();
 }
 
 void Tweaker::AddResetFn(std::function<void(void)> fn)
@@ -47,7 +72,7 @@ void Tweaker::AddResetFn(std::function<void(void)> fn)
 
 void Tweaker::Reset()
 {
-    TwRemoveAllVars(m_tweakBar);
+    TwRemoveAllVars(m_tweakbar);
     ClearEntries();
 
     if (m_resetFn)
@@ -56,8 +81,31 @@ void Tweaker::Reset()
     }
 }
 
-void Tweaker::Update()
+void Tweaker::Update(Input& input)
 {
+    if (input.HasMouseMoved())
+    {
+        TwMouseMotion(input.X(), input.Y());
+    }
+
+    if (input.WasMousePressed())
+    {
+        TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_LEFT);
+    }
+
+    if (input.WasMouseReleased())
+    {
+        TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_LEFT);
+    }
+
+    for (auto& key : input.GetKeys())
+    {
+        if (key.second.pressed)
+        {
+            TwKeyPressed(key.second.code, 0);
+        }
+    }
+
     for (auto& label : m_labels)
     {
         if (label->modifiable)
@@ -88,21 +136,6 @@ std::string Tweaker::Definition(std::string label, float step, int precision) co
         Definition(label);
 }
 
-std::string Tweaker::Definition(std::string label, float step, float min, float max, int precision) const
-{
-    const int defaultPrecision = 3;
-    return " step=" + std::to_string(step) + 
-        " precision=" + std::to_string(precision == 0 ? defaultPrecision : precision) + 
-        " min=" + std::to_string(min) +
-        " max=" + std::to_string(max) +
-        Definition(label);
-}
-
-std::string Tweaker::Definition(std::string label, int precision) const
-{
-    return " precision=" + std::to_string(precision) + Definition(label);
-}
-
 std::string Tweaker::Definition(std::string label) const
 {
     return " group='" + m_group + "'" + " label='" + label + "' ";
@@ -128,59 +161,6 @@ void TW_CALL Tweaker::GetCallback(void *value, void *clientData)
     static_cast<Entry*>(clientData)->Getter(value);
 }
 
-void Tweaker::AddEntry(std::string label,
-                       void* entry, 
-                       TwType type, 
-                       bool readonly)
-{
-    if (readonly)
-    {
-        TwAddVarRO(m_tweakBar, GetName().c_str(), type,
-            entry, Definition(label).c_str());
-    }
-    else
-    {
-        TwAddVarRW(m_tweakBar, GetName().c_str(), type,
-            entry, Definition(label).c_str());
-    }
-
-    LogTweakError();
-}
-
-void Tweaker::AddFltEntry(std::string label, 
-                          void* entry, 
-                          float step, 
-                          int precision)
-{
-    TwAddVarRW(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, entry, 
-        Definition(label, step, precision).c_str());
-
-    LogTweakError();
-}
-
-void Tweaker::AddFltEntry(std::string label, 
-                          void* entry, 
-                          float step, 
-                          float min,
-                          float max,
-                          int precision)
-{
-    TwAddVarRW(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, entry, 
-        Definition(label, step, min, max, precision).c_str());
-
-    LogTweakError();
-}
-
-void Tweaker::AddFltEntry(std::string label, 
-                          void* entry,
-                          int precision)
-{
-    TwAddVarRO(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, entry, 
-        Definition(label, precision).c_str());
-
-    LogTweakError();
-}
-
 void Tweaker::AddFltEntry(std::string label,
                           std::function<const float(void)> getter,
                           std::function<void(const float)> setter,
@@ -193,33 +173,8 @@ void Tweaker::AddFltEntry(std::string label,
     entry->setter = setter;
     m_entries.emplace_back(std::move(entry));
     
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_FLOAT, SetCallback,
+    TwAddVarCB(m_tweakbar, GetName().c_str(), TW_TYPE_FLOAT, SetCallback,
         GetCallback, m_entries[index].get(), Definition(label, step, precision).c_str());
-
-    LogTweakError();
-}
-
-void Tweaker::AddIntEntry(std::string label, 
-                          void* entry, 
-                          int min,
-                          int max)
-{
-    TwAddVarRW(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, entry, 
-        Definition(label, min, max).c_str());
-
-    LogTweakError();
-}
-
-void Tweaker::AddIntEntry(std::string label,
-                          std::function<const int(void)> getter)
-{
-    const auto index = m_entries.size();
-    auto entry = std::make_unique<TweakableEntry<int>>();
-    entry->getter = getter;
-    m_entries.emplace_back(std::move(entry));
-    
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, nullptr,
-        GetCallback, m_entries[index].get(), Definition(label).c_str());
 
     LogTweakError();
 }
@@ -235,7 +190,7 @@ void Tweaker::AddIntEntry(std::string label,
     entry->setter = setter;
     m_entries.emplace_back(std::move(entry));
     
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_INT32, 
+    TwAddVarCB(m_tweakbar, GetName().c_str(), TW_TYPE_INT32, 
         SetCallback, GetCallback, m_entries[index].get(), 
         Definition(label, 0, static_cast<int>(max)).c_str());
 
@@ -252,7 +207,7 @@ void Tweaker::AddBoolEntry(std::string label,
     entry->setter = setter;
     m_entries.emplace_back(std::move(entry));
 
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_BOOLCPP,
+    TwAddVarCB(m_tweakbar, GetName().c_str(), TW_TYPE_BOOLCPP,
         SetCallback, GetCallback, m_entries[index].get(),
         Definition(label).c_str());
 
@@ -280,24 +235,9 @@ void Tweaker::AddStrEntry(std::string label,
     m_labels[index]->value = value;
     FillBufffer(*m_labels[index]);
 
-    TwAddVarRO(m_tweakBar, GetName().c_str(), 
+    TwAddVarRO(m_tweakbar, GetName().c_str(), 
         TW_TYPE_CSSTRING(STR_BUFFER_SIZE),
         m_labels[index]->buffer, Definition(label).c_str());
-
-    LogTweakError();
-}
-
-void Tweaker::AddStrEntry(std::string label, std::string value)
-{
-    const auto index = m_labels.size();
-    m_labels.push_back(std::make_unique<Label>());
-    m_labels[index]->modifiable = false;
-    m_labels[index]->value = value;
-    FillBufffer(*m_labels[index]);
-
-   TwAddVarRO(m_tweakBar, GetName().c_str(), 
-       TW_TYPE_CSSTRING(STR_BUFFER_SIZE),
-       m_labels[index]->buffer, Definition(label).c_str());
 
     LogTweakError();
 }
@@ -309,7 +249,7 @@ void Tweaker::AddButton(std::string label,
     m_buttons.push_back(std::make_unique<Button>());
     m_buttons[index]->callback = callback;
     
-    TwAddButton(m_tweakBar, GetName().c_str(),
+    TwAddButton(m_tweakbar, GetName().c_str(),
         CallButton, m_buttons[index].get(), Definition(label).c_str());
 
     LogTweakError();
@@ -358,7 +298,7 @@ void Tweaker::AddColorEntry(std::string label,
 
     m_entries.emplace_back(std::move(entry));
 
-    TwAddVarCB(m_tweakBar, GetName().c_str(), TW_TYPE_COLOR4F,
+    TwAddVarCB(m_tweakbar, GetName().c_str(), TW_TYPE_COLOR4F,
         SetCallback, GetCallback, m_entries[index].get(),
         Definition(label).c_str());
 
@@ -386,7 +326,7 @@ void Tweaker::AddEnumEntry(std::string label,
     entry->setter = setter;
     m_entries.emplace_back(std::move(entry));
 
-    TwAddVarCB(m_tweakBar, GetName().c_str(), enumType,
+    TwAddVarCB(m_tweakbar, GetName().c_str(), enumType,
         SetCallback, GetCallback, m_entries[index].get(),
         Definition(label).c_str());
 

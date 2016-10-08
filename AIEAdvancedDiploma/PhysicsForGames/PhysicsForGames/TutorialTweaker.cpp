@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialTweaker.h"
+#include "TutorialData.h"
 #include "Tweaker.h"
 #include "PhysicsObject.h"
 #include "SquareBody.h"
@@ -14,17 +15,19 @@
 #include <algorithm>
 #include <assert.h>
 
-TutorialTweaker::TutorialTweaker(Tweaker& tweaker,
-                                 std::function<void(const char*, int)> setInt,
-                                 std::function<void(const char*, float)> setFlt,
-                                 std::function<int(const char*)> getInt,
-                                 std::function<float(const char*)> getFlt)
+TutorialTweaker::TutorialTweaker(Tweaker& tweaker)
     : m_tweaker(tweaker)
-    , m_setInt(setInt)
-    , m_setFlt(setFlt)
-    , m_getInt(getInt)
-    , m_getFlt(getFlt)
 {
+}
+
+void TutorialTweaker::Reset()
+{
+    m_tweaker.Reset();
+}
+
+void TutorialTweaker::SetData(TutorialData* data)
+{
+    m_data = data;
 }
 
 void TutorialTweaker::SetGroup(const char* group)
@@ -55,9 +58,11 @@ void TutorialTweaker::AddTweakableFlt(const char* name,
                                       int precision,
                                       std::function<void(void)> onSet)
 {
+    assert(m_data);
+
     auto setFlt = [this, name, onSet, min, max](float value)
     {
-        m_setFlt(name, std::max(std::min(value, max), min));
+        m_data->SetFlt(name, std::max(std::min(value, max), min));
 
         if (onSet)
         {
@@ -66,7 +71,7 @@ void TutorialTweaker::AddTweakableFlt(const char* name,
     };
 
     m_tweaker.AddFltEntry(label,
-        [this, name]() { return m_getFlt(name); },
+        [this, name]() { return m_data->GetFlt(name); },
         setFlt, step, precision);
 }
 
@@ -83,9 +88,11 @@ void TutorialTweaker::AddTweakableInt(const char* name,
                                       int max,
                                       std::function<void(void)> onSet)
 {
+    assert(m_data);
+
     auto setInt = [this, name, onSet, min, max](int value)
     {
-        m_setInt(name, std::max(std::min(value, max), min));
+        m_data->SetInt(name, std::max(std::min(value, max), min));
 
         if (onSet)
         {
@@ -94,7 +101,7 @@ void TutorialTweaker::AddTweakableInt(const char* name,
     };
 
     m_tweaker.AddIntEntry(label,
-        [this, name]() { return m_getInt(name); },
+        [this, name]() { return m_data->GetInt(name); },
         setInt, INT_MAX);
 }
 
@@ -102,9 +109,11 @@ void TutorialTweaker::AddTweakableBool(const char* name,
                                        const char* label,
                                        std::function<void(void)> onSet)
 {
+    assert(m_data);
+
     auto setter = [this, name, onSet](bool value)
     {
-        m_setInt(name, value != 0 ? 1 : 0);
+        m_data->SetBool(name, value);
 
         if (onSet)
         {
@@ -113,7 +122,7 @@ void TutorialTweaker::AddTweakableBool(const char* name,
     };
 
     m_tweaker.AddBoolEntry(label,
-        [this, name]() { return m_getInt(name) != 0; },
+        [this, name]() { return m_data->GetBool(name); },
         setter);
 }
 
