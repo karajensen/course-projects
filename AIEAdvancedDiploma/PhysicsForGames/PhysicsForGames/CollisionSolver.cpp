@@ -78,21 +78,22 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         
     if (response1.first || response2.first)
     {
-        const glm::vec2 collisionNormal = glm::normalize(delta);
+        const glm::vec2 normal = glm::normalize(delta);
         const glm::vec2 relativeVelocity = body1.GetVelocity() - body2.GetVelocity();
-        const glm::vec2 collisionVector = collisionNormal * glm::dot(relativeVelocity, collisionNormal);
-        const glm::vec2 force = 2.0f * (collisionVector * 1.0f / (1.0f / body1.GetMass() + 1.0f / body2.GetMass()));
-        const glm::vec2 seperationVector = collisionNormal * intersection * 0.5f;
+        const float mass = body1.GetMass() + body2.GetMass();
+        const float dot = glm::dot(relativeVelocity, normal);
+        const glm::vec2 force = (-2.0f / mass) * dot * normal;
+        const glm::vec2 seperationVector = normal * intersection * 0.5f;
 
         if (response1.first)
         {
-            body1.ApplyForce(-force);
+            body1.SetVelocity(force + body1.GetVelocity());
             body1.SetPosition(body1.GetPosition() - seperationVector);
         }
 
         if (response2.first)
         {
-            body2.ApplyForce(force);
+            body2.SetVelocity(-force + body2.GetVelocity());
             body2.SetPosition(body2.GetPosition() + seperationVector);
         }
     }
