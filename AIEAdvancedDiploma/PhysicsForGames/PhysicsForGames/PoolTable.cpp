@@ -144,7 +144,7 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
     cue->SetActive(false);
     cue->SetCollidable(false);
 
-    cue->SetInactiveFn([&data, ball = actors.playerBall, obj = cue.get(), tip = cuetip.get()]()
+    cue->SetInactiveFn([&data, balls = actors.balls, obj = cue.get(), tip = cuetip.get()]()
     {
         obj->SetVisible(false);
         tip->SetVisible(false);
@@ -169,11 +169,14 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
             const auto hitBuffer = 30.0f;
             const auto start = data.Input().Convert(data.Input().MousePosition());
             const auto end = data.Input().Convert(data.Input().MouseDownPosition());
+            const float force = data.GetFlt("cue_force");
 
-            if (glm::length((inverted ? start : end) - ball->GetPosition()) < ball->GetRadius() + hitBuffer)
+            for (auto* ball : balls)
             {
-                const float force = data.GetFlt("cue_force");
-                ball->ApplyForce((inverted ? start - end : end - start) * force);
+                if (glm::length((inverted ? start : end) - ball->GetPosition()) < ball->GetRadius() + hitBuffer)
+                {
+                    ball->ApplyForce((inverted ? start - end : end - start) * force);
+                }
             }
         }
     });
