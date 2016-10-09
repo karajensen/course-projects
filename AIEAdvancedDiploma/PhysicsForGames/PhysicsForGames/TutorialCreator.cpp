@@ -25,16 +25,18 @@ TutorialCreator::TutorialCreator(Input& input,
         &TutorialCreator::CreateTutorial1,
         &TutorialCreator::CreateTutorial2,
         &TutorialCreator::CreateTutorial3,
-        &TutorialCreator::CreateTutorial4
+        &TutorialCreator::CreateTutorial4,
+        &TutorialCreator::CreateTutorial5
     };
 
     m_tutorialNames = 
     {
         "No Tutorial",
-        "Tutorial 01",
-        "Tutorial 02",
-        "Tutorial 03",
-        "Tutorial 04"
+        "Tutorial 1",
+        "Tutorial 2",
+        "Tutorial 3",
+        "Tutorial 4",
+        "Tutorial 5"
     };
 }
 

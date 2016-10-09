@@ -4,7 +4,13 @@
 
 #include "RigidBody.h"
 #include "Utilities.h"
+#include "glm/glm.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 #include <algorithm>
+#include <numeric>
+
+const float MIN_LINEAR_THRESHOLD = std::numeric_limits<float>::epsilon();
+const float MIN_ROTATION_THRESHOLD = std::numeric_limits<float>::epsilon();
 
 RigidBody::RigidBody(Shape shape,
                      const glm::vec2& position, 
@@ -26,8 +32,22 @@ void RigidBody::Update(float timeStep)
     ApplyForce(m_gravity);
 
     // Euler Integration: X(t + ∆t) = X(t) + X•(t)∆t
-    m_velocity = (m_velocity * m_damping) + (m_acceleration * timeStep);
+    m_velocity = (m_velocity * (1.0f - m_linearDrag)) + (m_acceleration * timeStep);
     m_position = m_position + (m_velocity * timeStep);
+
+    auto rotationMatrix = glm::rotate(m_rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    m_angularVelocity *= m_angularDrag;
+    m_rotation += m_angularVelocity * timeStep;
+
+    if (glm::length(m_velocity) < MIN_LINEAR_THRESHOLD)
+    {
+        m_velocity = glm::vec2(0.0f, 0.0f);
+    }
+
+    if (abs(m_angularVelocity) < MIN_ROTATION_THRESHOLD)
+    {
+        m_angularVelocity = 0.0f;
+    }
 
     Utils::SetZero(m_acceleration);
 }
@@ -35,6 +55,16 @@ void RigidBody::Update(float timeStep)
 void RigidBody::Debug()
 {
     PhysicsObject::Debug();
+}
+
+float RigidBody::GetRotation() const
+{
+    return m_rotation;
+}
+
+void RigidBody::SetRotation(float rotation)
+{
+    m_rotation = rotation;
 }
 
 void RigidBody::ApplyForce(float x, float y)
@@ -85,14 +115,24 @@ float RigidBody::GetMass() const
     return m_mass;
 }
 
-void RigidBody::SetDamping(float damping)
+void RigidBody::SetLinearDrag(float drag)
 {
-    m_damping = damping;
+    m_linearDrag = std::min(1.0f, std::max(0.0f, drag));
 }
 
-float RigidBody::GetDamping() const
+float RigidBody::GetLinearDrag() const 
 {
-    return m_damping;
+    return m_linearDrag;
+}
+
+void RigidBody::SetAngularDrag(float drag)
+{
+    m_angularDrag = std::min(1.0f, std::max(0.0f, drag));
+}
+
+float RigidBody::GetAngularDrag() const
+{
+    return m_angularDrag;
 }
 
 void RigidBody::SetVelocity(const glm::vec2& velocity)
@@ -143,4 +183,14 @@ void RigidBody::SetPosition(float x, float y)
 const glm::vec2& RigidBody::GetPosition() const
 {
     return m_position;
+}
+
+float RigidBody::GetElasticity() const
+{
+    return m_elasticity;
+}
+
+void RigidBody::SetElasticity(float elasticity)
+{
+    m_elasticity = std::min(1.0f, std::max(0.0f, elasticity));
 }

@@ -6,6 +6,7 @@
 #include "Renderer2D.h"
 #include "glm/glm.hpp"
 #include "Utilities.h"
+#include <algorithm>
 
 SquareBody::SquareBody(const glm::vec2& position,
                        const glm::vec2& velocity, 
@@ -62,12 +63,12 @@ const glm::vec2& SquareBody::GetSize() const
     return m_size;
 }
 
-float SquareBody::GetRotation() const
+void SquareBody::SetRadius(float radius)
 {
-    return m_rotation;
+    SetSize(radius * 2.0f, radius * 2.0f);
 }
 
-void SquareBody::SetRotation(float rotation)
+float SquareBody::GetRadius() const
 {
-    m_rotation = rotation;
+    return std::max(m_size.x, m_size.y) * 0.5f;
 }

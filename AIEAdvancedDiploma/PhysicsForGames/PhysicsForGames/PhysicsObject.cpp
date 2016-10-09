@@ -17,28 +17,26 @@ PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour)
 {
 }
 
+void PhysicsObject::InactiveUpdate()
+{
+    if (m_inactiveFn)
+    {
+        m_inactiveFn();
+    }
+}
+
 void PhysicsObject::PreUpdate(float timeStep)
 {
-    if (m_isActive)
+    m_inCollision = false;
+    if (m_preUpdate)
     {
-        m_inCollision = false;
-        if (m_preUpdate)
-        {
-            m_preUpdate(timeStep);
-        }
-    }
-    else
-    {
-        if (m_inactiveFn)
-        {
-            m_inactiveFn();
-        }
+        m_preUpdate(timeStep);
     }
 }
 
 void PhysicsObject::PostUpdate(float timeStep)
 {
-    if (m_isActive && m_postUpdate)
+    if (m_postUpdate)
     {
         m_postUpdate(timeStep);
     }

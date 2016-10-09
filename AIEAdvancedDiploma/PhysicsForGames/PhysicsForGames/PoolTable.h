@@ -7,6 +7,7 @@
 class TutorialData;
 class SquareBody;
 class CircleBody;
+class RigidBody;
 
 class PoolTable
 {
@@ -14,8 +15,13 @@ public:
 
     /**
     * Creates the pool table
+    * @param data For creating the tutorial
+    * @param useDrag whether the balls should use linear drag
+    * @param useElasticity whether the balls should use elasticity
     */
-    static void Create(TutorialData& data);
+    static void Create(TutorialData& data,
+                       bool useDrag,
+                       bool useElasticity);
 
 private:
 

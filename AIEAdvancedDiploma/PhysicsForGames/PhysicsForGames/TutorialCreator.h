@@ -18,6 +18,7 @@ enum Tutorial
     TUTORIAL_2,
     TUTORIAL_3,
     TUTORIAL_4,
+    TUTORIAL_5,
     TUTORIAL_COUNT
 };
 
@@ -80,6 +81,7 @@ private:
     void CreateTutorial2();
     void CreateTutorial3();
     void CreateTutorial4();
+    void CreateTutorial5();
 
     Tutorial m_currentTutorial = TUTORIAL_NONE;           ///< Currently selected tutorial
     std::function<void(void)> m_resetTweaker = nullptr;   ///< Callback to reset the tweak bar

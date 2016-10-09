@@ -42,10 +42,14 @@ void PhysicsScene::Update()
 {
     for (auto& actor : m_actors)
     {
-        actor->PreUpdate(m_timeStep);
         if (actor->IsActive())
         {
+            actor->PreUpdate(m_timeStep);
             actor->Update(m_timeStep);
+        }
+        else
+        {
+            actor->InactiveUpdate();
         }
     }
 
@@ -53,7 +57,10 @@ void PhysicsScene::Update()
 
     for (auto& actor : m_actors)
     {
-        actor->PostUpdate(m_timeStep);
+        if (actor->IsActive())
+        {
+            actor->PostUpdate(m_timeStep);
+        }
     }
 }
 

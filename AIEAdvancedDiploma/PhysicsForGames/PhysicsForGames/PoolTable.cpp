@@ -97,8 +97,8 @@ void PoolTable::CreateBalls(TutorialData& data, Actors& actors)
     for (int i = 0; i < int(actors.balls.size()); ++i)
     {
         std::unique_ptr<CircleBody> ball(new CircleBody(
-            glm::vec2(0, 0), glm::vec2(0, 0),
-            0.0f, 0.0f, glm::vec4(0, 0, 0, 1)));
+                glm::vec2(0, 0), glm::vec2(0, 0),
+                0.0f, 0.0f, glm::vec4(0, 0, 0, 1)));
 
         for (auto* pocket : actors.pockets)
         {
@@ -182,7 +182,9 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
     data.Scene().AddActor(std::move(cuetip));
 }
 
-void PoolTable::Create(TutorialData& data)
+void PoolTable::Create(TutorialData& data,
+                       bool useDrag,
+                       bool useElasticity)
 {
     Actors actors;
     actors.barriers.resize(Barrier::Max);
@@ -196,10 +198,12 @@ void PoolTable::Create(TutorialData& data)
     data.CreateFlt("pocket_size", 40.0f);
     data.CreateFlt("ball_size", 11.0f);
     data.CreateFlt("ball_mass", 1.0f);
+    data.CreateFlt("ball_drag", useDrag ? 0.005f : 0.0f);
+    data.CreateFlt("ball_elasticity", useElasticity ? 0.8f : 1.0f);
     data.CreateFlt("player_start", 120.0f);
     data.CreateFlt("balls_start", -120.0f);
     data.CreateFlt("cue_size", 10.0f);
-    data.CreateFlt("cue_force", 10.0f);
+    data.CreateFlt("cue_force", useDrag ? 50.0f : 10.0f);
     data.CreateBool("cue_inverted", false);
 
     CreateBoard(data, actors);
@@ -294,13 +298,17 @@ void PoolTable::Create(TutorialData& data)
 
     auto resetBallValues = [actors, &data]()
     {
-        const float ballSize = data.GetFlt("ball_size");
-        const float ballMass = data.GetFlt("ball_mass");
+        const float size = data.GetFlt("ball_size");
+        const float mass = data.GetFlt("ball_mass");
+        const float drag = data.GetFlt("ball_drag");
+        const float elasticity = data.GetFlt("ball_elasticity");
 
         for(auto* ball : actors.balls)
         {
-            ball->SetMass(ballMass);
-            ball->SetRadius(ballSize);
+            ball->SetMass(mass);
+            ball->SetRadius(size);
+            ball->SetLinearDrag(drag);
+            ball->SetElasticity(elasticity);
         }
     };
 
@@ -315,11 +323,22 @@ void PoolTable::Create(TutorialData& data)
     tweaker.AddTweakableFlt("cue_size", "Cue Size", 1.0f, 1);
     tweaker.AddTweakableFlt("cue_force", "Cue Force", 1.0f, 1);
     tweaker.AddTweakableBool("cue_inverted", "Cue Inverted");
-
+   
     tweaker.SetGroup("Balls");
     tweaker.AddButton("Reset", resetBallPositions);
     tweaker.AddTweakableFlt("ball_mass", "Ball Mass", 0.1f, 3, resetBallValues);
     tweaker.AddTweakableFlt("ball_size", "Ball Size", 0.1f, 3, resetBallValues);
+
+    if (useDrag)
+    {
+        tweaker.AddTweakableFlt("ball_drag", "Ball Drag", 0.01f, 3, resetBallValues);
+    }
+    
+    if (useElasticity)
+    {
+        tweaker.AddTweakableFlt("ball_elasticity", "Ball Elasticity", 0.01f, 3, resetBallValues);
+    }
+    
     tweaker.AddTweakableFlt("player_start", "Player Start", 0.1f, 3, resetBallPositions);
     tweaker.AddTweakableFlt("balls_start", "Balls Start", 0.1f, 3, resetBallPositions);
 

@@ -103,14 +103,24 @@ public:
     float GetMass() const;
 
     /**
-    * Sets how much the velocity of the body will dampen as time passes
+    * Sets how much the linear velocity of the body will dampen as time passes
     */
-    void SetDamping(float damping);
+    void SetLinearDrag(float drag);
 
     /**
-    * @return how much the velocity of the body will dampen as time passes
+    * @return how much the linear velocity of the body will dampen as time passes
     */
-    float GetDamping() const;
+    float GetLinearDrag() const;
+
+    /**
+    * Sets how much the linear velocity of the body will dampen as time passes
+    */
+    void SetAngularDrag(float drag);
+
+    /**
+    * @return how much the linear velocity of the body will dampen as time passes
+    */
+    float GetAngularDrag() const;
 
     /**
     * Sets the velocity of the body
@@ -135,6 +145,36 @@ public:
     const glm::vec2& GetPreviousPosition() const;
 
     /**
+    * @return the rotation of the body in radians
+    */
+    float GetRotation() const;
+
+    /**
+    * Sets the rotation of the body in radians
+    */
+    void SetRotation(float rotation);
+
+    /**
+    * @return how much energy is lost during collision
+    */
+    float GetElasticity() const;
+
+    /**
+    * Sets how much energy is lost during collision
+    */
+    void SetElasticity(float elasticity);
+
+    /**
+    * Sets the radius of the body
+    */
+    virtual void SetRadius(float radius) = 0;
+
+    /**
+    * @return the radius of the body
+    */
+    virtual float GetRadius() const = 0;
+
+    /**
     * Predicts the position of projectile motion at the given time passed
     * @param gravity The gravity to apply to the body in the y direction
     * @param angle The angle of elevation launched at relative to horizontal in degrees
@@ -147,13 +187,17 @@ public:
                                                float timepassed);
 protected:
 
-    glm::vec2 m_position;      ///< Position of the body
+    glm::vec2 m_position;            ///< Position of the body
     glm::vec2 m_velocity;            ///< Current velocity of the body
     glm::vec2 m_acceleration;        ///< Current accerleration of the body
     glm::vec2 m_gravity;             ///< Gravity force to apply per update
     glm::vec2 m_previousPosition;    ///< Position of the body from last update
+    float m_angularVelocity;         ///< Angular velocity of the body
+    float m_rotation = 0.0f;         ///< Rotation of the body
+    float m_elasticity = 1.0f;       ///< How much energy is lost during collision
     float m_mass = 0.0f;             ///< Mass of the body
-    float m_damping = 1.0f;          ///< How much the velocity of the body will dampen as time passes
+    float m_linearDrag = 0.0f;       ///< How much the linear velocity of the body will dampen as time passes
+    float m_angularDrag = 0.0f;      ///< How much the angular velocity of the body will dampen as time passes
 
 private:
 

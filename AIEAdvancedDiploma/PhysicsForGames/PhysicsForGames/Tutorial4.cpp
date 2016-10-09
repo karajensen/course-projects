@@ -7,5 +7,5 @@
 
 void TutorialCreator::CreateTutorial4()
 {
-    PoolTable::Create(*m_data);
+    PoolTable::Create(*m_data, false, false);
 }

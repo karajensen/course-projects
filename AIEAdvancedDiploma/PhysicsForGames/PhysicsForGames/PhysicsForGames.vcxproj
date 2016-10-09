@@ -108,6 +108,7 @@
     <ClCompile Include="Tutorial2.cpp" />
     <ClCompile Include="Tutorial3.cpp" />
     <ClCompile Include="Tutorial4.cpp" />
+    <ClCompile Include="Tutorial5.cpp" />
     <ClCompile Include="TutorialCreator.cpp" />
     <ClCompile Include="TutorialData.cpp" />
     <ClCompile Include="TutorialTweaker.cpp" />

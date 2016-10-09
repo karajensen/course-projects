@@ -62,6 +62,12 @@ public:
     void PostUpdate(float timeStep);
 
     /**
+    * Update to be done when the body is inactive
+    * @param timeStep The time between each update call
+    */
+    void InactiveUpdate();
+
+    /**
     * Renders the body
     * @param renderer The 2D renderer for drawing the body
     */

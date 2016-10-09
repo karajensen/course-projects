@@ -1,7 +1,3 @@
-
-- Fix crash in AIE renderer when lots of spheres are added
-- Test if plane does bounce correctly
-
 =================================================================
 AIE Advanced Diploma - Physics For Games Unit
 =================================================================

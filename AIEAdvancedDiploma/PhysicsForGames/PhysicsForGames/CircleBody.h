@@ -44,12 +44,12 @@ public:
     /**
     * Sets the size of the circle
     */
-    void SetRadius(float radius);
+    virtual void SetRadius(float radius) override;
 
     /**
     * @return the size of the circle
     */
-    float GetRadius() const;
+    virtual float GetRadius() const override;
 
 private:
 

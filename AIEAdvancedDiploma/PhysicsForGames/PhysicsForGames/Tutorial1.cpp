@@ -87,7 +87,7 @@ void TutorialCreator::CreateTutorial1()
 
         rocket->SetCollidable(false);
         rocket->SetGravity(0.0f, -9.8f);
-        rocket->SetDamping(0.98f);
+        rocket->SetLinearDrag(0.02f);
 
         m_data->CreateFlt("time", 0.0f);
         m_data->CreateFlt("fuel", 10.0f);

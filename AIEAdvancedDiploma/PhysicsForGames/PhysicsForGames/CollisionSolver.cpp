@@ -82,7 +82,8 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         const glm::vec2 relativeVelocity = body1.GetVelocity() - body2.GetVelocity();
         const float mass = body1.GetMass() + body2.GetMass();
         const float dot = glm::dot(relativeVelocity, normal);
-        const glm::vec2 force = (-2.0f / mass) * dot * normal;
+        const float elasticity = (body1.GetElasticity() + body2.GetElasticity()) / 2.0f;
+        const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
         const glm::vec2 seperationVector = normal * intersection * 0.5f;
 
         if (response1.first)
@@ -144,7 +145,8 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
         const auto& velocity = circleBody.GetVelocity();
         const float dot = glm::dot(normal, velocity);
         const float mass = circleBody.GetMass();
-        const glm::vec2 reflection = (-2.0f / mass) * dot * normal + velocity;
+        const float elasticity = circleBody.GetElasticity();
+        const glm::vec2 reflection = (-2.0f / mass) * dot * elasticity * normal + velocity;
         circleBody.SetVelocity(reflection);
         circleBody.SetPosition(circleBody.GetPosition() + normal * intersection * 0.5f);
     }
@@ -195,7 +197,8 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             const auto& velocity = circleBody.GetVelocity();
             const float dot = glm::dot(normal, velocity);
             const float mass = circleBody.GetMass();
-            const glm::vec2 reflection = (-2.0f / mass) * dot * normal + velocity;
+            const float elasticity = circleBody.GetElasticity();
+            const glm::vec2 reflection = (-2.0f / mass) * dot * elasticity * normal + velocity;
             circleBody.SetVelocity(reflection);
             circleBody.SetPosition(position + normal * intersection * 0.5f);
         }
