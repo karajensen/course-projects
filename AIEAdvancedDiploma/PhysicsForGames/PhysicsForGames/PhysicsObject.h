@@ -16,6 +16,9 @@ namespace aie
 
 class RigidBody;
 
+/**
+* Physics body base class for all actors
+*/
 class PhysicsObject
 {
 public:
@@ -70,31 +73,9 @@ public:
     /**
     * Renders the body
     * @param renderer The 2D renderer for drawing the body
+    * @param showDiagnostics Whether to render diagnostics
     */
-    virtual void Draw(aie::Renderer2D& renderer);
-
-    /**
-    * Outputs debug information about the body
-    */
-    virtual void Debug();
-
-    /**
-    * Applies a force to the body
-    */
-    virtual void ApplyForce(const glm::vec2& force);
-
-    /**
-    * Applies a force to the body
-    * @param x/y The components of the force to apply
-    */
-    virtual void ApplyForce(float x, float y);
-
-    /**
-    * Applies a force to the body and then an opposite force to the given actor
-    * @param actor The body to apply the opposite force to
-    * @param force The force to apply to the body
-    */
-    virtual void ApplyForceToActor(RigidBody* actor, const glm::vec2& force);
+    virtual void Draw(aie::Renderer2D& renderer, bool showDiagnostics);
 
     /**
     * Sets the gravity force

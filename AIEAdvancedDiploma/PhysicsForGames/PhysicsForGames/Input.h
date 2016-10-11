@@ -14,6 +14,9 @@ namespace aie
 
 class Tweaker;
 
+/**
+* Manages input from the aie input class
+*/
 class Input
 {
 public:
@@ -101,9 +104,9 @@ public:
         {
         }
 
-        bool pressed = false;
-        bool down = false;
-        int code = 0;
+        bool pressed = false;   ///< Whether the key was pressed last tick
+        bool down = false;      ///< Whether the key is currently down
+        int code = 0;           ///< User key code
     };
 
     /**

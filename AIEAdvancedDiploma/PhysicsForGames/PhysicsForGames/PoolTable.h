@@ -9,6 +9,9 @@ class SquareBody;
 class CircleBody;
 class RigidBody;
 
+/**
+* Tutorial component for generating a pool table
+*/
 class PoolTable
 {
 public:
@@ -39,16 +42,22 @@ private:
 
     /**
     * Creates the table board
+    * @param data For creating the tutorial data
+    * @param actors Cached information for physics scene actors created
     */
     static void CreateBoard(TutorialData& data, Actors& actors);
 
     /**
     * Creates the pool balls
+    * @param data For creating the tutorial data
+    * @param actors Cached information for physics scene actors created
     */
     static void CreateBalls(TutorialData& data, Actors& actors);
 
     /**
     * Creates the pool cue
+    * @param data For creating the tutorial data
+    * @param actors Cached information for physics scene actors created
     */
     static void CreateCue(TutorialData& data, Actors& actors);
 };

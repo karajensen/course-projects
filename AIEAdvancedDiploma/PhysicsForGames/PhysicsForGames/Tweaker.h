@@ -15,6 +15,9 @@
 
 class Input;
 
+/**
+* Tweak bar for manipulating the scene
+*/
 class Tweaker
 {
 public:

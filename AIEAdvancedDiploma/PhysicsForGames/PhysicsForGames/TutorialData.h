@@ -11,6 +11,9 @@ class PhysicsScene;
 class TutorialTweaker;
 class Input;
 
+/**
+* Data for creating and managing the currently selected tutorial scene
+*/
 class TutorialData
 {
 public:

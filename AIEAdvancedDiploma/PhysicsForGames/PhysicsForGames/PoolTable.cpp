@@ -201,7 +201,8 @@ void PoolTable::Create(TutorialData& data,
     data.CreateFlt("pocket_size", 40.0f);
     data.CreateFlt("ball_size", 11.0f);
     data.CreateFlt("ball_mass", 1.0f);
-    data.CreateFlt("ball_drag", useDrag ? 0.005f : 0.0f);
+    data.CreateFlt("ball_linear_drag", useDrag ? 0.005f : 0.0f);
+    data.CreateFlt("ball_angular_drag", useDrag ? 0.05f : 0.0f);
     data.CreateFlt("ball_elasticity", useElasticity ? 0.8f : 1.0f);
     data.CreateFlt("player_start", 120.0f);
     data.CreateFlt("balls_start", -120.0f);
@@ -303,14 +304,16 @@ void PoolTable::Create(TutorialData& data,
     {
         const float size = data.GetFlt("ball_size");
         const float mass = data.GetFlt("ball_mass");
-        const float drag = data.GetFlt("ball_drag");
+        const float angularDrag = data.GetFlt("ball_angular_drag");
+        const float linearDrag = data.GetFlt("ball_linear_drag");
         const float elasticity = data.GetFlt("ball_elasticity");
 
         for(auto* ball : actors.balls)
         {
             ball->SetMass(mass);
             ball->SetRadius(size);
-            ball->SetLinearDrag(drag);
+            ball->SetLinearDrag(linearDrag);
+            ball->SetAngularDrag(angularDrag);
             ball->SetElasticity(elasticity);
         }
     };
@@ -334,7 +337,8 @@ void PoolTable::Create(TutorialData& data,
 
     if (useDrag)
     {
-        tweaker.AddTweakableFlt("ball_drag", "Ball Drag", 0.01f, 3, resetBallValues);
+        tweaker.AddTweakableFlt("ball_linear_drag", "Ball Linear Drag", 0.01f, 3, resetBallValues);
+        tweaker.AddTweakableFlt("ball_angular_drag", "Ball Angular Drag", 0.01f, 3, resetBallValues);
     }
     
     if (useElasticity)

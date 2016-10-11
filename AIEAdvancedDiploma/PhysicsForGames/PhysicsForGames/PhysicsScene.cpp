@@ -64,14 +64,6 @@ void PhysicsScene::Update()
     }
 }
 
-void PhysicsScene::DebugScene()
-{
-    for (auto& actor : m_actors)
-    {
-        actor->Debug();
-    }
-}
-
 void PhysicsScene::Draw()
 {
     m_solver->Draw(m_renderer);
@@ -81,7 +73,7 @@ void PhysicsScene::Draw()
     {
         if ((*itr)->IsVisible())
         {
-            (*itr)->Draw(m_renderer);
+            (*itr)->Draw(m_renderer, m_actorDiagnostics);
         }
     }
 }
@@ -118,6 +110,12 @@ void PhysicsScene::AddToTweaker(Tweaker& tweaker)
         [this]() { return m_timeStep; },
         [this](float value) { m_timeStep = value; },
         0.01f, 3);
+
+    tweaker.AddBoolEntry("Actor Diagnosics",
+        [this]() { return m_actorDiagnostics; },
+        [this](bool value) { m_actorDiagnostics = value;  });
+
+    m_solver->AddToTweaker(tweaker);
 }
 
 void PhysicsScene::CheckForCollision()

@@ -5,6 +5,7 @@
 #include "Font.h"
 #include <glm/ext.hpp>
 #include <stb_truetype.h>
+#include <vector>
 
 namespace aie {
 
@@ -127,7 +128,7 @@ Renderer2D::Renderer2D() {
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (MAX_SPRITES * 6) * sizeof(unsigned short), (void *)(&m_indices[0]), GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, (MAX_SPRITES * 4) * sizeof(SBVertex), m_vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (MAX_SPRITES * 4) * sizeof(SBVertex), &m_vertices[0], GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -634,7 +635,9 @@ void Renderer2D::drawText(Font * font, const char* text, float xPos, float yPos,
 }
 
 bool Renderer2D::shouldFlush() {
-	return m_currentVertex >= 2048;
+
+    const int buffer = 100;
+    return m_currentVertex + buffer >= 2048 || m_currentIndex + buffer >= 3072;
 }
 
 void Renderer2D::flushBatch() {
@@ -652,8 +655,8 @@ void Renderer2D::flushBatch() {
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, m_currentVertex * sizeof(SBVertex), m_vertices);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_currentIndex * sizeof(unsigned short), m_indices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_currentVertex * sizeof(SBVertex), &m_vertices[0]);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_currentIndex * sizeof(unsigned short), &m_indices[0]);
 
 	glDrawElements(GL_TRIANGLES, m_currentIndex, GL_UNSIGNED_SHORT, 0);
 

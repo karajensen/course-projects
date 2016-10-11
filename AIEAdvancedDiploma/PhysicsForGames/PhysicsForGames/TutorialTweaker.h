@@ -16,6 +16,9 @@ class Plane;
 class CircleBody;
 class Tweaker;
 
+/**
+* Wrapper for tweaking tutorial components
+*/
 class TutorialTweaker
 {
 public:

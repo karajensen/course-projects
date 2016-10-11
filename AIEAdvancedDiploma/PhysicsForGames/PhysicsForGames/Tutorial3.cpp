@@ -67,6 +67,7 @@ void TutorialCreator::CreateTutorial3()
             obj->SetColor(obj->IsColliding() ? collisionColor : normalColor);
         });
 
+        ball->SetAngularDrag(1.0f);
         m_data->Scene().AddActor(std::move(ball));
     };
 

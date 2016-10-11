@@ -42,25 +42,9 @@ void PhysicsObject::PostUpdate(float timeStep)
     }
 }
 
-void PhysicsObject::Draw(aie::Renderer2D& renderer)
+void PhysicsObject::Draw(aie::Renderer2D& renderer, bool showDiagnostics)
 {
     renderer.setRenderColour(m_colour.r, m_colour.g, m_colour.b, m_colour.a);
-}
-
-void PhysicsObject::Debug()
-{
-}
-
-void PhysicsObject::ApplyForce(const glm::vec2& force)
-{
-}
-
-void PhysicsObject::ApplyForce(float x, float y)
-{
-}
-
-void PhysicsObject::ApplyForceToActor(RigidBody* actor, const glm::vec2& force)
-{
 }
 
 void PhysicsObject::SetGravity(const glm::vec2& gravity)

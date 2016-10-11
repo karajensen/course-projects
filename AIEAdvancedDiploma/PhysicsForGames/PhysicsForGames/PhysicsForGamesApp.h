@@ -18,6 +18,9 @@ class PhysicsScene;
 class TutorialCreator;
 class Input;
 
+/**
+* Main application class
+*/
 class PhysicsForGamesApp : public aie::Application 
 {
 public:

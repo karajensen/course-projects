@@ -26,7 +26,7 @@ void SquareBody::MakeFromLine(const glm::vec2& start, const glm::vec2& end, floa
     m_size.x = glm::length(direction);
 
     const float dot = glm::dot(direction, glm::vec2(direction.y < 0.0f ? -1.0f : 1.0f, 0.0f));
-    m_rotation = m_size.x == 0.0f ? 0.0f : acos(dot / m_size.x);
+    m_rotation = RadToDeg(m_size.x == 0.0f ? 0.0f : acos(dot / m_size.x));
 }
 
 void SquareBody::Update(float timeStep)
@@ -34,17 +34,12 @@ void SquareBody::Update(float timeStep)
     RigidBody::Update(timeStep);
 }
 
-void SquareBody::Draw(aie::Renderer2D& renderer)
+void SquareBody::Draw(aie::Renderer2D& renderer, bool showDiagnostics)
 {
-    RigidBody::Draw(renderer);
+    RigidBody::Draw(renderer, showDiagnostics);
 
     renderer.drawBox(std::round(m_position.x), std::round(m_position.y), 
-        std::round(m_size.x), std::round(m_size.y), m_rotation);
-}
-
-void SquareBody::Debug()
-{
-    RigidBody::Debug();
+        std::round(m_size.x), std::round(m_size.y), DegToRad(m_rotation));
 }
 
 void SquareBody::SetSize(const glm::vec2& size)

@@ -21,9 +21,9 @@ void Plane::Update(float timeStep)
 {
 }
 
-void Plane::Draw(aie::Renderer2D& renderer)
+void Plane::Draw(aie::Renderer2D& renderer, bool showDiagnostics)
 {
-    PhysicsObject::Draw(renderer);
+    PhysicsObject::Draw(renderer, showDiagnostics);
 
     const glm::vec2 centrePoint = m_normal * m_distance;
 
@@ -33,11 +33,6 @@ void Plane::Draw(aie::Renderer2D& renderer)
     const glm::vec2 end = centrePoint - (parallel * m_size);
 
     renderer.drawLine(start.x, start.y, end.x, end.y, 1.0f, 0.0f);
-}
-
-void Plane::Debug()
-{
-    PhysicsObject::Debug();
 }
 
 float Plane::GetDistance() const

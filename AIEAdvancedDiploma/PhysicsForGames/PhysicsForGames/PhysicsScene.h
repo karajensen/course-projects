@@ -17,6 +17,9 @@ class Tweaker;
 class PhysicsObject;
 class CollisionSolver;
 
+/**
+* Owns and manages all physics bodies in the scene
+*/
 class PhysicsScene
 {
 public:
@@ -47,11 +50,6 @@ public:
     * Updates the scene
     */
     void Update();
-
-    /**
-    * Outputs debug information about the scene and actors
-    */
-    void DebugScene();
 
     /**
     * Renders the scene
@@ -107,4 +105,5 @@ private:
     std::vector<std::unique_ptr<PhysicsObject>> m_actors;   ///< All registered actors in the scene
     float m_timeStep = 0.0f;                                ///< The time to pass between updates on actors
     aie::Renderer2D& m_renderer;                            ///< The 2D renderer for drawing the scene
+    bool m_actorDiagnostics = false;                        ///< Whether to render body diagnostics
 };

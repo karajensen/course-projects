@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 
 namespace aie {
 
@@ -81,9 +82,10 @@ protected:
 	};
 
 	// data used for opengl to draw the sprites
-	SBVertex			m_vertices[MAX_SPRITES*4];
-	unsigned short		m_indices[MAX_SPRITES*6];
-	int					m_currentVertex, m_currentIndex;
+    std::array<SBVertex, MAX_SPRITES * 4> m_vertices;
+    std::array<unsigned short, MAX_SPRITES * 6> m_indices;
+    int	m_currentVertex;
+    int m_currentIndex;
 	unsigned int		m_vao, m_vbo, m_ibo;
 
 	// shader used to render sprites

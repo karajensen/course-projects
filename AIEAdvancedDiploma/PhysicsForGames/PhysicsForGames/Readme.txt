@@ -1,3 +1,9 @@
+
+- Fix comments
+- Fix diagnostics
+- Finish tutorial
+
+
 =================================================================
 AIE Advanced Diploma - Physics For Games Unit
 =================================================================

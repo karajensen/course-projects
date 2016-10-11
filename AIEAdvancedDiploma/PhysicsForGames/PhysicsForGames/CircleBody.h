@@ -6,6 +6,9 @@
 
 #include "RigidBody.h"
 
+/**
+* Circle physics body
+*/
 class CircleBody : public RigidBody
 {
 public:
@@ -33,13 +36,9 @@ public:
     /**
     * Renders the body
     * @param renderer The 2D renderer for drawing the body
+    * @param showDiagnostics Whether to render diagnostics
     */
-    virtual void Draw(aie::Renderer2D& renderer) override;
-
-    /**
-    * Outputs debug information about the body
-    */
-    virtual void Debug() override;
+    virtual void Draw(aie::Renderer2D& renderer, bool showDiagnostics) override;
 
     /**
     * Sets the size of the circle

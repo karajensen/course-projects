@@ -6,6 +6,9 @@
 
 #include "PhysicsObject.h"
 
+/**
+* Plane physics body
+*/
 class Plane : public PhysicsObject
 {
 public:
@@ -31,13 +34,9 @@ public:
     /**
     * Renders the body
     * @param renderer The 2D renderer for drawing the body
+    * @param showDiagnostics Whether to render diagnostics
     */
-    virtual void Draw(aie::Renderer2D& renderer) override;
-
-    /**
-    * Outputs debug information about the body
-    */
-    virtual void Debug() override;
+    virtual void Draw(aie::Renderer2D& renderer, bool showDiagnostics) override;
 
     /**
     * @return minimum distance from the plane to the origin

@@ -22,6 +22,9 @@ enum Tutorial
     TUTORIAL_COUNT
 };
 
+/**
+* Generates physics bodies for a tutorial scene
+*/
 class TutorialCreator
 {
 public:

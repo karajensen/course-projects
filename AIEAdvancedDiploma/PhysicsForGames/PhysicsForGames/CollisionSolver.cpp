@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "CollisionSolver.h"
+#include "Tweaker.h"
 #include "PhysicsObject.h"
 #include "CircleBody.h"
 #include "SquareBody.h"
@@ -11,6 +12,10 @@
 #include "Renderer2D.h"
 #include "glm/glm.hpp"
 #include <array>
+
+CollisionSolver::CollisionSolver()
+{
+}
 
 bool CollisionSolver::SolveCollision(PhysicsObject& obj1, PhysicsObject& obj2)
 {
@@ -64,21 +69,26 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
 
     const auto& position1 = body1.GetPosition();
     const auto& position2 = body2.GetPosition();
+    const float radius1 = body1.GetRadius();
+    const float radius2 = body2.GetRadius();
     const auto delta = position2 - position1;
     const float distance = glm::length(delta);
-    const float intersection = body1.GetRadius() + body2.GetRadius() - distance;
+    const float intersection = radius1 + radius2 - distance;
 
     if (intersection <= 0)
     {
         return false;
     }
 
+    const glm::vec2 normal = glm::normalize(delta);
+    const glm::vec2 collisionPoint = position1 + (normal * radius1);
+    AddDiagnostic(collisionPoint, 0.0f, 1.0f, 1.0f);
+
     const auto& response1 = circle1.GetCollisionResponse(circle2.GetID());
     const auto& response2 = circle2.GetCollisionResponse(circle1.GetID());
         
     if (response1.first || response2.first)
     {
-        const glm::vec2 normal = glm::normalize(delta);
         const glm::vec2 relativeVelocity = body1.GetVelocity() - body2.GetVelocity();
         const float mass = body1.GetMass() + body2.GetMass();
         const float dot = glm::dot(relativeVelocity, normal);
@@ -86,14 +96,20 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
         const glm::vec2 seperationVector = normal * intersection * 0.5f;
 
+        const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position1);
+        const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius1;
+        const float torque = (-2.0f / mass) * glm::dot(lever, relativeVelocity);
+
         if (response1.first)
         {
+            body1.SetAngularVelocity(torque + body1.GetAngularVelocity());
             body1.SetVelocity(force + body1.GetVelocity());
             body1.SetPosition(body1.GetPosition() - seperationVector);
         }
 
         if (response2.first)
         {
+            body2.SetAngularVelocity(-torque + body2.GetAngularVelocity());
             body2.SetVelocity(-force + body2.GetVelocity());
             body2.SetPosition(body2.GetPosition() + seperationVector);
         }
@@ -122,9 +138,10 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
     auto& planeBody = dynamic_cast<Plane&>(plane);
     auto& circleBody = dynamic_cast<CircleBody&>(circle);
 
+    const auto& position = circleBody.GetPosition();
     const auto& normal = planeBody.GetNormal();
     glm::vec2 collisionNormal = normal;
-    float sphereToPlane = glm::dot(circleBody.GetPosition(), normal) - planeBody.GetDistance();
+    float sphereToPlane = glm::dot(position, normal) - planeBody.GetDistance();
     if (sphereToPlane < 0.0f) 
     { 
         // planes are infintely thin, double sided, objects so if we are behind it we flip the normal 
@@ -132,11 +149,15 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
         sphereToPlane *= -1.0f;
     } 
 
-    const float intersection = circleBody.GetRadius() - sphereToPlane;
+    const float radius = circleBody.GetRadius();
+    const float intersection = radius - sphereToPlane;
     if (intersection <= 0)
     {
         return false;
     }
+
+    const glm::vec2 collisionPoint = position - (normal * sphereToPlane);
+    AddDiagnostic(collisionPoint, 1.0f, 0.0f, 1.0f);
 
     // Response for plane currently not supported
     const auto& responseCircle = circle.GetCollisionResponse(plane.GetID());
@@ -146,8 +167,14 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
         const float dot = glm::dot(normal, velocity);
         const float mass = circleBody.GetMass();
         const float elasticity = circleBody.GetElasticity();
-        const glm::vec2 reflection = (-2.0f / mass) * dot * elasticity * normal + velocity;
-        circleBody.SetVelocity(reflection);
+        const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
+
+        const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position);
+        const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius;
+        const float torque = (-2.0f / mass) * glm::dot(lever, velocity);
+
+        circleBody.SetAngularVelocity(torque + circleBody.GetAngularVelocity());
+        circleBody.SetVelocity(force + velocity);
         circleBody.SetPosition(circleBody.GetPosition() + normal * intersection * 0.5f);
     }
 
@@ -178,7 +205,8 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             return false;
         }
 
-        const float intersection = circleBody.GetRadius() - sphereToPlane;
+        const float radius = circleBody.GetRadius();
+        const float intersection = radius - sphereToPlane;
         if (intersection <= 0)
         {
             return false;
@@ -190,6 +218,8 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             return false;
         }
 
+        AddDiagnostic(collisionPoint, 1.0f, 0.0f, 1.0f);
+
         // Response for square currently not supported
         const auto& responseCircle = circleBody.GetCollisionResponse(squareBody.GetID());
         if (responseCircle.first)
@@ -198,8 +228,14 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             const float dot = glm::dot(normal, velocity);
             const float mass = circleBody.GetMass();
             const float elasticity = circleBody.GetElasticity();
-            const glm::vec2 reflection = (-2.0f / mass) * dot * elasticity * normal + velocity;
-            circleBody.SetVelocity(reflection);
+            const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
+
+            const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position);
+            const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius;
+            const float torque = (-2.0f / mass) * glm::dot(lever, velocity);
+
+            circleBody.SetAngularVelocity(torque + circleBody.GetAngularVelocity());
+            circleBody.SetVelocity(force + velocity);
             circleBody.SetPosition(position + normal * intersection * 0.5f);
         }
 
@@ -247,21 +283,36 @@ bool CollisionSolver::SolveSquarePlaneCollision(PhysicsObject& square, PhysicsOb
 
 void CollisionSolver::Draw(aie::Renderer2D& renderer)
 {
-    if (!m_diagnostics.empty())
+    const float size = 7.5f;
+    for (auto itr = m_diagnostics.begin(); itr != m_diagnostics.end(); )
     {
-        const float size = 10.0f;
+        auto& data = itr->second;
+        renderer.setRenderColour(data.first.r, data.first.g, data.first.b, 1.0f);
+        renderer.drawBox(itr->first.first, itr->first.second, size, size);
 
-        for (const auto& pair : m_diagnostics)
+        --data.second;
+        if (data.second <= 0)
         {
-            renderer.setRenderColour(pair.second.r, pair.second.g, pair.second.b, 1.0f);
-            renderer.drawBox(pair.first.x, pair.first.y, size, size);
+            m_diagnostics.erase(itr++);
         }
-
-        m_diagnostics.clear();
+        else
+        {
+            ++itr;
+        }
     }
 }
 
 void CollisionSolver::AddDiagnostic(const glm::vec2& point, float r, float g, float b)
 {
-    m_diagnostics.push_back(std::make_pair(point, glm::vec3(r, g, b)));
+    if (m_renderDiagnostics)
+    {
+        m_diagnostics[std::make_pair(point.x, point.y)] = std::make_pair(glm::vec3(r, g, b), 75);
+    }
+}
+
+void CollisionSolver::AddToTweaker(Tweaker& tweaker)
+{
+    tweaker.AddBoolEntry("Collision Diagnosics",
+        [this]() { return m_renderDiagnostics; },
+        [this](bool value) { m_renderDiagnostics = value;  });
 }
