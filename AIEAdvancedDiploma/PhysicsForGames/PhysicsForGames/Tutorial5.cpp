@@ -12,5 +12,5 @@
 
 void TutorialCreator::CreateTutorial5()
 {
-    PoolTable::Create(*m_data, true, true);
+    PoolTable::Create(*m_data, true, true, true);
 }

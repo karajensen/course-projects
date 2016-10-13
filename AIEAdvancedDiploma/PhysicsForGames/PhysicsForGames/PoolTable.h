@@ -19,12 +19,14 @@ public:
     /**
     * Creates the pool table
     * @param data For creating the tutorial
-    * @param useDrag whether the balls should use linear drag
+    * @param useLinearDrag whether the balls should use linear drag
+    * @param useRotation whether the balls should rotate
     * @param useElasticity whether the balls should use elasticity
     */
     static void Create(TutorialData& data,
-                       bool useDrag,
-                       bool useElasticity);
+                       bool useLinearDrag,
+                       bool useRotation,
+                       bool useElastcity);
 
 private:
 
@@ -51,8 +53,9 @@ private:
     * Creates the pool balls
     * @param data For creating the tutorial data
     * @param actors Cached information for physics scene actors created
+    * @param useRotation whether the balls should rotate
     */
-    static void CreateBalls(TutorialData& data, Actors& actors);
+    static void CreateBalls(TutorialData& data, Actors& actors, bool useRotation);
 
     /**
     * Creates the pool cue

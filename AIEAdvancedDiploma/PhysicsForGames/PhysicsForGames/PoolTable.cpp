@@ -88,7 +88,7 @@ void PoolTable::CreateBoard(TutorialData& data, Actors& actors)
     }
 }
 
-void PoolTable::CreateBalls(TutorialData& data, Actors& actors)
+void PoolTable::CreateBalls(TutorialData& data, Actors& actors, bool useRotation)
 {
     bool isRed = true;
     const glm::vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
@@ -117,6 +117,7 @@ void PoolTable::CreateBalls(TutorialData& data, Actors& actors)
             isRed = !isRed;
         }
 
+        ball->CanRotate(useRotation);
         actors.balls[i] = ball.get();
         data.Scene().AddActor(std::move(ball));
     }
@@ -186,7 +187,8 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
 }
 
 void PoolTable::Create(TutorialData& data,
-                       bool useDrag,
+                       bool useRotation,
+                       bool useLinearDrag,
                        bool useElasticity)
 {
     Actors actors;
@@ -201,18 +203,18 @@ void PoolTable::Create(TutorialData& data,
     data.CreateFlt("pocket_size", 40.0f);
     data.CreateFlt("ball_size", 11.0f);
     data.CreateFlt("ball_mass", 1.0f);
-    data.CreateFlt("ball_moi", 10.0f);
-    data.CreateFlt("ball_linear_drag", useDrag ? 0.005f : 0.0f);
-    data.CreateFlt("ball_angular_drag", useDrag ? 0.01f : 0.0f);
+    data.CreateFlt("ball_moi", useRotation ? 10.0f : 0.0f);
+    data.CreateFlt("ball_linear_drag", useLinearDrag ? 0.005f : 0.0f);
+    data.CreateFlt("ball_angular_drag", useRotation ? 0.01f : 1.0f);
     data.CreateFlt("ball_elasticity", useElasticity ? 0.8f : 1.0f);
     data.CreateFlt("player_start", 120.0f);
     data.CreateFlt("balls_start", -120.0f);
     data.CreateFlt("cue_size", 10.0f);
-    data.CreateFlt("cue_force", useDrag ? 50.0f : 10.0f);
+    data.CreateFlt("cue_force", useLinearDrag ? 50.0f : 10.0f);
     data.CreateBool("cue_inverted", false);
 
     CreateBoard(data, actors);
-    CreateBalls(data, actors);
+    CreateBalls(data, actors, useRotation);
     CreateCue(data, actors);
 
     auto resetTable = [actors, &data]()
@@ -337,12 +339,16 @@ void PoolTable::Create(TutorialData& data,
     tweaker.AddButton("Reset", resetBallPositions);
     tweaker.AddTweakableFlt("ball_mass", "Ball Mass", 0.1f, 3, resetBallValues);
     tweaker.AddTweakableFlt("ball_size", "Ball Size", 0.1f, 3, resetBallValues);
-    tweaker.AddTweakableFlt("ball_moi", "Ball Moment of Inertia", 0.1f, 3, resetBallValues);
 
-    if (useDrag)
+    if (useRotation)
+    {
+        tweaker.AddTweakableFlt("ball_moi", "Ball Moment of Inertia", 0.1f, 3, resetBallValues);
+        tweaker.AddTweakableFlt("ball_angular_drag", "Ball Angular Drag", 0.01f, 3, resetBallValues);
+    }
+
+    if (useLinearDrag)
     {
         tweaker.AddTweakableFlt("ball_linear_drag", "Ball Linear Drag", 0.01f, 3, resetBallValues);
-        tweaker.AddTweakableFlt("ball_angular_drag", "Ball Angular Drag", 0.01f, 3, resetBallValues);
     }
     
     if (useElasticity)

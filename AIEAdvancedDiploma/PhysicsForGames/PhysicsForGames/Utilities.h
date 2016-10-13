@@ -60,7 +60,7 @@ public:
     /**
     * @return whether a vector is set to zero
     */
-    static bool IsZero(glm::vec2& vec)
+    static bool IsZero(const glm::vec2& vec)
     {
         return vec.x == 0.0f && vec.y == 0.0f;
     }

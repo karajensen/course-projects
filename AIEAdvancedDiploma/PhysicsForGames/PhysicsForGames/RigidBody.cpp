@@ -27,36 +27,42 @@ RigidBody::RigidBody(Shape shape,
 
 void RigidBody::Update(float timeStep)
 {
-    m_previousPosition = m_position;
-
-    ApplyForce(m_gravity);
-
-    m_position += m_velocity * timeStep;
-    m_rotation += m_angularVelocity * timeStep;
-
-    m_velocity += m_acceleration * timeStep;
-    m_velocity *= 1.0f - m_linearDrag;
-
-    m_angularVelocity += m_angularAcceleration * timeStep;
-    m_angularVelocity *= 1.0f - m_angularDrag;
-
-    if (m_rotation > 360.0f)
+    if (m_canMove)
     {
-        m_rotation = 0.0f;
+        m_previousPosition = m_position;
+
+        ApplyForce(m_gravity);
+
+        m_position += m_velocity * timeStep;
+        m_velocity += m_acceleration * timeStep;
+        m_velocity *= 1.0f - m_linearDrag;
+
+        if (glm::length(m_velocity) < MIN_LINEAR_THRESHOLD)
+        {
+            Utils::SetZero(m_velocity);
+        }
+
+        Utils::SetZero(m_acceleration);
     }
 
-    if (glm::length(m_velocity) < MIN_LINEAR_THRESHOLD)
+    if (m_canRotate)
     {
-        Utils::SetZero(m_velocity);
-    }
+        m_rotation += m_angularVelocity * timeStep;
+        m_angularVelocity += m_angularAcceleration * timeStep;
+        m_angularVelocity *= 1.0f - m_angularDrag;
 
-    if (m_angularVelocity < MIN_ROTATION_THRESHOLD)
-    {
-        m_angularVelocity = 0.0f;
-    }
+        if (m_rotation > 360.0f)
+        {
+            m_rotation = 0.0f;
+        }
 
-    Utils::SetZero(m_acceleration);
-    m_angularAcceleration = 0.0f;
+        if (m_angularVelocity < MIN_ROTATION_THRESHOLD)
+        {
+            m_angularVelocity = 0.0f;
+        }
+
+        m_angularAcceleration = 0.0f;
+    }
 }
 
 float RigidBody::GetRotation() const
@@ -217,10 +223,30 @@ void RigidBody::SetElasticity(float elasticity)
 
 void RigidBody::SetMomentOfInertia(float moi)
 {
-    m_moi = moi;
+    m_moi = std::max(std::numeric_limits<float>::min(), moi);
 }
 
 float RigidBody::GetMomentOfInertia() const
 {
     return m_moi;
+}
+
+bool RigidBody::CanRotate() const
+{
+    return m_canRotate;
+}
+
+void RigidBody::CanRotate(bool rotate)
+{
+    m_canRotate = rotate;
+}
+
+bool RigidBody::CanMove() const
+{
+    return m_canMove;
+}
+
+void RigidBody::CanMove(bool move)
+{
+    m_canMove = move;
 }

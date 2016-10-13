@@ -204,6 +204,26 @@ public:
     float GetMomentOfInertia() const;
 
     /**
+    * @return whether this body is allowed to rotate
+    */
+    bool CanRotate() const;
+
+    /**
+    * Sets whether this body is allowed to rotate
+    */
+    void CanRotate(bool rotate);
+
+    /**
+    * @return whether this body is allowed to translate
+    */
+    bool CanMove() const;
+
+    /**
+    * Sets whether this body is allowed to translate
+    */
+    void CanMove(bool move);
+
+    /**
     * Predicts the position of projectile motion at the given time passed
     * @param gravity The gravity to apply to the body in the y direction
     * @param angle The angle of elevation launched at relative to horizontal in degrees
@@ -229,6 +249,8 @@ protected:
     float m_linearDrag = 0.0f;           ///< How much the linear velocity of the body will dampen as time passes
     float m_angularDrag = 0.0f;          ///< How much the angular velocity of the body will dampen as time passes
     float m_moi = 1.0f;                  ///< Moment of inertia, how resistant to changes in rotation
+    bool m_canRotate = true;             ///< Whether the body can rotate
+    bool m_canMove = true;               ///< Whether the body can translate
 
 private:
 
