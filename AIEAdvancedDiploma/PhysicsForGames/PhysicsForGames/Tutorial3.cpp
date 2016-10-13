@@ -14,7 +14,7 @@
 
 void TutorialCreator::CreateTutorial3()
 {
-    m_data->CreateBool("collision_response", false);
+    m_data->CreateBool("collision_response", true);
 
     m_tweaker->SetGroup("Planes");
 

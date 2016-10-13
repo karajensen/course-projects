@@ -31,12 +31,14 @@ void RigidBody::Update(float timeStep)
 
     ApplyForce(m_gravity);
 
-    // Euler Integration: X(t + ∆t) = X(t) + X•(t)∆t
-    m_velocity = (m_velocity * (1.0f - m_linearDrag)) + (m_acceleration * timeStep);
     m_position += m_velocity * timeStep;
-
-    m_angularVelocity = (m_angularVelocity * (1.0f - m_angularDrag)) + (m_angularAcceleration * timeStep);
     m_rotation += m_angularVelocity * timeStep;
+
+    m_velocity += m_acceleration * timeStep;
+    m_velocity *= 1.0f - m_linearDrag;
+
+    m_angularVelocity += m_angularAcceleration * timeStep;
+    m_angularVelocity *= 1.0f - m_angularDrag;
 
     if (m_rotation > 360.0f)
     {

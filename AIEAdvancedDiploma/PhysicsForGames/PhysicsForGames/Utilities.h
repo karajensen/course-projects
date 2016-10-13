@@ -7,6 +7,8 @@
 #define _USE_MATH_DEFINES
 
 #include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+#include "glm/glm.hpp"
 #include <iostream>
 #include <math.h>
 
@@ -61,5 +63,15 @@ public:
     static bool IsZero(glm::vec2& vec)
     {
         return vec.x == 0.0f && vec.y == 0.0f;
+    }
+
+    /**
+    * Converts a vec2 to a vec3
+    */
+    static glm::vec3 Cross(const glm::vec2& v1, const glm::vec2& v2)
+    {
+        return glm::cross(
+            glm::vec3(v1.x, v1.y, 0.0f),
+            glm::vec3(v2.x, v2.y, 0.0f));
     }
 };  

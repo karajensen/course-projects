@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////////
 // Kara Jensen - mail@karajensen.com - CollisionSolver.cpp
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,12 +96,17 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
         const glm::vec2 seperationVector = normal * intersection * 0.5f;
 
-        const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position1);
-        const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius1;
-        const float torque = (-2.0f / mass) * glm::dot(lever, relativeVelocity);
+        if (glm::length(force) == 0.0f)
+        {
+            return false;
+        }
 
         if (response1.first)
         {
+            const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position1);
+            const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius1;
+            const float torque = glm::length(Utils::Cross(force, lever)) * (1.0f / body1.GetMomentOfInertia());
+
             body1.SetAngularVelocity(torque + body1.GetAngularVelocity());
             body1.SetVelocity(force + body1.GetVelocity());
             body1.SetPosition(body1.GetPosition() - seperationVector);
@@ -109,6 +114,10 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
 
         if (response2.first)
         {
+            const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position2);
+            const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius2;
+            const float torque = glm::length(Utils::Cross(-force, lever)) * (1.0f / body2.GetMomentOfInertia());
+
             body2.SetAngularVelocity(-torque + body2.GetAngularVelocity());
             body2.SetVelocity(-force + body2.GetVelocity());
             body2.SetPosition(body2.GetPosition() + seperationVector);
@@ -169,9 +178,14 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
         const float elasticity = circleBody.GetElasticity();
         const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
 
+        if (glm::length(force) == 0.0f)
+        {
+            return false;
+        }
+
         const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position);
         const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius;
-        const float torque = (-2.0f / mass) * glm::dot(lever, velocity);
+        const float torque = glm::length(Utils::Cross(force, lever)) * (1.0f / circleBody.GetMomentOfInertia());
 
         circleBody.SetAngularVelocity(torque + circleBody.GetAngularVelocity());
         circleBody.SetVelocity(force + velocity);
@@ -230,9 +244,14 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             const float elasticity = circleBody.GetElasticity();
             const glm::vec2 force = (-2.0f / mass) * dot * elasticity * normal;
 
+            if (glm::length(force) == 0.0f)
+            {
+                return false;
+            }
+
             const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position);
             const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius;
-            const float torque = (-2.0f / mass) * glm::dot(lever, velocity);
+            const float torque = glm::length(Utils::Cross(force, lever)) * (1.0f / circleBody.GetMomentOfInertia());
 
             circleBody.SetAngularVelocity(torque + circleBody.GetAngularVelocity());
             circleBody.SetVelocity(force + velocity);
