@@ -1,6 +1,3 @@
-
-- Check if rotation correct and submit tutorial
-
 =================================================================
 AIE Advanced Diploma - Physics For Games Unit
 =================================================================

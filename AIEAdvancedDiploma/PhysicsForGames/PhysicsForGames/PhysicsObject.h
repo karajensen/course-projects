@@ -31,7 +31,8 @@ public:
         PLANE,
         CIRCLE,
         SQUARE,
-        MAX_SHAPES
+        MAX_SHAPES,
+        NO_SHAPE
     };
 
     /**

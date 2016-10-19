@@ -26,7 +26,8 @@ TutorialCreator::TutorialCreator(Input& input,
         &TutorialCreator::CreateTutorial2,
         &TutorialCreator::CreateTutorial3,
         &TutorialCreator::CreateTutorial4,
-        &TutorialCreator::CreateTutorial5
+        &TutorialCreator::CreateTutorial5,
+        &TutorialCreator::CreateTutorial6
     };
 
     m_tutorialNames = 
@@ -36,7 +37,8 @@ TutorialCreator::TutorialCreator(Input& input,
         "Tutorial 2",
         "Tutorial 3",
         "Tutorial 4",
-        "Tutorial 5"
+        "Tutorial 5",
+        "Tutorial 6"
     };
 }
 

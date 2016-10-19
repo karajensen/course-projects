@@ -3,12 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "TutorialCreator.h"
-#include "TutorialData.h"
-#include "TutorialTweaker.h"
-#include "PhysicsScene.h"
-#include "SquareBody.h"
 #include "PoolTable.h"
-#include "Utilities.h"
 
 void TutorialCreator::CreateTutorial5()
 {

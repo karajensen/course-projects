@@ -10,6 +10,7 @@
 #include "Plane.h"
 #include "CircleBody.h"
 #include "Utilities.h"
+#include "SpringJoint.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 #include <algorithm>
@@ -170,6 +171,26 @@ void TutorialTweaker::AddTweakbleObject(PhysicsObject* obj,
     m_tweaker.AddColorEntry((label + "Colour").c_str(),
         [obj]() { return obj->GetColour(); },
         [obj, onSet](const glm::vec4 value) { obj->SetColor(value); onSet(); });
+}
+
+void TutorialTweaker::AddTweakbleJoint(SpringJoint* obj,
+                                       const std::string& label,
+                                       std::function<void(void)> onSet)
+{
+    if (!onSet)
+    {
+        onSet = []() {};
+    }
+
+    m_tweaker.AddFltEntry((label + " Spring Coefficient").c_str(),
+        [obj]() { return obj->GetSpringCoefficient(); },
+        [obj, onSet](float value) { obj->SetSpringCoefficient(value); onSet(); },
+        0.1f, 3);
+
+    m_tweaker.AddFltEntry((label + " Damping").c_str(),
+        [obj]() { return obj->GetDamping(); },
+        [obj, onSet](float value) { obj->SetDamping(value); onSet(); },
+        0.1f, 3);
 }
 
 void TutorialTweaker::AddTweakblePlane(Plane* obj,

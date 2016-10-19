@@ -15,6 +15,7 @@ class SquareBody;
 class Plane;
 class CircleBody;
 class Tweaker;
+class SpringJoint;
 
 /**
 * Wrapper for tweaking tutorial components
@@ -131,6 +132,16 @@ public:
     * @param onSet Callback to use when value is set
     */
     void AddTweakblePlane(Plane* obj,
+                          const std::string& label,
+                          std::function<void(void)> onSet = nullptr);
+
+    /**
+    * Adds a spring joint to the tweak bar
+    * @param obj The body to add
+    * @param label The label to show on the tweak bar
+    * @param onSet Callback to use when value is set
+    */
+    void AddTweakbleJoint(SpringJoint* obj,
                           const std::string& label,
                           std::function<void(void)> onSet = nullptr);
 

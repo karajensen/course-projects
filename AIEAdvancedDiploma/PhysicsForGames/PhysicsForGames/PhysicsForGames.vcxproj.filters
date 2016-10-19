@@ -78,6 +78,12 @@
     <ClCompile Include="Tutorial5.cpp">
       <Filter>Tutorials</Filter>
     </ClCompile>
+    <ClCompile Include="Tutorial6.cpp">
+      <Filter>Tutorials</Filter>
+    </ClCompile>
+    <ClCompile Include="SpringJoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PhysicsForGamesApp.h">
@@ -123,6 +129,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TutorialData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpringJoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
