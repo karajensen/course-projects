@@ -69,6 +69,11 @@ public:
     virtual void SetGravity(float x, float y) override;
 
     /**
+    * @return the gravity force
+    */
+    const glm::vec2& GetGravity() const;
+
+    /**
     * Explicitly sets the position of the body
     * @param position The position to set
     */
@@ -204,24 +209,29 @@ public:
     float GetMomentOfInertia() const;
 
     /**
-    * @return whether this body is allowed to rotate
+    * @return whether this body is allowed to rotate dynamically
     */
-    bool CanRotate() const;
+    bool CanRotateDynamically() const;
 
     /**
-    * Sets whether this body is allowed to rotate
+    * Sets whether this body is allowed to rotate dynamically
     */
-    void CanRotate(bool rotate);
+    void CanRotateDynamically(bool rotate);
 
     /**
-    * @return whether this body is allowed to translate
+    * @return whether this body is allowed to translate dynamically
     */
-    bool CanMove() const;
+    bool CanMoveDynamically() const;
 
     /**
-    * Sets whether this body is allowed to translate
+    * Sets whether this body is allowed to translate dynamically
     */
-    void CanMove(bool move);
+    void CanMoveDynamically(bool move);
+
+    /**
+    * Makes the body static and prevents movement and rotation
+    */
+    void MakeStatic();
 
     /**
     * Predicts the position of projectile motion at the given time passed
@@ -249,8 +259,8 @@ protected:
     float m_linearDrag = 0.0f;           ///< How much the linear velocity of the body will dampen as time passes
     float m_angularDrag = 0.0f;          ///< How much the angular velocity of the body will dampen as time passes
     float m_moi = 1.0f;                  ///< Moment of inertia, how resistant to changes in rotation
-    bool m_canRotate = true;             ///< Whether the body can rotate
-    bool m_canMove = true;               ///< Whether the body can translate
+    bool m_canRotateDynamically = true;  ///< Whether the body can rotate dynamically
+    bool m_canMoveDynamically = true;    ///< Whether the body can translate dynamically
 
 private:
 

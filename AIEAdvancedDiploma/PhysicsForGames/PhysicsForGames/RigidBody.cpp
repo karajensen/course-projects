@@ -27,7 +27,7 @@ RigidBody::RigidBody(Shape shape,
 
 void RigidBody::Update(float timeStep)
 {
-    if (m_canMove)
+    if (m_canMoveDynamically)
     {
         m_previousPosition = m_position;
 
@@ -44,8 +44,13 @@ void RigidBody::Update(float timeStep)
 
         Utils::SetZero(m_acceleration);
     }
+    else
+    {
+        Utils::SetZero(m_acceleration);
+        Utils::SetZero(m_velocity);
+    }
 
-    if (m_canRotate)
+    if (m_canRotateDynamically)
     {
         m_rotation += m_angularVelocity * timeStep;
         m_angularVelocity += m_angularAcceleration * timeStep;
@@ -61,6 +66,11 @@ void RigidBody::Update(float timeStep)
             m_angularVelocity = 0.0f;
         }
 
+        m_angularAcceleration = 0.0f;
+    }
+    else
+    {
+        m_angularVelocity = 0.0f;
         m_angularAcceleration = 0.0f;
     }
 }
@@ -101,6 +111,11 @@ void RigidBody::ApplyForceToActor(RigidBody* otherActor, const glm::vec2& force)
 void RigidBody::SetGravity(const glm::vec2& gravity)
 {
     m_gravity = gravity;
+}
+
+const glm::vec2& RigidBody::GetGravity() const
+{
+    return m_gravity;
 }
 
 void RigidBody::SetGravity(float x, float y)
@@ -231,22 +246,28 @@ float RigidBody::GetMomentOfInertia() const
     return m_moi;
 }
 
-bool RigidBody::CanRotate() const
+bool RigidBody::CanRotateDynamically() const
 {
-    return m_canRotate;
+    return m_canRotateDynamically;
 }
 
-void RigidBody::CanRotate(bool rotate)
+void RigidBody::CanRotateDynamically(bool rotate)
 {
-    m_canRotate = rotate;
+    m_canRotateDynamically = rotate;
 }
 
-bool RigidBody::CanMove() const
+bool RigidBody::CanMoveDynamically() const
 {
-    return m_canMove;
+    return m_canMoveDynamically;
 }
 
-void RigidBody::CanMove(bool move)
+void RigidBody::CanMoveDynamically(bool move)
 {
-    m_canMove = move;
+    m_canMoveDynamically = move;
+}
+
+void RigidBody::MakeStatic()
+{
+    CanMoveDynamically(false);
+    CanRotateDynamically(false);
 }

@@ -47,10 +47,6 @@ void PhysicsScene::Update()
             actor->PreUpdate(m_timeStep);
             actor->Update(m_timeStep);
         }
-        else
-        {
-            actor->InactiveUpdate();
-        }
     }
 
     CheckForCollision();

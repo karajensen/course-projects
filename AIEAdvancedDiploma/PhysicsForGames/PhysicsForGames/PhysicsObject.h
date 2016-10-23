@@ -66,12 +66,6 @@ public:
     void PostUpdate(float timeStep);
 
     /**
-    * Update to be done when the body is inactive
-    * @param timeStep The time between each update call
-    */
-    void InactiveUpdate();
-
-    /**
     * Renders the body
     * @param renderer The 2D renderer for drawing the body
     * @param showDiagnostics Whether to render diagnostics
@@ -123,11 +117,6 @@ public:
     * Sets a callback to fire after the body is updated
     */
     void SetPostUpdateFn(std::function<void(float)> fn);
-
-    /**
-    * Sets a callback to fire after the body is inactive
-    */
-    void SetInactiveFn(std::function<void(void)> fn);
 
     /**
     * @return the type of physics body this is
@@ -189,6 +178,16 @@ public:
                               std::function<void(void)> fn = nullptr);
 
     /**
+    * Helper function to set the collision response on both objects
+    * @param obj1 The first object to set
+    * @param obj2 The second object to set
+    * @Param shouldCollide Whether the body should respond with force
+    */
+    static void SetCollisionResponse(PhysicsObject& obj1,
+                                     PhysicsObject& obj2,
+                                     bool shouldCollide);
+
+    /**
     * @return the type of response to the given object ID
     * @note will default to collide if no response has been set
     */
@@ -216,7 +215,6 @@ private:
 
     const Shape m_shape;                                    ///< The type of physics object this is
     const unsigned int m_id;                                ///< The unique ID of the object
-    std::function<void(void)> m_inactiveFn = nullptr;       ///< Callback to fire when inactive
     std::function<void(float)> m_preUpdate = nullptr;       ///< Callback to fire before the body is updated
     std::function<void(float)> m_postUpdate = nullptr;      ///< Callback to fire after the body is updated
     bool m_inCollision = false;                             ///< Whether this object is in collision this tick

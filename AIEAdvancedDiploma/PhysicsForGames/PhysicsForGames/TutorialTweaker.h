@@ -12,6 +12,7 @@ class TutorialData;
 class PhysicsScene;
 class PhysicsObject;
 class SquareBody;
+class RigidBody;
 class Plane;
 class CircleBody;
 class Tweaker;
@@ -124,6 +125,16 @@ public:
     void AddTweakbleObject(PhysicsObject* obj,
                            const std::string& label,
                            std::function<void(void)> onSet = nullptr);
+
+    /**
+    * Adds a body to the tweak bar
+    * @param obj The body to add
+    * @param label The label to show on the tweak bar
+    * @param onSet Callback to use when value is set
+    */
+    void AddTweakbleBody(RigidBody* obj,
+                         const std::string& label,
+                         std::function<void(void)> onSet = nullptr);
 
     /**
     * Adds a plane to the tweak bar

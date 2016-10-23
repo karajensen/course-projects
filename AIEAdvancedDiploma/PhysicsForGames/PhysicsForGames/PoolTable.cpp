@@ -117,7 +117,7 @@ void PoolTable::CreateBalls(TutorialData& data, Actors& actors, bool useRotation
             isRed = !isRed;
         }
 
-        ball->CanRotate(useRotation);
+        ball->CanRotateDynamically(useRotation);
         actors.balls[i] = ball.get();
         data.Scene().AddActor(std::move(ball));
     }
@@ -140,12 +140,12 @@ void PoolTable::CreateCue(TutorialData& data, Actors& actors)
         glm::vec2(0.0f, 0.0f),
         glm::vec4(1.0f, 0.5f, 0.0f, 1.0f)));
 
-    cuetip->SetActive(false);
+    cuetip->MakeStatic();
     cuetip->SetCollidable(false);
-    cue->SetActive(false);
+    cue->MakeStatic();
     cue->SetCollidable(false);
 
-    cue->SetInactiveFn([&data, balls = actors.balls, obj = cue.get(), tip = cuetip.get()]()
+    cue->SetPreUpdateFn([&data, balls = actors.balls, obj = cue.get(), tip = cuetip.get()](float)
     {
         obj->SetVisible(false);
         tip->SetVisible(false);
@@ -326,6 +326,7 @@ void PoolTable::Create(TutorialData& data,
     auto& tweaker = data.Tweaker();
 
     tweaker.SetGroup("Table");
+    tweaker.AddTweakbleObject(actors.center, "Board", resetTable);
     tweaker.AddTweakbleSquare(actors.center, "Board", resetTable);
     tweaker.AddTweakableFlt("barrier_size", "Barrier Size", 1.0f, 1, resetTable);
     tweaker.AddTweakableFlt("pocket_size", "Pocket Size", 1.0f, 1, resetTable);

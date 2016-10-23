@@ -102,7 +102,7 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
         {
             if (shouldBody1Respond)
             {
-                if (body1.CanRotate())
+                if (body1.CanRotateDynamically())
                 {
                     const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position1);
                     const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius1;
@@ -110,7 +110,7 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
                     body1.SetAngularVelocity(torque + body1.GetAngularVelocity());
                 }
 
-                if (body1.CanMove())
+                if (body1.CanMoveDynamically())
                 {
                     body1.SetVelocity(force + body1.GetVelocity());
                     body1.SetPosition(body1.GetPosition() - seperationVector);
@@ -119,7 +119,7 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
 
             if (shouldBody2Respond)
             {
-                if (body2.CanRotate())
+                if (body2.CanRotateDynamically())
                 {
                     const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position2);
                     const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius2;
@@ -127,7 +127,7 @@ bool CollisionSolver::SolveCircleCircleCollision(PhysicsObject& circle1, Physics
                     body2.SetAngularVelocity(-torque + body2.GetAngularVelocity());
                 }
 
-                if (body2.CanMove())
+                if (body2.CanMoveDynamically())
                 {
                     body2.SetVelocity(-force + body2.GetVelocity());
                     body2.SetPosition(body2.GetPosition() + seperationVector);
@@ -194,7 +194,7 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
 
         if (!Utils::IsZero(force))
         {
-            if (circleBody.CanRotate())
+            if (circleBody.CanRotateDynamically())
             {
                 const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position);
                 const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius;
@@ -202,7 +202,7 @@ bool CollisionSolver::SolveCirclePlaneCollision(PhysicsObject& circle, PhysicsOb
                 circleBody.SetAngularVelocity(torque + circleBody.GetAngularVelocity());
             }
 
-            if (circleBody.CanMove())
+            if (circleBody.CanMoveDynamically())
             {
                 circleBody.SetVelocity(force + velocity);
                 circleBody.SetPosition(circleBody.GetPosition() + normal * intersection * 0.5f);
@@ -266,7 +266,7 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
             
             if (!Utils::IsZero(force))
             {
-                if (circleBody.CanRotate())
+                if (circleBody.CanRotateDynamically())
                 {
                     const glm::vec2 axisToCollision = glm::normalize(collisionPoint - position);
                     const glm::vec2 lever = glm::normalize(glm::vec2(axisToCollision.y, -axisToCollision.x)) * radius;
@@ -276,7 +276,7 @@ bool CollisionSolver::SolveCircleSquareCollision(PhysicsObject& circle, PhysicsO
                     circleBody.SetAngularVelocity(torque + circleBody.GetAngularVelocity());
                 }
 
-                if (circleBody.CanMove())
+                if (circleBody.CanMoveDynamically())
                 {
                     circleBody.SetVelocity(force + velocity);
                     circleBody.SetPosition(position + normal * intersection * 0.5f);

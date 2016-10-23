@@ -131,8 +131,6 @@ void TutorialTweaker::AddTweakbleSquare(SquareBody* obj,
                                         const std::string& label,
                                         std::function<void(void)> onSet)
 {
-    AddTweakbleObject(obj, label, onSet);
-
     if (!onSet)
     {
         onSet = [](){};
@@ -220,5 +218,40 @@ void TutorialTweaker::AddTweakblePlane(Plane* obj,
     m_tweaker.AddFltEntry((label + " Size").c_str(),
         [obj]() { return obj->GetSize(); },
         [obj, onSet](float value) { obj->SetSize(value); onSet(); },
+        0.1f, 3);
+}
+
+void TutorialTweaker::AddTweakbleBody(RigidBody* obj,
+                                      const std::string& label,
+                                      std::function<void(void)> onSet)
+{
+    if (!onSet)
+    {
+        onSet = []() {};
+    }
+
+    m_tweaker.AddFltEntry((label + " Mass").c_str(),
+        [obj]() { return obj->GetMass(); },
+        [obj, onSet](float value) { obj->SetMass(value); onSet(); },
+        0.1f, 3);
+
+    m_tweaker.AddFltEntry((label + " Radius").c_str(),
+        [obj]() { return obj->GetRadius(); },
+        [obj, onSet](float value) { obj->SetRadius(value); onSet(); },
+        0.1f, 3);
+
+    m_tweaker.AddFltEntry((label + " Gravity").c_str(),
+        [obj]() { return obj->GetGravity().y; },
+        [obj, onSet](float value) { obj->SetGravity(obj->GetGravity().x, value); onSet(); },
+        0.1f, 3);
+
+    m_tweaker.AddFltEntry((label + " Linear Drag").c_str(),
+        [obj]() { return obj->GetLinearDrag(); },
+        [obj, onSet](float value) { obj->SetLinearDrag(value); onSet(); },
+        0.1f, 3);
+
+    m_tweaker.AddFltEntry((label + " Angular Drag").c_str(),
+        [obj]() { return obj->GetAngularDrag(); },
+        [obj, onSet](float value) { obj->SetAngularDrag(value); onSet(); },
         0.1f, 3);
 }

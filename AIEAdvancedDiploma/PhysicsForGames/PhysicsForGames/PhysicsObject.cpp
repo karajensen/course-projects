@@ -17,14 +17,6 @@ PhysicsObject::PhysicsObject(Shape shape, const glm::vec4& colour)
 {
 }
 
-void PhysicsObject::InactiveUpdate()
-{
-    if (m_inactiveFn)
-    {
-        m_inactiveFn();
-    }
-}
-
 void PhysicsObject::PreUpdate(float timeStep)
 {
     m_inCollision = false;
@@ -63,11 +55,6 @@ void PhysicsObject::SetPreUpdateFn(std::function<void(float)> fn)
 void PhysicsObject::SetPostUpdateFn(std::function<void(float)> fn)
 {
     m_postUpdate = fn;
-}
-
-void PhysicsObject::SetInactiveFn(std::function<void(void)> fn)
-{
-    m_inactiveFn = fn;
 }
 
 void PhysicsObject::SetActive(bool active)
@@ -121,6 +108,14 @@ void PhysicsObject::SetColor(float r, float g, float b, float a)
 const glm::vec4& PhysicsObject::GetColour() const
 {
     return m_colour;
+}
+
+void PhysicsObject::SetCollisionResponse(PhysicsObject& obj1,
+                                         PhysicsObject& obj2,
+                                         bool shouldCollide)
+{
+    obj1.SetCollisionResponse(obj2.GetID(), shouldCollide);
+    obj2.SetCollisionResponse(obj1.GetID(), shouldCollide);
 }
 
 void PhysicsObject::SetCollisionResponse(bool shouldCollide,
