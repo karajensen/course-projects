@@ -17,6 +17,7 @@
 *.fbm/
 ipch/
 html/
+.vs/
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/ComputerGraphics.exe
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/ComputerGraphicsD.exe
 AIEAdvancedDiploma/ComputerGraphics/ComputerGraphics/Debug/
@@ -45,3 +46,4 @@ AIEAdvancedDiploma/ComplexGameSystems/ComplexGameSystems/ComplexGameSystemsGUID.
 AIEAdvancedDiploma/PhysicsForGames/Framework/temp/
 AIEAdvancedDiploma/PhysicsForGames/Unity/tutorials/
 AIEAdvancedDiploma/PhysicsForGames/Unity/*/Library/
+AIEAdvancedDiploma/PhysicsForGames/Unity/*/Temp/

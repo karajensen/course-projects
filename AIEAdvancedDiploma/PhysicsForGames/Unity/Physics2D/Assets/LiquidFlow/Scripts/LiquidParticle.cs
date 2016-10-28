@@ -27,9 +27,10 @@ public class LiquidParticle : MonoBehaviour
 	public GameObject waterImage, lavaImage;
 	float m_startTime = 0.0f;
 	float m_particleLifeTime = 0.0f;
+    float m_downScaler = 1.0f;
 
-	const float WATER_GRAVITYSCALE = 0.0f;
-	const float LAVA_GRAVITYSCALE = 0.0f;
+	const float WATER_GRAVITYSCALE = 1.0f;
+	const float LAVA_GRAVITYSCALE = 0.75f;
 
 
 	/*
@@ -51,8 +52,9 @@ public class LiquidParticle : MonoBehaviour
    */
 	void Update ()
 	{
-		
-	}
+        MovementAnimation();
+        ScaleDown();
+    }
 
 
 	/*
@@ -63,10 +65,19 @@ public class LiquidParticle : MonoBehaviour
    */
 	public void SetState (LiquidStates a_newState)
 	{
-		currentImage.SetActive (false);
-		switch (a_newState) {
-		default:
-			break;
+        var pObj = currentImage.transform.parent;
+        currentImage.SetActive (false);
+
+		switch (a_newState)
+        {
+            case LiquidStates.Lava:
+                currentImage = pObj.GetChild(2).gameObject;
+                pObj.GetComponent<Rigidbody2D>().gravityScale = LAVA_GRAVITYSCALE;
+                break;
+            case LiquidStates.Water:
+                currentImage = pObj.GetChild(0).gameObject;
+                pObj.GetComponent<Rigidbody2D>().gravityScale = WATER_GRAVITYSCALE;
+                break;
 		}
 		currentState = a_newState;   
 		currentImage.SetActive (true);
@@ -81,8 +92,11 @@ public class LiquidParticle : MonoBehaviour
     */
 	void MovementAnimation ()
 	{
-		
-	}
+        var rb = currentImage.transform.parent.GetComponent<Rigidbody2D>();
+        var speed = rb.velocity.magnitude;
+        var scale = 1.0f + 0.085f * speed;
+        currentImage.gameObject.transform.localScale = new Vector3(scale, scale, 1.0f);
+    }
 
 
 	/*
@@ -92,9 +106,20 @@ public class LiquidParticle : MonoBehaviour
     *</summary>
     */
 	void ScaleDown ()
-	{ 
-		
-	}
+	{
+        m_downScaler -= 0.0035f;
+
+        var obj = currentImage.gameObject.transform;
+        obj.localScale = new Vector3(
+            obj.localScale.x * m_downScaler,
+            obj.localScale.y * m_downScaler,
+            1.0f);
+
+        if (obj.localScale.x <= 0.75f || obj.localScale.y <= 0.75f)
+        {
+            GameObject.Destroy(currentImage.transform.parent.gameObject);
+        }
+    }
 
 
 	/*
