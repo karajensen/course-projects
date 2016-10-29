@@ -27,18 +27,21 @@ public class LiquidParticle : MonoBehaviour
 	public GameObject waterImage, lavaImage;
 	float m_startTime = 0.0f;
 	float m_particleLifeTime = 0.0f;
+    float m_downScaler = 1.0f;
 
+    const float LAVA_MASS = 2.0f;
+    const float WATER_MASS = 1.0f;
 
-
-	/*
+    /*
      *<summary>
      *  Pseudo constructor
      *</summary>
      */
-	void Awake ()
+    void Awake ()
 	{
-
-	}
+        m_startTime = 0.0f;
+        SetState(currentState);
+    }
 
 
 	/*
@@ -48,8 +51,9 @@ public class LiquidParticle : MonoBehaviour
    */
 	void Update ()
 	{
-		
-	}
+        MovementAnimation();
+        ScaleDown();
+    }
 
 
 	/*
@@ -60,15 +64,25 @@ public class LiquidParticle : MonoBehaviour
    */
 	public void SetState (LiquidStates a_newState)
 	{
-		currentImage.SetActive (false);
-		switch (a_newState) {
-		default:
-			break;
-		}
-		currentState = a_newState;   
-		currentImage.SetActive (true);
-		//If the state changes (eg. water turns to lava) reset the life of the particle.
-		m_startTime = Time.time;
+        var pObj = currentImage.transform.parent;
+        currentImage.SetActive(false);
+
+        switch (a_newState)
+        {
+            case LiquidStates.Lava:
+                currentImage = lavaImage;
+                pObj.GetComponent<Rigidbody>().mass = LAVA_MASS;
+                break;
+            case LiquidStates.Water:
+                currentImage = waterImage;
+                pObj.GetComponent<Rigidbody>().mass = WATER_MASS;
+                break;
+        }
+        currentState = a_newState;
+        currentImage.SetActive(true);
+
+        //If the state changes (eg. water turns to lava) reset the life of the particle.
+        m_startTime = Time.time;
 	}
 
 
@@ -80,8 +94,11 @@ public class LiquidParticle : MonoBehaviour
     */
 	void MovementAnimation ()
 	{
-		
-	}
+        var rb = currentImage.transform.parent.GetComponent<Rigidbody>();
+        var speed = rb.velocity.magnitude;
+        var scale = 1.0f + 0.085f * speed;
+        currentImage.gameObject.transform.localScale = new Vector3(scale, scale, scale);
+    }
 
 
 	/*
@@ -91,9 +108,20 @@ public class LiquidParticle : MonoBehaviour
     *</summary>
     */
 	void ScaleDown ()
-	{ 
-		
-	}
+	{
+        m_downScaler -= 0.002f;
+
+        var obj = currentImage.gameObject.transform;
+        obj.localScale = new Vector3(
+            obj.localScale.x * m_downScaler,
+            obj.localScale.y * m_downScaler,
+            obj.localScale.z * m_downScaler);
+
+        if (obj.localScale.x <= 0.75f || obj.localScale.y <= 0.75f || obj.localScale.z <= 0.75f)
+        {
+            GameObject.Destroy(currentImage.transform.parent.gameObject);
+        }
+    }
 
 
 	/*

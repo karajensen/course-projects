@@ -71,11 +71,11 @@ public class LiquidParticle : MonoBehaviour
 		switch (a_newState)
         {
             case LiquidStates.Lava:
-                currentImage = pObj.GetChild(2).gameObject;
+                currentImage = lavaImage;
                 pObj.GetComponent<Rigidbody2D>().gravityScale = LAVA_GRAVITYSCALE;
                 break;
             case LiquidStates.Water:
-                currentImage = pObj.GetChild(0).gameObject;
+                currentImage = waterImage;
                 pObj.GetComponent<Rigidbody2D>().gravityScale = WATER_GRAVITYSCALE;
                 break;
 		}
