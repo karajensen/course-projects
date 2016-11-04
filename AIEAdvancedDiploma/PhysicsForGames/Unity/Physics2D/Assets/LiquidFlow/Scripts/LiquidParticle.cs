@@ -18,20 +18,20 @@ public class LiquidParticle : MonoBehaviour
 	public enum LiquidStates
 	{
 		Water,
-		Lava	//2 States
+		Lava,
+        Steam
 	};
-	//Different liquid types
+	
 	LiquidStates currentState = LiquidStates.Water;
 	public GameObject currentImage;
-	//The image is for the metaball shader for the effect.
-	public GameObject waterImage, lavaImage;
+    public GameObject waterImage, lavaImage, steamImage;
 	float m_startTime = 0.0f;
 	float m_particleLifeTime = 0.0f;
     float m_downScaler = 1.0f;
 
 	const float WATER_GRAVITYSCALE = 1.0f;
 	const float LAVA_GRAVITYSCALE = 0.75f;
-
+    const float STEAM_GRAVITYSCALE = -0.1f;
 
 	/*
      *<summary>
@@ -56,29 +56,42 @@ public class LiquidParticle : MonoBehaviour
         ScaleDown();
     }
 
+    /*
+   *<summary>
+   * return the state
+   *</summary>
+   */
+   public LiquidStates GetState()
+   {
+        return currentState;
+   }
 
-	/*
+    /*
    *<summary>
    *  Change an existing particle to a new type (eg water to lava)
    *</summary>
    *<param name="a_newState"> The new particle type to be passed in eg. LiquidStates.Lava </param>
    */
-	public void SetState (LiquidStates a_newState)
+    public void SetState (LiquidStates a_newState)
 	{
-        var pObj = currentImage.transform.parent;
+        var rb = currentImage.transform.parent.GetComponent<Rigidbody2D>();
         currentImage.SetActive (false);
 
 		switch (a_newState)
         {
             case LiquidStates.Lava:
                 currentImage = lavaImage;
-                pObj.GetComponent<Rigidbody2D>().gravityScale = LAVA_GRAVITYSCALE;
+                rb.gravityScale = LAVA_GRAVITYSCALE;
                 break;
             case LiquidStates.Water:
                 currentImage = waterImage;
-                pObj.GetComponent<Rigidbody2D>().gravityScale = WATER_GRAVITYSCALE;
+                rb.gravityScale = WATER_GRAVITYSCALE;
                 break;
-		}
+            case LiquidStates.Steam:
+                currentImage = steamImage;
+                rb.gravityScale = STEAM_GRAVITYSCALE;
+                break;
+        }
 		currentState = a_newState;   
 		currentImage.SetActive (true);
 	}
@@ -107,7 +120,7 @@ public class LiquidParticle : MonoBehaviour
     */
 	void ScaleDown ()
 	{
-        m_downScaler -= 0.0035f;
+        m_downScaler -= 0.002f;
 
         var obj = currentImage.gameObject.transform;
         obj.localScale = new Vector3(
@@ -115,7 +128,8 @@ public class LiquidParticle : MonoBehaviour
             obj.localScale.y * m_downScaler,
             1.0f);
 
-        if (obj.localScale.x <= 0.75f || obj.localScale.y <= 0.75f)
+        float minSize = currentState == LiquidStates.Steam ? 0.1f : 0.75f;
+        if (obj.localScale.x <= minSize || obj.localScale.y <= minSize)
         {
             GameObject.Destroy(currentImage.transform.parent.gameObject);
         }
@@ -143,8 +157,19 @@ public class LiquidParticle : MonoBehaviour
      */
 	void OnCollisionEnter2D (Collision2D a_otherParticle)
 	{
-		
-
+        var particle = a_otherParticle.gameObject.GetComponent<LiquidParticle>();
+        if(particle)
+        {
+            if((particle.GetState() == LiquidStates.Lava && currentState == LiquidStates.Water) ||
+               (particle.GetState() == LiquidStates.Water && currentState == LiquidStates.Lava))
+            {
+                particle.SetState(LiquidStates.Steam);
+                SetState(LiquidStates.Steam);
+            }
+        }
+        else if(currentState == LiquidStates.Steam)
+        {
+            GameObject.Destroy(currentImage.transform.parent.gameObject);
+        }
 	}
-	
 }
