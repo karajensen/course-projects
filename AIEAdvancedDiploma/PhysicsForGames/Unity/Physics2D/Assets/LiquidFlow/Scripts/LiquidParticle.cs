@@ -19,19 +19,22 @@ public class LiquidParticle : MonoBehaviour
 	{
 		Water,
 		Lava,
-        Steam
+        Steam,
+        Vapour
 	};
 	
 	LiquidStates currentState = LiquidStates.Water;
 	public GameObject currentImage;
-    public GameObject waterImage, lavaImage, steamImage;
-	float m_startTime = 0.0f;
-	float m_particleLifeTime = 0.0f;
-    float m_downScaler = 1.0f;
+    public GameObject waterImage, lavaImage, steamImage, vapourImage;
+    public float m_timer = 0.0f;
+    public float m_particleLifeTime = 0.0f;
 
-	const float WATER_GRAVITYSCALE = 1.0f;
-	const float LAVA_GRAVITYSCALE = 0.75f;
+    const float MAX_SIZE = 2.0f;
+
+    const float WATER_GRAVITYSCALE = 1.0f;
+	const float LAVA_GRAVITYSCALE = 0.5f;
     const float STEAM_GRAVITYSCALE = -0.1f;
+    const float VAPOUR_GRAVITYSCALE = -0.01f;
 
 	/*
      *<summary>
@@ -40,7 +43,7 @@ public class LiquidParticle : MonoBehaviour
      */
 	void Awake ()
 	{
-		m_startTime = 0.0f;
+        m_timer = m_particleLifeTime;
 		SetState (currentState);
 	}
 
@@ -52,6 +55,7 @@ public class LiquidParticle : MonoBehaviour
    */
 	void Update ()
 	{
+        m_timer -= Time.deltaTime;
         MovementAnimation();
         ScaleDown();
     }
@@ -74,10 +78,11 @@ public class LiquidParticle : MonoBehaviour
    */
     public void SetState (LiquidStates a_newState)
 	{
-        var rb = currentImage.transform.parent.GetComponent<Rigidbody2D>();
+        var go = currentImage.transform.parent.gameObject;
+        var rb = go.GetComponent<Rigidbody2D>();
         currentImage.SetActive (false);
 
-		switch (a_newState)
+        switch (a_newState)
         {
             case LiquidStates.Lava:
                 currentImage = lavaImage;
@@ -91,10 +96,21 @@ public class LiquidParticle : MonoBehaviour
                 currentImage = steamImage;
                 rb.gravityScale = STEAM_GRAVITYSCALE;
                 break;
+            case LiquidStates.Vapour:
+                currentImage = vapourImage;
+                rb.gravityScale = VAPOUR_GRAVITYSCALE;
+                break;
         }
-		currentState = a_newState;   
+
+        rb.velocity = new Vector2(0, 0);
+        rb.angularVelocity = 0.0f;
+        m_timer = m_particleLifeTime;
+
+        currentState = a_newState;   
 		currentImage.SetActive (true);
-	}
+        go.layer = currentImage.gameObject.layer;
+
+    }
 
 
 	/*
@@ -107,8 +123,8 @@ public class LiquidParticle : MonoBehaviour
 	{
         var rb = currentImage.transform.parent.GetComponent<Rigidbody2D>();
         var speed = rb.velocity.magnitude;
-        var scale = 1.0f + 0.085f * speed;
-        currentImage.gameObject.transform.localScale = new Vector3(scale, scale, 1.0f);
+        var speedMultiplier = 0.01f;
+        SetScale(MAX_SIZE - speed * speedMultiplier);
     }
 
 
@@ -118,34 +134,52 @@ public class LiquidParticle : MonoBehaviour
     * Gives the impression of a dying particle.
     *</summary>
     */
-	void ScaleDown ()
+	void ScaleDown()
 	{
-        m_downScaler -= 0.002f;
+        if(currentState != LiquidStates.Vapour)
+        {
+            float ratio = Mathf.Min(1.0f, Mathf.Max(0.0f, m_timer / m_particleLifeTime));
+            SetScale(GetScale() * ratio);
+        }
 
-        var obj = currentImage.gameObject.transform;
-        obj.localScale = new Vector3(
-            obj.localScale.x * m_downScaler,
-            obj.localScale.y * m_downScaler,
-            1.0f);
-
-        float minSize = currentState == LiquidStates.Steam ? 0.1f : 0.75f;
-        if (obj.localScale.x <= minSize || obj.localScale.y <= minSize)
+        float minSize = 0.25f;
+        if (GetScale() <= minSize)
         {
             GameObject.Destroy(currentImage.transform.parent.gameObject);
         }
     }
 
+    /*
+     *<summary>
+     * Sets the scale of the particle
+     *</summary>
+     */
+     private void SetScale(float scale)
+     {
+        currentImage.gameObject.transform.localScale = new Vector3(scale, scale, 1.0f);
+     }
 
-	/*
+    /*
+     *<summary>
+     * Gets the scale of the particle
+     *</summary>
+     */
+    private float GetScale()
+    {
+        return currentImage.gameObject.transform.localScale.x;
+    }
+
+    /*
      *<summary>
      *  Function allows for the external changing of the particles lifetime.
      *</summary>
      *<param name="a_newLifetime"> The new time the particle should live for. (eg. 4.0f seconds) </param>
      */
-	public void SetLifeTime (float a_newLifetime)
+    public void SetLifeTime (float a_newLifetime)
 	{
-		
-	}
+        m_particleLifeTime = a_newLifetime;
+        m_timer = m_particleLifeTime;
+    }
 
 
 	/*
@@ -169,7 +203,15 @@ public class LiquidParticle : MonoBehaviour
         }
         else if(currentState == LiquidStates.Steam)
         {
-            GameObject.Destroy(currentImage.transform.parent.gameObject);
+            SetState(LiquidStates.Vapour);
+            SetScale(MAX_SIZE);
+        }
+        else if(currentState == LiquidStates.Vapour)
+        {
+            if(a_otherParticle.gameObject.layer == LayerMask.NameToLayer("Barrier"))
+            {
+                GameObject.Destroy(currentImage.transform.parent.gameObject);
+            }
         }
 	}
 }

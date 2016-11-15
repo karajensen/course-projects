@@ -18,17 +18,16 @@ public class LiquidParticle : MonoBehaviour
 	public enum LiquidStates
 	{
 		Water,
-		Lava	//2 States
+		Lava
 	};
-	//Different liquid types
+
 	LiquidStates currentState = LiquidStates.Water;
 	public GameObject currentImage;
-	//The image is for the metaball shader for the effect.
 	public GameObject waterImage, lavaImage;
-	float m_startTime = 0.0f;
+	float m_timer = 0.0f;
 	float m_particleLifeTime = 0.0f;
-    float m_downScaler = 1.0f;
 
+    const float MAX_SIZE = 2.0f;
     const float LAVA_MASS = 2.0f;
     const float WATER_MASS = 1.0f;
 
@@ -39,7 +38,7 @@ public class LiquidParticle : MonoBehaviour
      */
     void Awake ()
 	{
-        m_startTime = 0.0f;
+        m_timer = m_particleLifeTime;
         SetState(currentState);
     }
 
@@ -51,6 +50,7 @@ public class LiquidParticle : MonoBehaviour
    */
 	void Update ()
 	{
+        m_timer -= Time.deltaTime;
         MovementAnimation();
         ScaleDown();
     }
@@ -64,26 +64,29 @@ public class LiquidParticle : MonoBehaviour
    */
 	public void SetState (LiquidStates a_newState)
 	{
-        var pObj = currentImage.transform.parent;
+        var go = currentImage.transform.parent.gameObject;
+        var rb = go.GetComponent<Rigidbody>();
         currentImage.SetActive(false);
 
         switch (a_newState)
         {
             case LiquidStates.Lava:
                 currentImage = lavaImage;
-                pObj.GetComponent<Rigidbody>().mass = LAVA_MASS;
+                rb.mass = LAVA_MASS;
                 break;
             case LiquidStates.Water:
                 currentImage = waterImage;
-                pObj.GetComponent<Rigidbody>().mass = WATER_MASS;
+                rb.mass = WATER_MASS;
                 break;
         }
+
+        rb.velocity = new Vector3(0, 0, 0);
+        rb.angularVelocity = new Vector3(0, 0, 0);
+        m_timer = m_particleLifeTime;
+
         currentState = a_newState;
         currentImage.SetActive(true);
-
-        //If the state changes (eg. water turns to lava) reset the life of the particle.
-        m_startTime = Time.time;
-	}
+    }
 
 
 	/*
@@ -96,8 +99,8 @@ public class LiquidParticle : MonoBehaviour
 	{
         var rb = currentImage.transform.parent.GetComponent<Rigidbody>();
         var speed = rb.velocity.magnitude;
-        var scale = 1.0f + 0.085f * speed;
-        currentImage.gameObject.transform.localScale = new Vector3(scale, scale, scale);
+        var speedMultiplier = 0.01f;
+        SetScale(MAX_SIZE - speed * speedMultiplier);
     }
 
 
@@ -109,31 +112,47 @@ public class LiquidParticle : MonoBehaviour
     */
 	void ScaleDown ()
 	{
-        m_downScaler -= 0.002f;
+        float ratio = Mathf.Min(1.0f, Mathf.Max(0.0f, m_timer / m_particleLifeTime));
+        SetScale(GetScale() * ratio);
 
-        var obj = currentImage.gameObject.transform;
-        obj.localScale = new Vector3(
-            obj.localScale.x * m_downScaler,
-            obj.localScale.y * m_downScaler,
-            obj.localScale.z * m_downScaler);
-
-        if (obj.localScale.x <= 0.75f || obj.localScale.y <= 0.75f || obj.localScale.z <= 0.75f)
+        float minSize = 0.25f;
+        if (GetScale() <= minSize)
         {
             GameObject.Destroy(currentImage.transform.parent.gameObject);
         }
     }
 
+    /*
+     *<summary>
+     * Sets the scale of the particle
+     *</summary>
+     */
+    private void SetScale(float scale)
+    {
+        currentImage.gameObject.transform.localScale = new Vector3(scale, scale, scale);
+    }
 
-	/*
+    /*
+     *<summary>
+     * Gets the scale of the particle
+     *</summary>
+     */
+    private float GetScale()
+    {
+        return currentImage.gameObject.transform.localScale.x;
+    }
+
+    /*
      *<summary>
      *  Function allows for the external changing of the particles lifetime.
      *</summary>
      *<param name="a_newLifetime"> The new time the particle should live for. (eg. 4.0f seconds) </param>
      */
-	public void SetLifeTime (float a_newLifetime)
+    public void SetLifeTime (float a_newLifetime)
 	{
-		
-	}
+        m_particleLifeTime = a_newLifetime;
+        m_timer = m_particleLifeTime;
+    }
 
 
 	/*
