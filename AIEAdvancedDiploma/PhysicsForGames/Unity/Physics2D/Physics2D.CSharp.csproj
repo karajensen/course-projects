@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="Assets\LiquidFlow\Scripts\LiquidParticle.cs" />
     <Compile Include="Assets\LiquidFlow\Scripts\ParticleGenerator.cs" />
+    <Compile Include="Assets\LiquidFlow\Scripts\SpriteToParticles.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\LiquidFlow\Shaders\Metaballs_Multiple.shader" />

@@ -34,6 +34,31 @@ public class ParticleGenerator : MonoBehaviour {
         m_sceneParticleHolder = new GameObject("ParticleHolder").transform;
     }
 
+    /*
+     *<summary>
+     * Creates particles given an area
+     *</summary>
+     */
+    public void Fill(float x, float y, float w, float h)
+    {
+        float offset = 0.25f;
+        float startX = x - (w * 0.5f) + offset;
+        float startY = y - (h * 0.5f) + offset;
+
+        for (float i = startX; i < startX + w - offset; i += offset)
+        {
+            for (float j = startY; j < startY + h - offset; j += offset)
+            {
+                GameObject newLiquidParticle = (GameObject)Instantiate(Resources.Load("LiquidPhysics/LiquidParticle"));
+                newLiquidParticle.transform.position = new Vector2(i, j);
+
+                LiquidParticle particleScript = newLiquidParticle.GetComponent<LiquidParticle>();
+                particleScript.SetImmortal();
+                particleScript.SetState(particlesState);
+                newLiquidParticle.transform.SetParent(m_sceneParticleHolder);
+            }
+        }
+    }
 
     /*
      *<summary>

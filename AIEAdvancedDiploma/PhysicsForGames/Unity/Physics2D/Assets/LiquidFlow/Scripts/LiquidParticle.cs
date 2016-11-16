@@ -10,11 +10,8 @@ using System.Collections;
  *</summary>
  *<Author> AIE </Author>
  */
-
-
 public class LiquidParticle : MonoBehaviour
 {
-
 	public enum LiquidStates
 	{
 		Water,
@@ -28,9 +25,9 @@ public class LiquidParticle : MonoBehaviour
     public GameObject waterImage, lavaImage, steamImage, vapourImage;
     public float m_timer = 0.0f;
     public float m_particleLifeTime = 0.0f;
+    public bool m_immortal = false;
 
     const float MAX_SIZE = 2.0f;
-
     const float WATER_GRAVITYSCALE = 1.0f;
 	const float LAVA_GRAVITYSCALE = 0.5f;
     const float STEAM_GRAVITYSCALE = -0.1f;
@@ -47,17 +44,20 @@ public class LiquidParticle : MonoBehaviour
 		SetState (currentState);
 	}
 
-
-	/*
+/*
    *<summary>
    *  Update loop called each tick as part of monobehavior
    *</summary>
    */
 	void Update ()
 	{
-        m_timer -= Time.deltaTime;
         MovementAnimation();
-        ScaleDown();
+
+        if (!m_immortal)
+        {
+            m_timer -= Time.deltaTime;
+            ScaleDown();
+        }
     }
 
     /*
@@ -109,9 +109,7 @@ public class LiquidParticle : MonoBehaviour
         currentState = a_newState;   
 		currentImage.SetActive (true);
         go.layer = currentImage.gameObject.layer;
-
     }
-
 
 	/*
     *<summary>
@@ -126,8 +124,7 @@ public class LiquidParticle : MonoBehaviour
         var speedMultiplier = 0.01f;
         SetScale(MAX_SIZE - speed * speedMultiplier);
     }
-
-
+    
 	/*
     *<summary>
     * Scales the size of the particle based on how long it has been alive. 
@@ -181,15 +178,25 @@ public class LiquidParticle : MonoBehaviour
         m_timer = m_particleLifeTime;
     }
 
+    /*
+     *<summary>
+     *  Function allows for a particle to live forever
+     *</summary>
+     *<param name="a_newLifetime"> The new time the particle should live for. (eg. 4.0f seconds) </param>
+     */
+    public void SetImmortal()
+    {
+        m_immortal = true;
+    }
 
-	/*
+    /*
      *<summary>
      *  This is where we would handle collisions between particles and call functions like our setState to change
      *  partcle types. Or we could just flat out destroy them etc..
      *</summary>
      *<param name="a_otherParticle"> The collision with another particle. Obviously not limited to particles so do a check in the method </param>
      */
-	void OnCollisionEnter2D (Collision2D a_otherParticle)
+    void OnCollisionEnter2D (Collision2D a_otherParticle)
 	{
         var particle = a_otherParticle.gameObject.GetComponent<LiquidParticle>();
         if(particle)
