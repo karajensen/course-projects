@@ -12,6 +12,7 @@ using System.Collections;
 
 public class ParticleGenerator : MonoBehaviour {
 
+    public float particleSizeMultiplier = 1.0f;
     public float particleLifetime = 3.0f;
     //Is there a initial force the particles should have?
     public Vector3 particleForce = Vector3.zero;
@@ -55,6 +56,7 @@ public class ParticleGenerator : MonoBehaviour {
                 LiquidParticle particleScript = newLiquidParticle.GetComponent<LiquidParticle>();
                 particleScript.SetImmortal();
                 particleScript.SetState(particlesState);
+                particleScript.particleSizeMultiplier = particleSizeMultiplier;
                 newLiquidParticle.transform.SetParent(m_sceneParticleHolder);
             }
         }
@@ -76,6 +78,7 @@ public class ParticleGenerator : MonoBehaviour {
 			LiquidParticle particleScript = newLiquidParticle.GetComponent<LiquidParticle>(); // Get the particle script
 			particleScript.SetLifeTime(particleLifetime); //Set each particle lifetime
 			particleScript.SetState(particlesState); //Set the particle State		
+            particleScript.particleSizeMultiplier = particleSizeMultiplier;
             //Keep the scene tidy and add the particle to the container transform
             newLiquidParticle.transform.SetParent(m_sceneParticleHolder);
             //Reset spawn timer

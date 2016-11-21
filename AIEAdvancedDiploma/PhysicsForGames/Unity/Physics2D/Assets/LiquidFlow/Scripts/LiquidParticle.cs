@@ -26,6 +26,7 @@ public class LiquidParticle : MonoBehaviour
     public float m_timer = 0.0f;
     public float m_particleLifeTime = 0.0f;
     public bool m_immortal = false;
+    public float particleSizeMultiplier = 1.0f;
 
     const float MAX_SIZE = 2.0f;
     const float WATER_GRAVITYSCALE = 1.0f;
@@ -122,7 +123,7 @@ public class LiquidParticle : MonoBehaviour
         var rb = currentImage.transform.parent.GetComponent<Rigidbody2D>();
         var speed = rb.velocity.magnitude;
         var speedMultiplier = 0.01f;
-        SetScale(MAX_SIZE - speed * speedMultiplier);
+        SetScale((MAX_SIZE * particleSizeMultiplier) - (speed * speedMultiplier));
     }
     
 	/*
@@ -151,7 +152,7 @@ public class LiquidParticle : MonoBehaviour
      * Sets the scale of the particle
      *</summary>
      */
-     private void SetScale(float scale)
+     public void SetScale(float scale)
      {
         currentImage.gameObject.transform.localScale = new Vector3(scale, scale, 1.0f);
      }
@@ -187,6 +188,7 @@ public class LiquidParticle : MonoBehaviour
     public void SetImmortal()
     {
         m_immortal = true;
+        SetScale(MAX_SIZE * particleSizeMultiplier);
     }
 
     /*
