@@ -66,6 +66,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\LiquidFlow\Scripts\Controller2D.cs" />
     <Compile Include="Assets\LiquidFlow\Scripts\GateDriver.cs" />
     <Compile Include="Assets\LiquidFlow\Scripts\LimbDriver.cs" />
     <Compile Include="Assets\LiquidFlow\Scripts\LiquidParticle.cs" />
