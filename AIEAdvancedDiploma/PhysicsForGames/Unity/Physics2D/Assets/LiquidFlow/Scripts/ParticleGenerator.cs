@@ -55,6 +55,7 @@ public class ParticleGenerator : MonoBehaviour {
 
                 LiquidParticle particleScript = newLiquidParticle.GetComponent<LiquidParticle>();
                 particleScript.SetImmortal();
+                particleScript.SetMaxSize();
                 particleScript.SetState(particlesState);
                 particleScript.particleSizeMultiplier = particleSizeMultiplier;
                 newLiquidParticle.transform.SetParent(m_sceneParticleHolder);
@@ -79,6 +80,7 @@ public class ParticleGenerator : MonoBehaviour {
 			particleScript.SetLifeTime(particleLifetime); //Set each particle lifetime
 			particleScript.SetState(particlesState); //Set the particle State		
             particleScript.particleSizeMultiplier = particleSizeMultiplier;
+            particleScript.SetMaxSize();
             //Keep the scene tidy and add the particle to the container transform
             newLiquidParticle.transform.SetParent(m_sceneParticleHolder);
             //Reset spawn timer

@@ -188,6 +188,15 @@ public class LiquidParticle : MonoBehaviour
     public void SetImmortal()
     {
         m_immortal = true;
+    }
+
+    /*
+     *<summary>
+     *  Function sets the particle to its maximum size
+     *</summary>
+     */
+    public void SetMaxSize()
+    {
         SetScale(MAX_SIZE * particleSizeMultiplier);
     }
 
