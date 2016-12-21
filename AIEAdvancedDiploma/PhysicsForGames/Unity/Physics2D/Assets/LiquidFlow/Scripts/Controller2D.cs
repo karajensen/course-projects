@@ -21,14 +21,10 @@ public class Controller2D : MonoBehaviour
 
     ParticleGenerator _waterGunScript;
     SpriteRenderer _renderer;
-    float _gravity = 0.04f;
     float _minDistanceToWall = 0.1f;
     float _minDistanceForSlope = 0.1f;
     float _minDistanceToGround = 0.1f;
     float _slopeAdjustment = 0.1f;
-    float _movementAmount = 0.01f;
-    float _waterGunOffset = 2.0f;
-    float _waterGunPower = 100.0f;
     bool _jumping = false;
     bool _jumpReleased = false;
     float _jumpTimer = 0.0f;
@@ -43,6 +39,12 @@ public class Controller2D : MonoBehaviour
     public int _totalHorizontalRays = _minHorizontalRays;
     public int _totalVerticalRays = _minVerticalRays;
     public bool _grounded = false;
+    public float _gravity = 0.04f;
+    public float _waterGunOffset = 2.0f;
+    public float _waterGunPower = 100.0f;
+    public float _movementAmount = 0.01f;
+    public float _slopeLimit = 0.9f;
+    public float _jumpDuration = 0.2f;
 
     void Start()
     {
@@ -129,8 +131,7 @@ public class Controller2D : MonoBehaviour
             {
                 // Determine movement for slopes
                 float dot = Vector2.Dot(hit.normal.normalized, direction);
-                const float maxSlopeCanTravel = 0.9f;
-                if (Math.Abs(dot) < maxSlopeCanTravel)
+                if (Math.Abs(dot) < _slopeLimit)
                 {
                     canSlopeAdjust = true;
                     slopAdjustDown = dot > 0.0f;
@@ -200,8 +201,7 @@ public class Controller2D : MonoBehaviour
         {
             // Apply jump to character
             _jumpTimer += Time.deltaTime;
-            const float jumpDuration = 0.2f;
-            if(_jumpTimer > jumpDuration || roofDistance < _minDistanceToGround)
+            if(_jumpTimer > _jumpDuration || roofDistance < _minDistanceToGround)
             {
                 _jumping = false;
             }
