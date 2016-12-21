@@ -5,22 +5,44 @@ using System;
 
 public class Controller2D : MonoBehaviour
 {
-    public GameObject waterGun;
-    private ParticleGenerator _waterGunScript;
-    private SpriteRenderer _renderer;
+    public class RayCastData
+    {
+        public RayCastData(RaycastHit2D r, Vector2 s, Vector2 d)
+        {
+            ray = r;
+            start = s;
+            direction = d;
+        }
+
+        public RaycastHit2D ray;
+        public Vector2 start;
+        public Vector2 direction;
+    };
+
+    ParticleGenerator _waterGunScript;
+    SpriteRenderer _renderer;
     float _gravity = 0.04f;
-    bool _grounded = false;
     float _minDistanceToWall = 0.1f;
-    float _minDistanceForSlope = 0.1f;  
+    float _minDistanceForSlope = 0.1f;
     float _minDistanceToGround = 0.1f;
+    float _slopeAdjustment = 0.1f;
     float _movementAmount = 0.01f;
     float _waterGunOffset = 2.0f;
     float _waterGunPower = 100.0f;
     bool _jumping = false;
+    bool _jumpReleased = false;
     float _jumpTimer = 0.0f;
     int _mask = 0;
 
-    bool IsGrounded() { return _grounded;  }
+    static int _minHorizontalRays = 1;
+    static int _minVerticalRays = 2;
+    static int _maxRays = 6;
+
+    public GameObject waterGun;
+    public List<RayCastData> _raycastsThisFrame = new List<RayCastData>();
+    public int _totalHorizontalRays = _minHorizontalRays;
+    public int _totalVerticalRays = _minVerticalRays;
+    public bool _grounded = false;
 
     void Start()
     {
@@ -30,26 +52,93 @@ public class Controller2D : MonoBehaviour
         moveHorizontal(false);
     }
 
-    bool isValidCollider(Collider2D collider)
+    bool IsGrounded()
     {
-        return collider != null;
+        return _grounded;
+    }
+
+    void DrawDiagnostics()
+    {
+        foreach (var data in _raycastsThisFrame)
+        {
+            if (data.ray.collider != null)
+            {
+                Debug.DrawLine(data.start,
+                    data.start + (data.direction * data.ray.distance), 
+                    Color.green);
+
+                float size = 0.025f;
+                Vector2 topLeft = data.ray.point + (Vector2.up * size) + (Vector2.left * size);
+                Vector2 topRight = data.ray.point + (Vector2.up * size) + (Vector2.right * size);
+                Vector2 botLeft = data.ray.point + (Vector2.down * size) + (Vector2.left * size);
+                Vector2 botRight = data.ray.point + (Vector2.down * size) + (Vector2.right * size);
+
+                Debug.DrawLine(topLeft, topRight, Color.green);
+                Debug.DrawLine(topRight, botRight, Color.green);
+                Debug.DrawLine(botRight, botLeft, Color.green);
+                Debug.DrawLine(botLeft, topLeft, Color.green);
+            }
+            else
+            {
+                const float length = 5.0f;
+                Debug.DrawLine(data.start,
+                    data.start + (data.direction * length), 
+                    Color.red);
+            }
+        }
     }
 
     void moveHorizontal(bool movingLeft)
     {
+        bool canMove = false;
+        bool isGunActive = true;
+        bool canSlopeAdjust = false;
+        bool slopAdjustDown = false;
+
         const float castOffset = 0.01f;
         float width = _renderer.bounds.size.x;
+        float height = _renderer.bounds.size.y;
         float halfHeight = _renderer.bounds.size.y * 0.5f;
         float halfWidth = width * 0.5f;
 
         float xOffset = movingLeft ? -halfWidth - castOffset : halfWidth + castOffset;
-        Vector2 pt = new Vector2(
-            _renderer.bounds.center.x + xOffset,
-            _renderer.bounds.center.y);
+        float yOffset = _totalHorizontalRays == 2 ? height : height / _totalHorizontalRays;
         Vector2 direction = movingLeft ? Vector2.left : Vector2.right;
+        Vector2 start = new Vector2(
+            _renderer.bounds.center.x + xOffset,
+            _renderer.bounds.center.y - (_totalHorizontalRays > 1 ? halfHeight : 0));
+        
+        for (int i = 0; i < _totalHorizontalRays; ++i)
+        {
+            Vector2 pt = new Vector2(start.x, start.y + (yOffset * i));
 
-        RaycastHit2D hit = Physics2D.Raycast(pt, direction, Mathf.Infinity, _mask);
-        if (hit.collider == null || (isValidCollider(hit.collider) && hit.distance >= _minDistanceToWall))
+            RaycastHit2D hit = Physics2D.Raycast(pt, direction, Mathf.Infinity, _mask);
+            _raycastsThisFrame.Add(new RayCastData(hit, pt, direction));
+
+            if (hit.collider == null || (hit.collider != null && hit.distance >= _minDistanceToWall))
+            {
+                canMove = true;
+            }
+
+            if (hit.collider != null)
+            {
+                isGunActive = !(hit.distance < halfWidth);
+            }
+
+            if (hit.collider != null && hit.distance < _minDistanceForSlope)
+            {
+                // Determine movement for slopes
+                float dot = Vector2.Dot(hit.normal.normalized, direction);
+                const float maxSlopeCanTravel = 0.9f;
+                if (Math.Abs(dot) < maxSlopeCanTravel)
+                {
+                    canSlopeAdjust = true;
+                    slopAdjustDown = dot > 0.0f;
+                }
+            }
+        }
+
+        if (canMove)
         {
             transform.localPosition = new Vector3(
                 transform.localPosition.x + (movingLeft ? -_movementAmount : _movementAmount),
@@ -57,43 +146,12 @@ public class Controller2D : MonoBehaviour
                 transform.localPosition.z);
         }
 
-        bool isGunActive = true;
-        if (isValidCollider(hit.collider))
+        if (canSlopeAdjust)
         {
-            isGunActive = !(hit.distance < halfWidth);
-
-            if(hit.distance < _minDistanceForSlope)
-            {
-                // Determine movement for slopes
-                float dot = Vector2.Dot(hit.normal.normalized, direction);
-                const float maxSlopeCanTravel = 0.9f;
-                const float slopeAdjustment = 0.2f;
-
-                if (Math.Abs(dot) < maxSlopeCanTravel)
-                {
-                    transform.localPosition = new Vector3(
-                        transform.localPosition.x,
-                        transform.localPosition.y + (-dot * slopeAdjustment),
-                        transform.localPosition.z);
-                }
-                else
-                {
-                    // Ensure the slope isn't a small ledge
-                    pt.y += halfHeight;
-                    RaycastHit2D hitSlope = Physics2D.Raycast(pt, direction, Mathf.Infinity, _mask);
-                    if (isValidCollider(hitSlope.collider))
-                    {
-                        dot = Vector2.Dot(hitSlope.normal.normalized, direction);
-                        if (Math.Abs(dot) < maxSlopeCanTravel)
-                        {
-                            transform.localPosition = new Vector3(
-                                transform.localPosition.x,
-                                transform.localPosition.y + (-dot * slopeAdjustment),
-                                transform.localPosition.z);
-                        }
-                    }
-                }
-            }
+            transform.localPosition = new Vector3(
+                transform.localPosition.x,
+                transform.localPosition.y + (slopAdjustDown ? -_slopeAdjustment : _slopeAdjustment),
+                transform.localPosition.z);
         }
 
         waterGun.SetActive(isGunActive);
@@ -105,42 +163,44 @@ public class Controller2D : MonoBehaviour
 
     void moveVertical()
     {
-        float halfHeight = _renderer.bounds.size.y * 0.5f;
-        float halfWidth = _renderer.bounds.size.x * 0.5f;
+        float width = _renderer.bounds.size.x;
+        float height = _renderer.bounds.size.y;
+        float halfHeight = height * 0.5f;
+        float halfWidth = width * 0.5f;
         const float castOffset = 0.01f;
+        float xOffset = _totalVerticalRays == 2 ? width : width / _totalVerticalRays;
+        float roofDistance = Mathf.Infinity;
+        float groundDistance = Mathf.Infinity;
 
-        // Determine whether colliding with the ground/roof
-        Vector2 downLeft = new Vector2(
+        Vector2 startDown = new Vector2(
             _renderer.bounds.center.x - halfWidth,
             _renderer.bounds.center.y - halfHeight - castOffset);
 
-        Vector2 downRight = new Vector2(
-            _renderer.bounds.center.x + halfWidth,
-            _renderer.bounds.center.y - halfHeight - castOffset);
-
-        Vector2 topLeft = new Vector2(
+        Vector2 startUp = new Vector2(
             _renderer.bounds.center.x - halfWidth,
             _renderer.bounds.center.y + halfHeight + castOffset);
 
-        Vector2 topRight = new Vector2(
-            _renderer.bounds.center.x + halfWidth,
-            _renderer.bounds.center.y + halfHeight + castOffset);
+        for (int i = 0; i < _totalVerticalRays; ++i)
+        {
+            Vector2 down = new Vector2(startDown.x + (xOffset * i), startDown.y);
+            Vector2 up = new Vector2(startUp.x + (xOffset * i), startUp.y);
 
-        RaycastHit2D groundHit = Physics2D.Raycast(downLeft, Vector2.down, Mathf.Infinity, _mask);
-        float groundDistance = isValidCollider(groundHit.collider) ? groundHit.distance : Mathf.Infinity;
-        groundHit = Physics2D.Raycast(downRight, Vector2.down, Mathf.Infinity, _mask);
-        groundDistance = Math.Min(groundDistance, isValidCollider(groundHit.collider) ? groundHit.distance : Mathf.Infinity);
-        _grounded = groundDistance < _minDistanceToGround;
+            RaycastHit2D groundHit = Physics2D.Raycast(down, Vector2.down, Mathf.Infinity, _mask);
+            groundDistance = Math.Min(groundDistance, groundHit.collider != null ? groundHit.distance : Mathf.Infinity);
+            _raycastsThisFrame.Add(new RayCastData(groundHit, down, Vector2.down));
 
-        RaycastHit2D roofHit = Physics2D.Raycast(topLeft, Vector2.up, Mathf.Infinity, _mask);
-        float roofDistance = isValidCollider(roofHit.collider) ? roofHit.distance : Mathf.Infinity;
-        roofHit = Physics2D.Raycast(topRight, Vector2.up, Mathf.Infinity, _mask);
-        roofDistance = Math.Min(roofDistance, isValidCollider(roofHit.collider) ? roofHit.distance : Mathf.Infinity);
+            RaycastHit2D roofHit = Physics2D.Raycast(up, Vector2.up, Mathf.Infinity, _mask);
+            roofDistance = Math.Min(roofDistance, roofHit.collider != null ? roofHit.distance : Mathf.Infinity);
+            _raycastsThisFrame.Add(new RayCastData(roofHit, up, Vector2.up));
+
+            _grounded = groundDistance < _minDistanceToGround;
+        }
 
         if (_jumping)
         {
+            // Apply jump to character
             _jumpTimer += Time.deltaTime;
-            const float jumpDuration = 0.15f;
+            const float jumpDuration = 0.2f;
             if(_jumpTimer > jumpDuration || roofDistance < _minDistanceToGround)
             {
                 _jumping = false;
@@ -165,22 +225,36 @@ public class Controller2D : MonoBehaviour
        
     void Update()
     {
+        _totalVerticalRays = Math.Min(Math.Max(
+            _minVerticalRays, _totalVerticalRays), _maxRays);
+
+        _totalHorizontalRays = Math.Min(Math.Max(
+            _minHorizontalRays, _totalHorizontalRays), _maxRays);
+
+        _raycastsThisFrame.Clear();
+
         moveVertical();
 
-        // Determine movememnt
         if (Input.GetKey(KeyCode.LeftArrow))
         {
             moveHorizontal(true);
         }
-        if (Input.GetKey(KeyCode.RightArrow))
+        else if (Input.GetKey(KeyCode.RightArrow))
         {
             moveHorizontal(false);
         }
 
-        if (Input.GetKey(KeyCode.Space) && _grounded)
+        if (!_jumpReleased)
         {
+            _jumpReleased = !Input.GetKey(KeyCode.Space);
+        }
+        else if (_jumpReleased && Input.GetKey(KeyCode.Space) && _grounded)
+        {
+            _jumpReleased = false;
             _jumping = true;
             _jumpTimer = 0.0f;
         }
+
+        DrawDiagnostics();
     }
 }

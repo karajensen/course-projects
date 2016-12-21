@@ -16,8 +16,8 @@ public class LimbDriver : MonoBehaviour
     private SpriteRenderer leftArmRenderer = null;
 
     public Rigidbody2D body = null;
-    private float forceUpMultiplier = 5.0f;
-    private float forceSideMultiplier = 2.5f;
+    private float forceUpMultiplier = 6.0f;
+    private float forceSideMultiplier = 3.0f;
 
     void Start()
     {
@@ -41,21 +41,21 @@ public class LimbDriver : MonoBehaviour
             body.AddForce(force);
             leftArmRenderer.color = selectedColor;
         }
-        if (Input.GetKey("w"))
+        else if (Input.GetKey("w"))
         {
             Vector2 force = Vector2.up * forceUpMultiplier + Vector2.right * forceSideMultiplier;
             rightArm.AddForce(force);
             body.AddForce(force);
             rightArmRenderer.color = selectedColor;
         }
-        if (Input.GetKey("o"))
+        else if (Input.GetKey("o"))
         {
             Vector2 force = Vector2.up * forceUpMultiplier + Vector2.left * forceSideMultiplier;
             leftLeg.AddForce(force);
             body.AddForce(force);
             leftLegRenderer.color = selectedColor;
         }
-        if (Input.GetKey("p"))
+        else if (Input.GetKey("p"))
         {
             Vector2 force = Vector2.up * forceUpMultiplier + Vector2.right * forceSideMultiplier;
             rightLeg.AddForce(force);
