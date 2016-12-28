@@ -15,6 +15,7 @@
 *.metagen
 *.exp
 *.fbm/
+*.pyc
 ipch/
 html/
 .vs/
