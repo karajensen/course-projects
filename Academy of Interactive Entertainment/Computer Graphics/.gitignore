@@ -1,0 +1,7 @@
+Debug/
+ComputerGraphics/ComputerGraphics.exe
+ComputerGraphics/ComputerGraphicsD.exe
+ComputerGraphics/Assets/Textures/Generated/*.bmp
+ComputerGraphics/Debug/
+ComputerGraphics/Release/
+Release/Assets/Textures/Generated/*.bmp

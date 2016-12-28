@@ -1,4 +1,0 @@
-LIBRARY	"ShroomBot"
-EXPORTS
-	CreateBot
-	DeleteBot

@@ -1,0 +1,9 @@
+Debug/
+Release/
+QtTutorial/Debug/
+QtTutorial/Release/
+QtTutorial/QtTutorial.exe
+QtTutorial/QtTutorialD.exe
+QtTutorial/qt/Makefile.Debug
+QtTutorial/qt/Makefile.Release
+QtTutorial/qt/Makefile

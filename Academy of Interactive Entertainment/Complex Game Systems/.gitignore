@@ -1,0 +1,11 @@
+Debug/
+ComplexGameSystems/frame.png
+ComplexGameSystems/GuiDebug/
+ComplexGameSystems/GuiRelease/
+ComplexGameSystems/Release/
+ComplexGameSystems/Debug/
+ComplexGameSystems/ComplexGameSystems.exe
+ComplexGameSystems/ComplexGameSystemsGUI.lib
+ComplexGameSystems/ComplexGameSystemsGUID.lib
+ComplexGameSystems/ComplexGameSystemsGUI.dll
+ComplexGameSystems/ComplexGameSystemsGUID.dll
