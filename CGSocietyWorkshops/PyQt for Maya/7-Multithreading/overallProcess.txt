@@ -1,0 +1,6 @@
+basicSubProcess = Main UI
+    processArea = Module
+        USES - processArea.ui = UI file
+        SPAWNS - procThread
+            SPAWNS - runSub
+                USES - standaloneSetup
