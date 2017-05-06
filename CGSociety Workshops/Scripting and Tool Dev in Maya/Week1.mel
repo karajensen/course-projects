@@ -1,0 +1,87 @@
+//====================================================================================
+// Scripting and Tool Dev in Maya - Week 1 - Kara Jensen
+//====================================================================================
+
+{ // Script 1 ------------------------------------------------------------------------
+    /** Creates, colors and assigns a shader to the given node */
+    proc assignNewShader(string $node, string $type, float $r, float $g, float $b) { 
+        string $shaderName = $node + "_shader";
+        string $shaderGroup = $node + "_shaderSG";
+        
+        if($type == "lambert") {
+            shadingNode -asShader lambert -n $shaderName;            
+        }
+        else {
+            shadingNode -asShader blinn -n $shaderName;
+        }
+    
+        sets -renderable true -noSurfaceShader true -empty -name $shaderGroup;
+        connectAttr -f ($shaderName + ".outColor") ($shaderGroup + ".surfaceShader");
+        assignCreatedShader "lambert" "" $shaderName $node; 
+        setAttr ($shaderName + ".color") -type double3 $r $g $b;    
+    }
+    
+    // Create 3 spheres 5 units from each other in the x-axis
+    polySphere -n "sphere1";
+    polySphere -n "sphere2";
+    polySphere -n "sphere3";        
+    setAttr "sphere1.translateX" 5;
+    setAttr "sphere3.translateX" -5;   
+    
+    // Create 3 cubes 3 units above the sphere
+    polyCube -n "cube1";
+    polyCube -n "cube2";
+    polyCube -n "cube3";        
+    setAttr "cube1.translateX" 5;
+    setAttr "cube3.translateX" -5;  
+    setAttr "cube1.translateY" 3;
+    setAttr "cube2.translateY" 3;    
+    setAttr "cube3.translateY" 3;     
+    
+    // Assign the required shaders to the 3 cubs
+    assignNewShader("cube1", "lambert", 1.0, 0.0, 0.0);
+    assignNewShader("cube2", "lambert", 0.0, 1.0, 0.0);
+    assignNewShader("cube3", "blinn", 0.0, 0.0, 1.0);         
+}
+
+{ // Script 2 ------------------------------------------------------------------------
+    // Move a selected object 1.5 units up
+    string $selection[] = `ls -sl -tr`;
+    for($selItem in $selection) {
+        if(`attributeExists "translateY" $selItem`) {
+            float $currentY = `getAttr ($selItem + ".translateY")`;
+            setAttr ($selItem + ".translateY") ($currentY + 1.5);            
+        }
+    }
+}
+
+{ // Script 3 ------------------------------------------------------------------------
+    //Print selected objects/nodes
+    print(size(`ls -sl`));
+}
+
+{ // Script 4 ------------------------------------------------------------------------
+    //Print selected joints, meshes, transforms
+    print("\nMeshes: " + size(`ls -sl -dag -ap -s`));
+    print("\nJoints: " + size(`ls -sl -type "joint"`));    
+    print("\nTransforms: " + size(`ls -sl -tr`));
+}
+
+{ // Script 5 ------------------------------------------------------------------------
+    /** Prints hello world to the user */
+    proc helloWorldProc(string $name) {
+        print("\nHello " + $name);
+    }
+    
+    // Create a UI with a button when pressed with print a welcome message
+    string $windowName = "HelloWorldWindow";
+    if(`window -exists $windowName`) {
+        deleteUI -wnd $windowName;    
+    }
+    window -title "Hello World" $windowName;
+    showWindow $windowName;
+    window -edit -w 300 -h 90 $windowName;
+    columnLayout -adjustableColumn true -rs 10;
+        textField -editable true -h 30 "tfName";
+        button -label "Okay" -h 60 -c "helloWorldProc(`textField -q -tx \"tfName\"`)";
+}
