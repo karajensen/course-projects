@@ -1,7 +1,6 @@
 //====================================================================================
 // Scripting and Tool Dev in Maya - Week 1 - Kara Jensen
 //====================================================================================
-
 { // Script 1 ------------------------------------------------------------------------
     /** Creates, colors and assigns a shader to the given node */
     proc assignNewShader(string $node, string $type, float $r, float $g, float $b) { 

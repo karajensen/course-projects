@@ -1,3 +1,67 @@
 //====================================================================================
 // Scripting and Tool Dev in Maya - Week 2 - Kara Jensen
 //====================================================================================
+
+// Script 1 ------------------------------------------------------------------------
+proc Script1RandomizeSelection(float $distance, float $minScale, float $maxScale) {
+    string $selectedItems[] = `ls -sl -tr`;
+    for($selItem in $selectedItems) {
+        vector $trans = rand(<<-$distance,-$distance,-$distance>>, <<$distance,$distance,$distance>>);
+        vector $rotation = rand(<<-180,-180,-180>>, <<180,180,180>>);
+        vector $scale = rand(<<$minScale,$minScale,$minScale>>, <<$maxScale, $maxScale, $maxScale>>);
+        scale ($scale.x) ($scale.y) ($scale.z) $selItem;
+        rotate ($rotation.x) ($rotation.y) ($rotation.z) $selItem;
+        move -a ($trans.x) ($trans.y) ($trans.z) $selItem;
+    }          
+}
+proc Script1() {
+    // Randomize the position, rotation and scale on objects the user selects
+    select -cl;
+    string $groupName = "Script1Objects";
+    group -em -n $groupName;
+    for($i = 0; $i < 100; $i++) {
+        parent `polyCube` $groupName;
+    }
+    select -hi $groupName;
+    Script1RandomizeSelection(10.0, 0.5, 2.0);
+}
+
+ // Script 2 ------------------------------------------------------------------------
+proc Script2() {
+    // Create a cube that's 1x5x1 units    
+    // Add 10 keyframes in 10 frame intervals starting at frame 0 to animate
+    // rotation X so it swings right and left with random value between 20-70
+    // Ensure it alternates between positive and negative each 10 frames so it
+    // passes through zero
+
+    string $script2Cube = "Script2Cube";
+    polyCube -w 1.0 -h 1.5 -d 1.0 -n $script2Cube;
+    
+    for($i = 0; $i < 10; $i++) {
+        float $value = (($i % 2) ? -1.0 : 1.0) * rand(20, 70);
+        setKeyframe -time ($i*10) -v $value -attribute "rotateX" $script2Cube;
+    }
+}
+
+ // Script 3 ------------------------------------------------------------------------
+proc Script3() {
+    // Move the eye rig in eyesRig.mb rapidly
+    string $rightEye = "r_eye_CTL";
+    string $leftEye = "l_eye_CTL";
+    float $distance = 5.0;
+    float $totalFrames = 1000;
+    int $framesPerKeyframe = 50;
+    playbackOptions -min 1 -max $totalFrames;
+   
+    for($i = 0; $i < $totalFrames; $i++) {
+        float $rightValueX = rand(-$distance, $distance); 
+        float $rightValueY = rand(-$distance, $distance);
+        float $leftValueX = rand(-$distance, $distance); 
+        float $leftValueY = rand(-$distance, $distance);      
+        float $timeValue = $i * $framesPerKeyframe;
+        setKeyframe -time $timeValue -v $rightValueX -attribute "translateX" $rightEye;
+        setKeyframe -time $timeValue -v $rightValueY -attribute "translateY" $rightEye;
+        setKeyframe -time $timeValue -v $leftValueX -attribute "translateX" $leftEye;
+        setKeyframe -time $timeValue -v $leftValueY -attribute "translateY" $leftEye;
+    }
+}
