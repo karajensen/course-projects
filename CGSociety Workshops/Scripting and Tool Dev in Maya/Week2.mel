@@ -35,7 +35,7 @@ proc Script2() {
     // passes through zero
 
     string $script2Cube = "Script2Cube";
-    polyCube -w 1.0 -h 1.5 -d 1.0 -n $script2Cube;
+    polyCube -w 1.0 -h 5.0 -d 1.0 -n $script2Cube;
     
     for($i = 0; $i < 10; $i++) {
         float $value = (($i % 2) ? -1.0 : 1.0) * rand(20, 70);
