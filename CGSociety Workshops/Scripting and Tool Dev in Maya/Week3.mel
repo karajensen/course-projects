@@ -1,0 +1,93 @@
+// Script 1 ------------------------------------------------------------------------
+proc DuplicateInLine(string $objA, string $objB, string $objC, int $x_number) {
+    
+    vector $aPosition = `xform -q -worldSpace -translation $objA`;
+    vector $bPosition = `xform -q -worldSpace -translation $objB`;
+    vector $direction = $aPosition - $bPosition;
+    float $distance = mag($direction);
+    $direction /= $distance;
+    float $spacing = $distance / $x_number;
+
+    int $i;
+    for($i = 0; $i < $x_number; $i++) {
+        string $newObj[] = `duplicate $objC`;
+        vector $newpos = $bPosition + ($direction * ($i * $spacing));
+        move -a ($newpos.x) ($newpos.y) ($newpos.z) $newObj[0]; 
+    }
+    delete $objC;
+}
+proc Script1() {
+    string $objA = "ObjectA";
+    polySphere -name $objA;
+    move -a 10 10 10 $objA;
+    
+    string $objB = "ObjectB";
+    polySphere -name $objB;
+    move -a -10 -10 -10 $objB;
+    
+    string $objC = "ObjectC";
+    polySphere -name $objC;  
+    
+    DuplicateInLine($objA, $objB, $objC, 20);
+}
+
+ // Script 2 ------------------------------------------------------------------------
+proc Script2() {
+    string $selectedItems[] = `ls -sl`;
+    select -cl;
+    
+    string $delim = "_";
+    string $selItem;
+    for($selItem in $selectedItems) {
+        
+        // Splint the item name into sections
+        string $components[];
+        tokenize $selItem $delim $components;
+        if(size($components) == 0 || $components[0] != "zoma") {
+            warning ("Selected item " + $selItem + " is not part of rig");
+            continue;
+        }
+
+        // Create a string to search for the mirrored item
+        string $searchStr = $components[0] + $delim + 
+            $components[1] + $delim + "*" + $delim + 
+            $components[size($components)-1];  
+        select $searchStr;
+        string $matchedItems[] = `ls -sl`;
+        select -cl;
+
+        // Out of the found items, find the mirrored Item
+        string $matchedItem;
+        string $mirrorItem;
+        for($matchedItem in $matchedItems) {
+            string $matchedComponents[];
+            tokenize $matchedItem $delim $matchedComponents;            
+            if(size($matchedComponents) == size($components) && $matchedItem != $selItem) {
+                $mirrorItem = $matchedItem;
+                break;
+            }
+        }
+        
+        // Some items may not have an opposite side
+        if(size($mirrorItem) == 0) {
+            warning ($selItem + " has nothing to mirror");
+            continue;
+        }    
+
+        // Iterate over all attributes and mirror them
+        string $selAttrs[] = `listAttr -k $selItem`;
+        string $selAttr;
+        for($selAttr in $selAttrs) {
+            if(`attributeExists $selAttr $mirrorItem`) {                
+                setAttr ($mirrorItem + "." + $selAttr) (`getAttr ($selItem + "." + $selAttr)`);
+                
+                // To mirror translation, need to negate it
+                if(`gmatch $selAttr "*translate*"`) {
+                    setAttr ($mirrorItem + "." + $selAttr) (-(`getAttr ($mirrorItem + "." + $selAttr)`));                    
+                }                
+            }
+        }
+    }
+}
+
+Script2();

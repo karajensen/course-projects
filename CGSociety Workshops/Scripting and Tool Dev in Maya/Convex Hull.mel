@@ -1,0 +1,39 @@
+/*****************************************************************************************************
+Incremental Convex hull algorithm removes all faces 
+that are facing the new point and generates new faces 
+on the border of the highlighted ones. Reference:
+http://www.eecs.tufts.edu/~mhorn01/comp163/algorithm.html
+
+1)  Get the mesh the user has selected
+
+2)  Get the vertices, faces and edges of the mesh and create the following arrays:
+	- Vertices: A vector array of all vertex positions of the mesh
+	- HullPoints: Holds vertices of the convex hull, initially empty
+	- HullFaces: A series of arrays where index 1 into each array contains information about face 1:
+		- Points: A vector array holding 3 indexes for the 3 face vertices
+		- Alive: Bool array whether the face is considered alive
+		- Normal: A vector array holding the normalized normal of the face
+	
+3)  Move the first four vertices from the Vertices array into the HullPoints array
+
+4)  Fill in HullFaces array with information on how these four vertices in HullPoints connect
+	The final mesh data generated should have normals pointing outwards from the centre
+
+5)  For each remaining point P in the Vertices array:
+
+	1)  Generate an int array HighlightedFaces from the array HullFaces
+		These are indices to faces the are in front of or 'highlight' the point P
+		For face F in HullFaces, add to HighlightedFaces if face is considered 'alive'
+		(used in the final hull) and the dot of face-to-P and the face normal is > 0
+			
+	2)	Generate a vector array HorizonEdges from the array HighlighedFaces
+		This vector will only use 2 components and hold indexes to 2 vertices
+		For face F in HighlightedFaces, add the two vertices that form an edge
+		to HorizonEdges if no other face in HighlighedFaces shares these two vertices
+	
+	3)  Mark faces in HighlighedFaces as dead and not part of the hull mesh
+	
+	4)  Connect up new faces in HighlighedFaces from the HorizonEdges to the point P
+		For edge E in HorizonEdges, reuse a dead face (could reuse faces in HighlighedFaces)
+		or create a new face and add to array HighlighedFaces
+*****************************************************************************************************/
