@@ -1,0 +1,164 @@
+//====================================================================================
+// Scripting and Tool Dev in Maya - Week 4 - Kara Jensen
+//====================================================================================
+
+// Script 1 ------------------------------------------------------------------------
+proc Script1SetIntAttrValue(string $attr, string $slider) {
+    int $value = `intSliderGrp -q -v $slider`;
+    setAttr $attr $value;    
+}
+proc Script1SetFltAttrValue(string $attr, string $slider) {
+    float $value = `floatSliderGrp -q -v $slider`;
+    setAttr $attr $value; 
+}
+proc Script1AddAttrSlider(string $attr, int $index) {
+    string $slider = "Slider_" + $index;
+    if(`getAttr -type $attr` == "bool") {
+        string $command = "Script1SetIntAttrValue( \"" + $attr + "\",\"" + $slider + "\")";
+        intSliderGrp -value `getAttr $attr`
+                      -field true
+                      -label $attr
+                      -changeCommand $command
+                      -minValue 0
+                      -maxValue 1                     
+                      $slider;            
+    }
+    else {
+        string $command = "Script1SetFltAttrValue( \"" + $attr + "\",\"" + $slider + "\")";
+        floatSliderGrp -value `getAttr $attr`
+                       -field true
+                       -label $attr
+                       -changeCommand $command
+                       -minValue -100.0
+                       -maxValue 1000.0                     
+                       $slider;            
+    }    
+}
+
+proc Script1() {
+    string $selectedItems[] = `ls -sl`;
+    if(size($selectedItems) == 0) {
+        return;
+    }
+    
+    string $script1Window = "Script1Window";
+    if(`window -exists $script1Window`) {
+        windowPref -remove $script1Window;
+        deleteUI -wnd $script1Window;
+    }
+    
+    window -title "Script 1" -resizeToFitChildren false $script1Window;
+    showWindow $script1Window;
+    window -edit -width 600 -height 300 $script1Window;    
+    columnLayout;
+    
+    string $firstItem =  $selectedItems[0];
+    string $cbKeyableAttr[] = `listAttr -keyable $firstItem`;
+    string $cbNonKeyableAttr[] = `listAttr -cb $firstItem`;    
+    string $attr = "";
+    int $i = 0;
+    
+    for($attr in $cbKeyableAttr) {
+        Script1AddAttrSlider($firstItem + "." + $attr, $i++);
+    } 
+    for($attr in $cbNonKeyableAttr) {
+        Script1AddAttrSlider($firstItem + "." + $attr, $i++);
+    }     
+}
+
+ // Script 2 ------------------------------------------------------------------------
+proc Script2SelectJoint(string $txtScrollLst){
+    string $selectedItems[] = `textScrollList -q -si $txtScrollLst`;
+    select $selectedItems;
+}
+proc Script2AddIncJoints(string $txtScrollLst, string $deformer, string $filterStr) {
+    string $jointInputs[] = `listConnections -type "joint" -plugs off $deformer`;
+    string $jointInput = "";
+    for($jointInput in $jointInputs) {
+        if(size($filterStr) == 0 || size(`match $filterStr $jointInput`) != 0) {
+            textScrollList -edit -append $jointInput $txtScrollLst;
+        }
+    }      
+}
+proc Script2FillTxtScrollLst(string $txtScrollLst, string $filterStr) {
+    string $selectedItems[] = `ls -sl`;
+    if(size($selectedItems) == 0) {
+        return;
+    }
+        
+    string $shapes[] = `listRelatives -fullPath -shapes $selectedItems[0]`;
+    string $firstItem = $shapes[0];
+    string $skinClusters[] = `listConnections -plugs off -type "skinCluster" $firstItem`;
+    string $clusters[] = `listConnections -plugs off -type "cluster" $firstItem`;
+    string $lattices[] = `listConnections -plugs off -type "lattice" $firstItem`;
+    string $jointClusters[] = `listConnections -plugs off -type "jointCluster" $firstItem`;            
+    string $deformer = "";
+    
+    for($deformer in $clusters) {
+        Script2AddIncJoints($txtScrollLst, $deformer, $filterStr);
+    }
+    for($deformer in $jointClusters) {
+        Script2AddIncJoints($txtScrollLst, $deformer, $filterStr);
+    }
+    for($deformer in $lattices) {
+        Script2AddIncJoints($txtScrollLst, $deformer, $filterStr);
+    }
+    for($deformer in $skinClusters) {
+        Script2AddIncJoints($txtScrollLst, $deformer, $filterStr);
+    }             
+}
+proc Script2() {    
+    string $script2Window = "Script2Window";
+    if(`window -exists $script2Window`) {
+        deleteUI -wnd $script2Window;
+    }
+    
+    window -title "Script 2" -resizeToFitChildren false $script2Window;
+    showWindow $script2Window;
+    window -edit -width 300 -height 300 $script2Window;    
+    columnLayout;
+    
+    string $txtScrollLst = "TxtScrollLst";
+    string $command = "Script2SelectJoint(\"" + $txtScrollLst + "\")";
+    textScrollList -h 300 -w 300
+                   -selectCommand $command
+                   $txtScrollLst;
+    
+    Script2FillTxtScrollLst($txtScrollLst, "");
+}
+
+// Script 3 ------------------------------------------------------------------------
+proc Script3OnTxtEdit(string $txtScrollLst, string $txtField) {
+    string $value = `textField -q -text $txtField`;
+    textScrollList -e -ra $txtScrollLst;
+    Script2FillTxtScrollLst($txtScrollLst, $value);
+}
+proc Script3() {
+    string $script3Window = "Script3Window";
+    if(`window -exists $script3Window`) {
+        deleteUI -wnd $script3Window;
+    }
+    
+    window -title "Script 3" -resizeToFitChildren false $script3Window;
+    showWindow $script3Window;
+    window -edit -width 300 -height 300 $script3Window;    
+    columnLayout;
+    
+    string $txtField = "TxtField";
+    string $txtScrollLst = "TxtScrollLst";
+    
+    string $txtCommand = "Script3OnTxtEdit(\"" + $txtScrollLst + "\",\"" + $txtField + "\")";
+    textField -w 300 
+              -changeCommand $txtCommand 
+              $txtField;
+    
+    string $command = "Script2SelectJoint(\"" + $txtScrollLst + "\")";
+    textScrollList -h 300 -w 300
+                   -selectCommand $command
+                   $txtScrollLst;
+    
+    Script2FillTxtScrollLst($txtScrollLst, "");
+}
+
+//select "zoma_hi_rt_hand";
+Script1();
