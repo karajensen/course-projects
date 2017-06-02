@@ -1,0 +1,38 @@
+//====================================================================================
+// Scripting and Tool Dev in Maya - Week 5 - Kara Jensen
+//====================================================================================
+
+// Script 1 ------------------------------------------------------------------------
+global int $Script1JobNumber = -1;
+global string $Script1Selection[];
+
+proc Script1SetIncandescence(string $items[], float $red, float $green, float $blue) {
+    select $items;
+    hyperShade -smn;
+    string $shaderSelection[] = `ls -sl`;    
+    string $shader = "";
+    for($shader in $shaderSelection) {                   
+        setAttr ($shader + ".incandescence") -type double3 ($red) ($green) ($blue);
+    }
+}
+
+proc Script1OnSelChanged() {
+    global string $Script1Selection[];
+    global int $Script1JobNumber;        
+    string $currentSelection[] = `ls -sl`;
+    Script1SetIncandescence($Script1Selection, 0.0, 0.0, 0.0);    
+    $Script1Selection = $currentSelection;
+    Script1SetIncandescence($Script1Selection, 0.5, 0.5, 0.0);    
+    select $Script1Selection; 
+}
+
+proc Script1() {
+   global int $Script1JobNumber;
+   if($Script1JobNumber == -1) {
+       $Script1JobNumber = `scriptJob -e "SelectionChanged" "Script1OnSelChanged()"`;
+   }
+}
+
+//scriptJob -kill $Script1JobNumber -force;
+//scriptJob -listJobs;
+Script1();
