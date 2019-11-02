@@ -1,1 +1,28 @@
 
+SPECIAL KANA
+っ          ッ         Double consonant of next character
+ぁぃぅぇぉ   ァィゥェォ   Extend vowel part of previous character
+ヶ (ga)                Used inside place names
+でぅ         ドゥ       du
+ふぁ         ファ       fa
+ふぃ         フィ       fi
+ふぉ         フォ       fo
+チェ         ちぇ       che
+ヴ                     vu
+
+PARTICLES
+へ (e)     To
+に         To / At / On / In / By / Indirect object
+は (wa)    Topic marker
+が         Subject marker
+の         Of
+を (o)     Direct object
+か         ?
+や         And etc
+と         And
+も         As well
+
+VERBS
+1: all others
+2: -iru, -eru with exceptions
+3: kuru, suru
