@@ -26,3 +26,15 @@ VERBS
 1: all others
 2: -iru, -eru with exceptions
 3: kuru, suru
+
+MINUTES
+1      いっぷん
+2      にふん
+3      さんぷん
+4      よんぷん
+5      ごふん
+6      ろっぷん
+7      ななふん (しちふん)
+8      はっぷん/はちふん
+9      きゅうふん
+10     じゅっぷん (じっぷん)
