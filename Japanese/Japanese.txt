@@ -130,4 +130,6 @@ SPECIAL KANA
 -------------------------------------------------------------------------
 PHRASES
 -------------------------------------------------------------------------
-2ふたつください                    Please give me two (of them)
+2つください                      Please give me two (of them)
+サンドイッチとコーヒーを1つください  One sandwich and coffee please
+アイスコーヒーを1つください         One iced coffee please
