@@ -133,3 +133,4 @@ PHRASES
 2つください                      Please give me two (of them)
 サンドイッチとコーヒーを1つください  One sandwich and coffee please
 アイスコーヒーを1つください         One iced coffee please
+もう一いちどいってください          Please say that again
